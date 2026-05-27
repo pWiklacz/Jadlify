@@ -1,32 +1,31 @@
 ﻿using Jadlify.Application.Common.Behaviours;
 using Jadlify.SharedKernel;
 
-namespace Jadlify.Application.Common.Mediator
+namespace Jadlify.Application.Common.Mediator;
+
+internal static class PipelineHelper
 {
-    internal static class PipelineHelper
+    public static async Task<Result<TResponse>> Execute<TRequest, TResponse>(
+        IReadOnlyList<IPipelineBehavior<TRequest, TResponse>> behaviors,
+        TRequest request,
+        Func<Task<Result<TResponse>>> handlerFunc,
+        CancellationToken cancellationToken)
     {
-        public static async Task<Result<TResponse>> Execute<TRequest, TResponse>(
-            IReadOnlyList<IPipelineBehavior<TRequest, TResponse>> behaviors,
-            TRequest request,
-            Func<Task<Result<TResponse>>> handlerFunc,
-            CancellationToken cancellationToken)
+        if (behaviors.Count == 0)
         {
-            if (behaviors.Count == 0)
-            {
-                return await handlerFunc();
-            }
-
-            RequestHandlerDelegate<TResponse> currentHandler = () => handlerFunc();
-
-            for (int i = behaviors.Count - 1; i >= 0; i--)
-            {
-                var behavior = behaviors[i];
-                var nextHandler = currentHandler;
-
-                currentHandler = () => behavior.HandleAsync(request, nextHandler, cancellationToken);
-            }
-
-            return await currentHandler();
+            return await handlerFunc();
         }
+
+        RequestHandlerDelegate<TResponse> currentHandler = () => handlerFunc();
+
+        for (int i = behaviors.Count - 1; i >= 0; i--)
+        {
+            IPipelineBehavior<TRequest, TResponse> behavior = behaviors[i];
+            RequestHandlerDelegate<TResponse> nextHandler = currentHandler;
+
+            currentHandler = () => behavior.HandleAsync(request, nextHandler, cancellationToken);
+        }
+
+        return await currentHandler();
     }
 }

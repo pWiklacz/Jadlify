@@ -1,8 +1,8 @@
+using System.Reflection;
 using FluentValidation;
 using Jadlify.Application.Common.Behaviours;
 using Jadlify.Application.Common.Mediator;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace Jadlify.Application;
 
@@ -10,7 +10,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        var assembly = typeof(DependencyInjection).Assembly;
+        Assembly assembly = typeof(DependencyInjection).Assembly;
 
         // 1. Rejestracja CQRS (Mediator, Handlers, Validators, Pipelines)
         services.AddCQRS(assembly);
@@ -20,7 +20,7 @@ public static class DependencyInjection
 
     public static IServiceCollection AddCQRS(this IServiceCollection services, params Assembly[] assemblies)
     {
-        var assembliesToScan = assemblies?.Length > 0
+        Assembly[] assembliesToScan = assemblies?.Length > 0
             ? assemblies
             : new[] { Assembly.GetExecutingAssembly() };
 
@@ -37,7 +37,7 @@ public static class DependencyInjection
     /// </summary>
     private static IServiceCollection RegisterHandlers(this IServiceCollection services, Assembly[] assemblies)
     {
-        foreach (var assembly in assemblies)
+        foreach (Assembly assembly in assemblies)
         {
             // Command Handlers bez wyniku (zwracające Result)
             var commandHandlers = assembly.GetTypes()
@@ -47,16 +47,16 @@ public static class DependencyInjection
                     i.GetGenericTypeDefinition() == typeof(ICommandHandler<>)))
                 .ToList();
 
-            foreach (var handlerType in commandHandlers)
+            foreach (Type? handlerType in commandHandlers)
             {
-                var interfaceType = handlerType.GetInterfaces()
+                Type interfaceType = handlerType.GetInterfaces()
                     .First(i => i.IsGenericType &&
                            i.GetGenericTypeDefinition() == typeof(ICommandHandler<>));
 
                 services.AddScoped(interfaceType, handlerType);
 
                 // Log registration
-                var commandType = interfaceType.GetGenericArguments()[0];
+                Type commandType = interfaceType.GetGenericArguments()[0];
                 Console.WriteLine($"Registered handler: {handlerType.Name} for command: {commandType.Name}");
             }
 
@@ -68,16 +68,16 @@ public static class DependencyInjection
                     i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>)))
                 .ToList();
 
-            foreach (var handlerType in commandHandlersWithResult)
+            foreach (Type? handlerType in commandHandlersWithResult)
             {
-                var interfaceType = handlerType.GetInterfaces()
+                Type interfaceType = handlerType.GetInterfaces()
                     .First(i => i.IsGenericType &&
                            i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>));
 
                 services.AddScoped(interfaceType, handlerType);
 
-                var commandType = interfaceType.GetGenericArguments()[0];
-                var resultType = interfaceType.GetGenericArguments()[1];
+                Type commandType = interfaceType.GetGenericArguments()[0];
+                Type resultType = interfaceType.GetGenericArguments()[1];
                 Console.WriteLine($"Registered handler: {handlerType.Name} for command: {commandType.Name} returning: {resultType.Name}");
             }
 
@@ -89,16 +89,16 @@ public static class DependencyInjection
                     i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>)))
                 .ToList();
 
-            foreach (var handlerType in queryHandlers)
+            foreach (Type? handlerType in queryHandlers)
             {
-                var interfaceType = handlerType.GetInterfaces()
+                Type interfaceType = handlerType.GetInterfaces()
                     .First(i => i.IsGenericType &&
                            i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>));
 
                 services.AddScoped(interfaceType, handlerType);
 
-                var queryType = interfaceType.GetGenericArguments()[0];
-                var resultType = interfaceType.GetGenericArguments()[1];
+                Type queryType = interfaceType.GetGenericArguments()[0];
+                Type resultType = interfaceType.GetGenericArguments()[1];
                 Console.WriteLine($"Registered handler: {handlerType.Name} for query: {queryType.Name} returning: {resultType.Name}");
             }
         }
@@ -115,7 +115,7 @@ public static class DependencyInjection
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
         // Rejestracja custom behaviors z assemblies
-        foreach (var assembly in assemblies)
+        foreach (Assembly assembly in assemblies)
         {
             var behaviors = assembly.GetTypes()
                 .Where(t => !t.IsAbstract && !t.IsInterface && !t.IsGenericType)
@@ -124,11 +124,11 @@ public static class DependencyInjection
                     i.GetGenericTypeDefinition() == typeof(IPipelineBehavior<,>)))
                 .ToList();
 
-            foreach (var behaviorType in behaviors)
+            foreach (Type? behaviorType in behaviors)
             {
                 // Pomiń już zarejestrowane wbudowane behaviors
                 if (behaviorType.IsGenericType &&
-                    (behaviorType.GetGenericTypeDefinition() == typeof(ValidationBehavior<,>)))
+                    behaviorType.GetGenericTypeDefinition() == typeof(ValidationBehavior<,>))
                 {
                     continue;
                 }
@@ -146,7 +146,7 @@ public static class DependencyInjection
     /// </summary>
     private static IServiceCollection RegisterValidators(this IServiceCollection services, Assembly[] assemblies)
     {
-        foreach (var assembly in assemblies)
+        foreach (Assembly assembly in assemblies)
         {
             // Znajdź wszystkie typy implementujące IValidator<>
             var validatorTypes = assembly.GetTypes()
@@ -156,7 +156,7 @@ public static class DependencyInjection
                     i.GetGenericTypeDefinition() == typeof(IValidator<>)))
                 .ToList();
 
-            foreach (var validatorType in validatorTypes)
+            foreach (Type? validatorType in validatorTypes)
             {
                 // Znajdź wszystkie interfejsy IValidator<> które implementuje ten typ
                 var validatorInterfaces = validatorType.GetInterfaces()
@@ -164,13 +164,13 @@ public static class DependencyInjection
                            i.GetGenericTypeDefinition() == typeof(IValidator<>))
                     .ToList();
 
-                foreach (var validatorInterface in validatorInterfaces)
+                foreach (Type? validatorInterface in validatorInterfaces)
                 {
                     // Rejestruj validator
                     services.AddScoped(validatorInterface, validatorType);
 
                     // Log dla debugowania
-                    var modelType = validatorInterface.GetGenericArguments()[0];
+                    Type modelType = validatorInterface.GetGenericArguments()[0];
                     Console.WriteLine($"Registered validator: {validatorType.Name} for: {modelType.Name}");
                 }
             }

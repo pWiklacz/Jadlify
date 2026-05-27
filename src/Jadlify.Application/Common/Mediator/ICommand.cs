@@ -1,7 +1,5 @@
-﻿namespace Jadlify.Application.Common.Mediator
-{
-    public interface ICommand;
+﻿namespace Jadlify.Application.Common.Mediator;
 
-    public interface ICommand<TResponse>;
+public interface ICommand;
 
-}
+public interface ICommand<TResponse>;
