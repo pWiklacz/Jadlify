@@ -11,7 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Jadlify.Application\Jadlify.Application.csproj" />
+    <ProjectReference Include="..\Jadlify.Domain\Jadlify.Domain.csproj" />
     <ProjectReference Include="..\Jadlify.Infrastructure\Jadlify.Infrastructure.csproj" />
+    <ProjectReference Include="..\Jadlify.SharedKernel\Jadlify.SharedKernel.csproj" />
   </ItemGroup>
 
 </Project>
