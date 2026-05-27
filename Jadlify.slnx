@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Jadlify.API/Jadlify.API.csproj" />
+    <Project Path="src/Jadlify.Application/Jadlify.Application.csproj" />
+    <Project Path="src/Jadlify.Domain/Jadlify.Domain.csproj" />
+    <Project Path="src/Jadlify.Infrastructure/Jadlify.Infrastructure.csproj" />
+    <Project Path="src/Jadlify.SharedKernel/Jadlify.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Jadlify.API.Tests/Jadlify.API.Tests.csproj" />
+    <Project Path="tests/Jadlify.Application.Tests/Jadlify.Application.Tests.csproj" />
+    <Project Path="tests/Jadlify.Domain.Tests/Jadlify.Domain.Tests.csproj" />
+    <Project Path="tests/Jadlify.Infrastructure.Tests/Jadlify.Infrastructure.Tests.csproj" />
+  </Folder>
+</Solution>
