@@ -22,8 +22,8 @@ public class ValidationBehaviorTests
     public async Task HandleAsync_ShouldCallNext_WhenValidationSucceeds()
     {
         // Arrange
-        var validators = new[] { new TestRequestValidator() };
-        var logger = NullLogger<ValidationBehavior<TestRequest, TestResponse>>.Instance;
+        TestRequestValidator[] validators = new[] { new TestRequestValidator() };
+        NullLogger<ValidationBehavior<TestRequest, TestResponse>> logger = NullLogger<ValidationBehavior<TestRequest, TestResponse>>.Instance;
         var behavior = new ValidationBehavior<TestRequest, TestResponse>(validators, logger);
 
         var request = new TestRequest("Valid Name");
@@ -37,7 +37,7 @@ public class ValidationBehaviorTests
         }
 
         // Act
-        var result = await behavior.HandleAsync(request, Next);
+        Result<TestResponse> result = await behavior.HandleAsync(request, Next);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -49,8 +49,8 @@ public class ValidationBehaviorTests
     public async Task HandleAsync_ShouldReturnFailureWithValidationError_WhenValidationFails()
     {
         // Arrange
-        var validators = new[] { new TestRequestValidator() };
-        var logger = NullLogger<ValidationBehavior<TestRequest, TestResponse>>.Instance;
+        TestRequestValidator[] validators = new[] { new TestRequestValidator() };
+        NullLogger<ValidationBehavior<TestRequest, TestResponse>> logger = NullLogger<ValidationBehavior<TestRequest, TestResponse>>.Instance;
         var behavior = new ValidationBehavior<TestRequest, TestResponse>(validators, logger);
 
         var request = new TestRequest(string.Empty); // Invalid request (empty name)
@@ -63,13 +63,13 @@ public class ValidationBehaviorTests
         }
 
         // Act
-        var result = await behavior.HandleAsync(request, Next);
+        Result<TestResponse> result = await behavior.HandleAsync(request, Next);
 
         // Assert
         Assert.True(result.IsFailure);
         Assert.False(nextCalled);
-        
-        var validationError = Assert.IsType<ValidationError>(result.Error);
+
+        ValidationError validationError = Assert.IsType<ValidationError>(result.Error);
         Assert.Single(validationError.Errors);
         Assert.Equal("Name", validationError.Errors[0].Code);
         Assert.Equal("Name cannot be empty", validationError.Errors[0].Description);
