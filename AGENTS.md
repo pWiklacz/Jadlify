@@ -10,13 +10,37 @@ Keep writes out of `context/archive/`; archived changes are immutable. Do not ad
 
 The solution is `@Jadlify.slnx`. Runtime code lives under `src/`: `Jadlify.API` is the ASP.NET Core entrypoint, `Jadlify.Application` depends on Domain, `Jadlify.Domain` depends on SharedKernel, `Jadlify.Infrastructure` depends on Application, and `Jadlify.SharedKernel` has no project references. Keep that dependency direction when adding references. Tests mirror source projects under `tests/Jadlify.*.Tests`.
 
-## Commands
+## Build, Test, and Run Commands
 
-Run `dotnet build Jadlify.slnx` to compile the full solution. Run `dotnet test Jadlify.slnx` for all xUnit test projects. Run a single layer with `dotnet test tests/Jadlify.Domain.Tests/Jadlify.Domain.Tests.csproj` or the matching test project path. Start the API locally with `dotnet run --project src/Jadlify.API/Jadlify.API.csproj`.
+Run commands from the repo root. Target framework: .NET 10. Solution file: `phrAIse.slnx`.
+
+Agents must use the minimal scripts for build/test/format/verify work. Do not run raw `dotnet build`, `dotnet test`, `dotnet format`, or `dotnet restore` for normal repo verification.
+
+```bash
+pwsh ./.scripts/build-min.ps1
+pwsh ./.scripts/test-min.ps1
+pwsh ./.scripts/format-min.ps1
+pwsh ./.scripts/verify-min.ps1
+```
+
+Useful script options:
+
+- `-Project` for build/test/format scripts.
+- `-BuildProject` and `-TestProject` for `verify-min.ps1`.
+- `-Name`, `-Class`, `-FullyQualifiedNameContains`, or `-Filter` for targeted tests.
+- `-Help` on any script for supported parameters.
+
+Run these scripts sequentially because they share `.logs/*.log` files and some integration tests share local resources.
 
 ## Coding And Naming
 
 Use file-scoped namespaces matching the project namespace, as in `@src/Jadlify.Domain/AssemblyReference.cs`. Keep layer-specific code in its owning project; shared abstractions belong in `Jadlify.SharedKernel` only when they are truly cross-layer.
+
+## Coding Conventions
+
+`.editorconfig` and `Directory.Build.props` are the canonical style contract. Fix violations they enforce before committing.
+
+Keep edits scoped to the feature, project, and ownership boundary implied by the task. Do not perform opportunistic refactors in unrelated areas.
 
 ## Testing
 
@@ -25,6 +49,12 @@ Use xUnit; follow `@tests/Jadlify.Domain.Tests/Jadlify.Domain.Tests.csproj` as t
 ## Foundation Docs
 
 `context/foundation/shape-notes.md`, `prd.md`, and `tech-stack.md` are living docs. Update them in place when product or stack decisions change; put change-scoped plans and reviews under `context/changes/`.
+
+## Git Workflow
+
+Follow `@context/standards/github-workflow.md`. Do not push directly to `master`.
+
+Before committing or opening a PR, run the narrowest relevant verification script and state what was run.
 
 <!-- BEGIN @przeprogramowani/10x-cli -->
 
