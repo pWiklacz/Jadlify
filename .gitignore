@@ -484,3 +484,5 @@ $RECYCLE.BIN/
 # 10x Devs Toolkit Agent Skills and Manifest
 .agents/skills/10x-*
 .agents/.10x-cli-manifest.json
+.claude/skills/10x-*
+.claude/.10x-cli-manifest.json
