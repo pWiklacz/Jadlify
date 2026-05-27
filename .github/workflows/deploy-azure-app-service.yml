@@ -1,0 +1,45 @@
+name: Deploy Azure App Service
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: 10.0.x
+  AZURE_WEBAPP_NAME: jadlify-mvp-wikla
+  API_PROJECT: src/Jadlify.API/Jadlify.API.csproj
+  PUBLISH_DIR: ./publish
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore Jadlify.slnx
+
+      - name: Build
+        run: dotnet build Jadlify.slnx --configuration Release --no-restore -m:1 -p:UseSharedCompilation=false --verbosity minimal
+
+      - name: Test
+        run: dotnet test Jadlify.slnx --configuration Release --no-build -m:1 -p:UseSharedCompilation=false --verbosity minimal
+
+      - name: Publish
+        run: dotnet publish ${{ env.API_PROJECT }} --configuration Release --no-build --output ${{ env.PUBLISH_DIR }}
+
+      - name: Deploy
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ${{ env.PUBLISH_DIR }}
