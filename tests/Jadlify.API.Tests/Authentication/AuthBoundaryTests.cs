@@ -82,6 +82,40 @@ public class AuthBoundaryTests
         Assert.Equal(new ApplicationUserId("user-123"), currentUser.UserId);
     }
 
+    [Fact]
+    public void CurrentUser_ShouldThrow_WhenPrincipalIsNotAuthenticated()
+    {
+        DefaultHttpContext httpContext = new()
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity())
+        };
+        HttpContextAccessor accessor = new()
+        {
+            HttpContext = httpContext
+        };
+        HttpContextCurrentUser currentUser = new(accessor, Options.Create(new SupabaseJwtOptions()));
+
+        Assert.Throws<InvalidOperationException>(() => currentUser.UserId);
+    }
+
+    [Fact]
+    public void CurrentUser_ShouldThrow_WhenSubjectClaimIsMissing()
+    {
+        DefaultHttpContext httpContext = new()
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(
+                Array.Empty<Claim>(),
+                TestAuthenticationHandler.AuthenticationScheme))
+        };
+        HttpContextAccessor accessor = new()
+        {
+            HttpContext = httpContext
+        };
+        HttpContextCurrentUser currentUser = new(accessor, Options.Create(new SupabaseJwtOptions()));
+
+        Assert.Throws<InvalidOperationException>(() => currentUser.UserId);
+    }
+
     private sealed class TestApiFactory : WebApplicationFactory<Program>
     {
         public HttpClient CreateHttpsClient() =>
