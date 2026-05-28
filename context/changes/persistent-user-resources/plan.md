@@ -376,27 +376,27 @@ If a future implementation changes unit support beyond grams-only, it should cre
 
 #### Automated
 
-- [x] 1.1 Infrastructure-focused verification passes
-- [x] 1.2 API-focused verification passes after registration
-- [x] 1.3 Secret scan returns no committed connection strings or Supabase secrets
+- [x] 1.1 Infrastructure-focused verification passes — e2890e2
+- [x] 1.2 API-focused verification passes after registration — e2890e2
+- [x] 1.3 Secret scan returns no committed connection strings or Supabase secrets — e2890e2
 
 #### Manual
 
-- [x] 1.4 No real database connection string is committed
-- [x] 1.5 Clean Architecture project reference direction is preserved
+- [x] 1.4 No real database connection string is committed — e2890e2
+- [x] 1.5 Clean Architecture project reference direction is preserved — e2890e2
 
 ### Phase 2: MVP Resource Model And Deterministic Calculations
 
 #### Automated
 
-- [ ] 2.1 Domain-focused tests pass
-- [ ] 2.2 Macro-calculation code does not use `double` or `float`
-- [ ] 2.3 No placeholder Domain `UnitTest1.cs` remains
+- [x] 2.1 Domain-focused tests pass
+- [x] 2.2 Macro-calculation code does not use `double` or `float`
+- [x] 2.3 No placeholder Domain `UnitTest1.cs` remains
 
 #### Manual
 
-- [ ] 2.4 Grams-only MVP decision is visible in model contracts
-- [ ] 2.5 Recipe ingredient quantities are clearly whole-recipe quantities
+- [x] 2.4 Grams-only MVP decision is visible in model contracts
+- [x] 2.5 Recipe ingredient quantities are clearly whole-recipe quantities
 
 ### Phase 3: Application Ports, EF Implementations, And Handoff
 
