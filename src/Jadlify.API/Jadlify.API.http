@@ -1,6 +1,6 @@
 @Jadlify.API_HostAddress = http://localhost:5182
 
-GET {{Jadlify.API_HostAddress}}/weatherforecast/
+GET {{Jadlify.API_HostAddress}}/health
 Accept: application/json
 
 ###

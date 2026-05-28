@@ -298,39 +298,39 @@ No database migration is part of this change. Supabase project configuration is 
 
 #### Automated
 
-- [ ] 1.1 Application identity tests pass
-- [ ] 1.2 Application project builds through the solution
-- [ ] 1.3 User-scope denial uses SharedKernel Result Pattern
-- [ ] 1.4 No placeholder Application UnitTest1 remains
+- [x] 1.1 Application identity tests pass
+- [x] 1.2 Application project builds through the solution
+- [x] 1.3 User-scope denial uses SharedKernel Result Pattern
+- [x] 1.4 No placeholder Application UnitTest1 remains
 
 #### Manual
 
-- [ ] 1.5 Application identity namespace has no web, Supabase, EF Core, or Infrastructure dependency
+- [x] 1.5 Application identity namespace has no web, Supabase, EF Core, or Infrastructure dependency
 
 ### Phase 2: API JWT Authentication Boundary
 
 #### Automated
 
-- [ ] 2.1 API tests pass
-- [ ] 2.2 Full solution builds
-- [ ] 2.3 Scaffolded weather endpoint is removed or explicitly protected
+- [x] 2.1 API tests pass
+- [x] 2.2 Full solution builds
+- [x] 2.3 Scaffolded weather endpoint is removed or explicitly protected
 
 #### Manual
 
-- [ ] 2.4 No Supabase secret or database connection string is committed
-- [ ] 2.5 `/health` is the only intentionally anonymous runtime endpoint
+- [x] 2.4 No Supabase secret or database connection string is committed
+- [x] 2.5 `/health` is the only intentionally anonymous runtime endpoint
 
 ### Phase 3: Boundary Verification And Handoff Contracts
 
 #### Automated
 
-- [ ] 3.1 API auth boundary tests pass
-- [ ] 3.2 Application identity tests pass
-- [ ] 3.3 Full solution tests pass
-- [ ] 3.4 Build remains green with current CQRS/Result baseline
-- [ ] 3.5 Secret scan has no real secret values
+- [x] 3.1 API auth boundary tests pass
+- [x] 3.2 Application identity tests pass
+- [x] 3.3 Full solution tests pass
+- [x] 3.4 Build remains green with current CQRS/Result baseline
+- [x] 3.5 Secret scan has no real secret values
 
 #### Manual
 
-- [ ] 3.6 F-02 can build persistence without re-deciding the auth boundary
-- [ ] 3.7 No files were written under `context/archive/`
+- [x] 3.6 F-02 can build persistence without re-deciding the auth boundary
+- [x] 3.7 No files were written under `context/archive/`
