@@ -1,9 +1,24 @@
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { RequireAuth } from './auth/RequireAuth'
+import { LandingPage } from './routes/LandingPage'
+import { LoginPage } from './routes/LoginPage'
+
 function App() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-2 bg-slate-50 text-slate-900">
-      <h1 className="text-3xl font-bold">Jadlify</h1>
-      <p className="text-slate-600">App shell scaffold — UI lands in later phases.</p>
-    </main>
+    <BrowserRouter>
+      <Routes>
+        {/* Public placeholder; real auth UI is slice S-01. */}
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* Protected area. Phase 4 layers the responsive shell + section routes here. */}
+        <Route element={<RequireAuth />}>
+          <Route path="/" element={<LandingPage />} />
+        </Route>
+
+        {/* Unknown paths fall back to the protected landing (guard handles redirect). */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

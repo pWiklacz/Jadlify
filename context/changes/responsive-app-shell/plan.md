@@ -390,8 +390,8 @@ Wrap the protected area in a responsive app-bar/drawer layout with placeholder r
 
 #### Automated
 
-- [x] 2.1 New `/api/me` endpoint tests pass (`test-min.ps1 -Project tests/Jadlify.API.Tests`)
-- [x] 2.2 Full backend verify is green (`pwsh ./.scripts/verify-min.ps1`)
+- [x] 2.1 New `/api/me` endpoint tests pass (`test-min.ps1 -Project tests/Jadlify.API.Tests`) — 00893f4
+- [x] 2.2 Full backend verify is green (`pwsh ./.scripts/verify-min.ps1`) — 00893f4
 
 #### Manual
 
@@ -402,9 +402,9 @@ Wrap the protected area in a responsive app-bar/drawer layout with placeholder r
 
 #### Automated
 
-- [ ] 3.1 Frontend tests pass (`npm test`)
-- [ ] 3.2 Lint passes (`npm run lint`)
-- [ ] 3.3 Production build succeeds (`npm run build`)
+- [x] 3.1 Frontend tests pass (`npm test`)
+- [x] 3.2 Lint passes (`npm run lint`)
+- [x] 3.3 Production build succeeds (`npm run build`)
 
 #### Manual
 
