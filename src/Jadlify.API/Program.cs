@@ -67,10 +67,22 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Serve the built SPA from wwwroot. UseStaticFiles runs before authentication so
+// static assets are returned without hitting the global "must be authenticated"
+// fallback policy.
+app.UseStaticFiles();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGet("/health", () => Results.Ok()).AllowAnonymous();
+
+// Client-side routing: serve index.html for non-API deep links. Must be
+// AllowAnonymous, otherwise the global fallback policy 401s the SPA entrypoint
+// and anonymous users can never reach the (future) login screen. API and health
+// endpoints match first, so this only catches unrouted paths.
+app.MapFallbackToFile("index.html").AllowAnonymous();
 
 app.Run();
 
