@@ -402,14 +402,14 @@ If a future implementation changes unit support beyond grams-only, it should cre
 
 #### Automated
 
-- [x] 3.1 Full solution verification passes
-- [x] 3.2 Infrastructure tests pass locally without live Supabase credentials
-- [x] 3.3 Domain calculation tests pass
-- [x] 3.4 Format check passes
-- [x] 3.5 Secret scan returns no real secrets or database URLs
+- [x] 3.1 Full solution verification passes — 250dc57
+- [x] 3.2 Infrastructure tests pass locally without live Supabase credentials — 250dc57
+- [x] 3.3 Domain calculation tests pass — 250dc57
+- [x] 3.4 Format check passes — 250dc57
+- [x] 3.5 Secret scan returns no real secrets or database URLs — 250dc57
 
 #### Manual
 
-- [x] 3.6 Contract surface registry gives later slices one persistence/calculation contract
-- [x] 3.7 No files were written under `context/archive/`
-- [x] 3.8 Generated migrations target Supabase Postgres but normal verification does not require live Supabase
+- [x] 3.6 Contract surface registry gives later slices one persistence/calculation contract — 250dc57
+- [x] 3.7 No files were written under `context/archive/` — 250dc57
+- [x] 3.8 Generated migrations target Supabase Postgres but normal verification does not require live Supabase — 250dc57

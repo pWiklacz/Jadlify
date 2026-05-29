@@ -1,9 +1,9 @@
 ---
 change_id: persistent-user-resources
 title: Persistent user resources
-status: implementing
+status: implemented
 created: 2026-05-28
-updated: 2026-05-28
+updated: 2026-05-29
 archived_at: null
 ---
 
