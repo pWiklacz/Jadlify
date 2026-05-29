@@ -54,6 +54,7 @@ Build inward-to-outward and backend-before-its-consumer:
 2. Add the authenticated `/api/me` endpoint the frontend will consume, with API tests proving the auth boundary holds for it.
 3. Wire frontend auth plumbing (Supabase session, Bearer client, TanStack Query `useMe`, route guard) that consumes `/api/me`.
 4. Layer the responsive shell (app bar + drawer + placeholder routes) and integrate the frontend quality gate into CI.
+5. Provision a local Supabase dev stack (Supabase CLI) that coexists with other local stacks on the same machine, and wire the API to validate its tokens — unblocking the manual auth round-trip checks deferred from Phases 2 and 3 (2.3/2.4, 3.4–3.6).
 
 ## Critical Implementation Details
 
@@ -327,6 +328,85 @@ Wrap the protected area in a responsive app-bar/drawer layout with placeholder r
 
 ---
 
+## Phase 5: Local Supabase Dev Environment + Backend JWT Wiring
+
+### Overview
+
+Stand up a **local Supabase stack** (Supabase CLI + Docker) dedicated to Jadlify that coexists with another project's local Supabase on the same machine, and wire the ASP.NET Core API to validate the tokens that local stack issues. This unblocks the manual auth round-trip checks deferred from Phases 2 and 3 (2.3/2.4, 3.4–3.6) without changing production behavior.
+
+The **coexistence mechanism**: the Supabase CLI namespaces all Docker containers/volumes by `project_id`, so two distinct `project_id`s are fully isolated stacks (separate DB, volumes, data). The only real conflict is host ports, resolved by giving Jadlify its own shifted port range.
+
+The **validation wrinkle**: local GoTrue (CLI default) signs tokens **HS256 with a shared symmetric secret over HTTP**, while `Program.cs` is currently wired for **asymmetric JWKS discovery over HTTPS** (`Authority`/`MetadataAddress`, `RequireHttpsMetadata = true`). This phase adds a symmetric-key validation path used in Development, keeping the asymmetric JWKS path for Production unchanged.
+
+### Changes Required:
+
+#### 1. Local Supabase project config
+
+**File**: `supabase/config.toml` (new, via `supabase init`)
+
+**Intent**: Define a Jadlify-specific local stack that runs alongside another project's stack without port collisions.
+
+**Contract**: `project_id = "jadlify"`; shift every host-published port to a dedicated range (api `54421`, db `54422`, db `shadow_port 54420`, pooler `54429`, studio `54423`, inbucket `54424`, analytics `54427`); set `[auth] site_url` to the Vite dev URL (`http://127.0.0.1:5173`) and include it in `additional_redirect_urls`. CLI-generated `supabase/.branches` and `supabase/.temp` are gitignored.
+
+#### 2. Symmetric (dev) JWT validation option
+
+**File**: `src/Jadlify.API/Authentication/SupabaseJwtOptions.cs`
+
+**Intent**: Allow Development to validate locally-issued HS256 tokens via a shared secret, without breaking the production JWKS path.
+
+**Contract**: Add an optional `SigningKey` (the symmetric secret). When present, validation uses it as the `IssuerSigningKey`; when absent, behavior is unchanged (asymmetric JWKS via `Authority`/`MetadataAddress`).
+
+#### 3. Branch the JWT bearer wiring
+
+**File**: `src/Jadlify.API/Program.cs`
+
+**Intent**: Use symmetric-key validation when `SigningKey` is configured (local/dev), otherwise keep the existing asymmetric JWKS discovery.
+
+**Contract**: When `SupabaseJwtOptions.SigningKey` is set, set `TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey))` and skip HTTPS-metadata discovery; `ValidIssuer`/`ValidAudience`/`NameClaimType=sub`/lifetime validation remain identical. The global fallback policy and the `sub`-as-`ApplicationUserId` contract are untouched. Production (no `SigningKey`) keeps `Authority`/JWKS + `RequireHttpsMetadata = true`.
+
+#### 4. Local dev configuration values
+
+**File**: API user-secrets (and the SPA `.env` — gitignored, documented only)
+
+**Intent**: Point both processes at the local stack without committing secrets.
+
+**Contract**: API user-secrets set `SupabaseAuth:Issuer = http://127.0.0.1:54421/auth/v1`, `SupabaseAuth:Audience = authenticated`, and `SupabaseAuth:SigningKey = <JWT secret from "supabase status">`. SPA `.env` sets `VITE_SUPABASE_URL=http://127.0.0.1:54421` and `VITE_SUPABASE_ANON_KEY=<anon key from "supabase status">`. Real values stay out of git (only `.env.example` is committed); the local JWT secret is a well-known dev constant but still goes in user-secrets per the repo's no-secrets-in-appsettings rule.
+
+#### 5. Real-pipeline JWT validation test
+
+**File**: `tests/Jadlify.API.Tests/` (new test class, e.g. `Authentication/SymmetricJwtValidationTests.cs`)
+
+**Intent**: Lock the Development symmetric-key path through the real `JwtBearer` middleware (the existing `AuthBoundaryTests` bypass it via `TestAuthenticationHandler`).
+
+**Contract**: A `WebApplicationFactory<Program>` configured with a test `SupabaseAuth:SigningKey`/`Issuer`/`Audience` mints HS256 tokens in-test (no Docker required). Assert: a well-formed token (correct issuer/audience/`sub`, unexpired) → `200` with the `sub`; a token signed with the wrong key or expired → `401`; a token missing `sub` → `403`.
+
+#### 6. Dev setup documentation
+
+**File**: `src/Jadlify.Web/README.md` and/or `AGENTS.md` (Build/Test/Run)
+
+**Intent**: Record the local-Supabase coexistence setup so future agents/devs reproduce it.
+
+**Contract**: Document `supabase start` (Jadlify stack on `544xx`), the `supabase status` values to copy into `.env` + user-secrets, how to create a local test user (GoTrue admin API with the service-role key, or local Studio at `:54423`), and the two-process dev loop. Keep it concise and complementary to (not duplicating) Phase 4's dev docs.
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- `supabase/config.toml` is committed with a unique `project_id` and the shifted port range (no service left on a default `5432x` port)
+- New symmetric-JWT test passes: dev-secret-signed token → `200`; wrong-key/expired → `401`; missing-`sub` → `403` (real `JwtBearer` pipeline)
+- Full backend verify is green: `pwsh ./.scripts/verify-min.ps1`
+
+#### Manual Verification:
+
+- `supabase start` brings up the Jadlify stack on the `544xx` ports while another project's stack stays up on `5432x` — no port conflict; `supabase stop` stops only the Jadlify stack
+- With `.env` + user-secrets set and a local test user, the SPA signs in and the landing shows the `/api/me` user id (unblocks 3.4/3.5)
+- `GET /api/me` behaves correctly end-to-end: anonymous → `401`, valid token → `200` + `sub` (unblocks 2.3/2.4)
+- After the Supabase access token refreshes, a subsequent `/api/me` call still succeeds (unblocks 3.6)
+
+**Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful.
+
+---
+
 ## Testing Strategy
 
 ### Unit / Component Tests (Vitest + RTL):
@@ -402,9 +482,9 @@ Wrap the protected area in a responsive app-bar/drawer layout with placeholder r
 
 #### Automated
 
-- [x] 3.1 Frontend tests pass (`npm test`)
-- [x] 3.2 Lint passes (`npm run lint`)
-- [x] 3.3 Production build succeeds (`npm run build`)
+- [x] 3.1 Frontend tests pass (`npm test`) — 82710b9
+- [x] 3.2 Lint passes (`npm run lint`) — 82710b9
+- [x] 3.3 Production build succeeds (`npm run build`) — 82710b9
 
 #### Manual
 
@@ -427,3 +507,18 @@ Wrap the protected area in a responsive app-bar/drawer layout with placeholder r
 - [ ] 4.6 Each placeholder section route renders behind the guard and is reachable
 - [ ] 4.7 Responsiveness NFR met (≤200 ms feedback, progress indicator for >2 s)
 - [ ] 4.8 Usable on the four desktop browsers + a current mobile browser, desktop + responsive modes
+
+### Phase 5: Local Supabase Dev Environment + Backend JWT Wiring
+
+#### Automated
+
+- [ ] 5.1 `supabase/config.toml` committed with unique `project_id` + shifted port range
+- [ ] 5.2 Symmetric-JWT test passes (dev-secret→`200`, wrong-key/expired→`401`, missing-`sub`→`403`)
+- [ ] 5.3 Full backend verify green (`pwsh ./.scripts/verify-min.ps1`)
+
+#### Manual
+
+- [ ] 5.4 `supabase start` runs Jadlify stack on `544xx` alongside another project on `5432x` (no conflict)
+- [ ] 5.5 SPA signs in with a local test user; landing shows `/api/me` user id (unblocks 3.4/3.5)
+- [ ] 5.6 `/api/me` end-to-end: anonymous→`401`, valid→`200`+`sub` (unblocks 2.3/2.4)
+- [ ] 5.7 Token refresh → `/api/me` still succeeds (unblocks 3.6)
