@@ -1,0 +1,5 @@
+# Enforce LF line endings for C# sources so `.editorconfig` (end_of_line = lf)
+# holds on checkout regardless of a contributor's core.autocrlf setting.
+# Without this, Windows checkouts produce CRLF and `dotnet format` fails the
+# end-of-line check on otherwise-clean files.
+*.cs text eol=lf

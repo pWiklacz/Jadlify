@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Jadlify.API.Authentication;
 using Jadlify.Application;
 using Jadlify.Application.Identity;
+using Jadlify.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -13,6 +14,7 @@ JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
 builder.Services.Configure<SupabaseJwtOptions>(
     builder.Configuration.GetSection(SupabaseJwtOptions.SectionName));

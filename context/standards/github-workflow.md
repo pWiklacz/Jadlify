@@ -8,15 +8,15 @@
 ## 1. Core Philosophy and Branch Protection
 We use a lightweight approach based on Trunk-Based Development (GitHub Flow). This ensures rapid iteration, prevents "merge hell", and keeps the repository clean.
 
-### The Golden Rule of the `master` branch
-* The `master` branch is sacred. Code on the `master` branch **must always compile, run flawlessly, and be production-ready.**
-* **Direct pushes to `master` are strictly forbidden.** All changes must be integrated using a Pull Request (PR).
-* *Honesty Note for Free/Private repos:* If you are on a free GitHub tier and this repository is private, platform branch protection rules might be disabled. In such cases, this rule relies entirely on strict developer discipline. Do not use `git push origin master`.
+### The Golden Rule of the `main` branch
+* The `main` branch is sacred. Code on the `main` branch **must always compile, run flawlessly, and be production-ready.**
+* **Direct pushes to `main` are strictly forbidden.** All changes must be integrated using a Pull Request (PR).
+* *Honesty Note for Free/Private repos:* If you are on a free GitHub tier and this repository is private, platform branch protection rules might be disabled. In such cases, this rule relies entirely on strict developer discipline. Do not use `git push origin main`.
 
 ---
 
 ## 2. Branch Naming Conventions
-Every new task must be isolated into its own branch, created from the latest state of the `master` branch. Standard prefixes must be used to clearly define the branch's purpose:
+Every new task must be isolated into its own branch, created from the latest state of the `main` branch. Standard prefixes must be used to clearly define the branch's purpose:
 
 * `feature/` – For new features and additions (e.g., `feature/audio-recording`, `feature/groq-integration`).
 * `fix/` – For bug fixes (e.g., `fix/jwt-refresh-timeout`).
@@ -28,11 +28,11 @@ Every new task must be isolated into its own branch, created from the latest sta
 
 Follow this cycle for every single task:
 
-1. **Sync with `master`:**
+1. **Sync with `main`:**
    Always start your day (and every new task) by pulling the latest changes.
    ```bash
-   git checkout master
-   git pull origin master
+   git checkout main
+   git pull origin main
    ```
 2. **Start a new Working Branch:**
    ```bash
@@ -47,19 +47,19 @@ Follow this cycle for every single task:
    git push origin feature/your-feature-name
    ```
 5. **Open a Pull Request (PR):**
-   Go to GitHub and create a PR targeting the `master` branch. Before creating it, review the "Files changed" tab — this self-review helps catch leftover developer logs (like `Console.WriteLine`) or unnecessary commented-out code.
+   Go to GitHub and create a PR targeting the `main` branch. Before creating it, review the "Files changed" tab — this self-review helps catch leftover developer logs (like `Console.WriteLine`) or unnecessary commented-out code.
 6. **"Squash and Merge":**
    Once the PR is accepted (or self-approved), **DO NOT use a standard "merge commit"**. Click the dropdown arrow next to the green button and select **"Squash and merge"**.
-   * *Why?* This squashes numerous, messy development commits ("wip", "typo fix", "now it works") into a single clean and descriptive commit on the `master` branch.
+   * *Why?* This squashes numerous, messy development commits ("wip", "typo fix", "now it works") into a single clean and descriptive commit on the `main` branch.
 
 ---
 
 ## 4. Release Management and Versioning
 
-We do not use "heavy" release branches. When the code on `master` reaches a desired milestone and the application is ready for users, we use GitHub Releases based on **Semantic Versioning (SemVer)** rules:
+We do not use "heavy" release branches. When the code on `main` reaches a desired milestone and the application is ready for users, we use GitHub Releases based on **Semantic Versioning (SemVer)** rules:
 
 * Go to the GitHub repository > **Releases** tab > **Draft a new release**.
-* Create a new Tag pointing to the current state of the `master` branch:
+* Create a new Tag pointing to the current state of the `main` branch:
   * `v0.1.0-alpha` (For initial, unstable testing).
   * `v1.0.0` (Targeting the official MVP V1 deployment).
   * `v1.1.0` (Minor release: adding a small new feature, e.g., voice commands).
