@@ -4,6 +4,12 @@ namespace Jadlify.Domain.Recipes;
 
 public sealed class RecipeIngredient
 {
+    private RecipeIngredient()
+    {
+        // EF Core materialization constructor; populated through mapped members.
+        WholeRecipeAmount = null!;
+    }
+
     public RecipeIngredient(Guid productId, GramAmount wholeRecipeAmount)
     {
         ArgumentNullException.ThrowIfNull(wholeRecipeAmount);

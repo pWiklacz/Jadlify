@@ -389,27 +389,27 @@ If a future implementation changes unit support beyond grams-only, it should cre
 
 #### Automated
 
-- [x] 2.1 Domain-focused tests pass
-- [x] 2.2 Macro-calculation code does not use `double` or `float`
-- [x] 2.3 No placeholder Domain `UnitTest1.cs` remains
+- [x] 2.1 Domain-focused tests pass — bf6b257
+- [x] 2.2 Macro-calculation code does not use `double` or `float` — bf6b257
+- [x] 2.3 No placeholder Domain `UnitTest1.cs` remains — bf6b257
 
 #### Manual
 
-- [x] 2.4 Grams-only MVP decision is visible in model contracts
-- [x] 2.5 Recipe ingredient quantities are clearly whole-recipe quantities
+- [x] 2.4 Grams-only MVP decision is visible in model contracts — bf6b257
+- [x] 2.5 Recipe ingredient quantities are clearly whole-recipe quantities — bf6b257
 
 ### Phase 3: Application Ports, EF Implementations, And Handoff
 
 #### Automated
 
-- [ ] 3.1 Full solution verification passes
-- [ ] 3.2 Infrastructure tests pass locally without live Supabase credentials
-- [ ] 3.3 Domain calculation tests pass
-- [ ] 3.4 Format check passes
-- [ ] 3.5 Secret scan returns no real secrets or database URLs
+- [x] 3.1 Full solution verification passes
+- [x] 3.2 Infrastructure tests pass locally without live Supabase credentials
+- [x] 3.3 Domain calculation tests pass
+- [x] 3.4 Format check passes
+- [x] 3.5 Secret scan returns no real secrets or database URLs
 
 #### Manual
 
-- [ ] 3.6 Contract surface registry gives later slices one persistence/calculation contract
-- [ ] 3.7 No files were written under `context/archive/`
-- [ ] 3.8 Generated migrations target Supabase Postgres but normal verification does not require live Supabase
+- [x] 3.6 Contract surface registry gives later slices one persistence/calculation contract
+- [x] 3.7 No files were written under `context/archive/`
+- [x] 3.8 Generated migrations target Supabase Postgres but normal verification does not require live Supabase

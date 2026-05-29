@@ -4,6 +4,12 @@ namespace Jadlify.Domain.Planning;
 
 public sealed class DailyMacroGoal
 {
+    private DailyMacroGoal()
+    {
+        // EF Core materialization constructor; populated through mapped members.
+        Target = null!;
+    }
+
     public DailyMacroGoal(Guid id, MacroNutrients target)
     {
         ArgumentNullException.ThrowIfNull(target);

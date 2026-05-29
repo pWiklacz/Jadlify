@@ -4,6 +4,13 @@ namespace Jadlify.Domain.Products;
 
 public sealed class Product
 {
+    private Product()
+    {
+        // EF Core materialization constructor; populated through mapped members.
+        Name = null!;
+        Per100Grams = null!;
+    }
+
     public Product(Guid id, string name, MacroNutrients per100Grams, string? barcode = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
