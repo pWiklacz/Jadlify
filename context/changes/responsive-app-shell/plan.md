@@ -496,10 +496,10 @@ The **validation wrinkle**: local GoTrue (CLI default) signs tokens **HS256 with
 
 #### Automated
 
-- [ ] 4.1 Frontend lint + tests + build pass
-- [ ] 4.2 Full backend verify green (`pwsh ./.scripts/verify-min.ps1`)
-- [ ] 4.3 Publish bundles SPA into `wwwroot` (`.publish/wwwroot/index.html`)
-- [ ] 4.4 Workflow YAML valid with Node setup + frontend step before publish
+- [x] 4.1 Frontend lint + tests + build pass
+- [x] 4.2 Full backend verify green (`pwsh ./.scripts/verify-min.ps1`)
+- [x] 4.3 Publish bundles SPA into `wwwroot` (`.publish/wwwroot/index.html`)
+- [x] 4.4 Workflow YAML valid with Node setup + frontend step before publish
 
 #### Manual
 

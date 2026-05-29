@@ -1,15 +1,16 @@
 import { useMe } from '../api/useMe'
 
 /**
- * Post-login landing. Renders the `/api/me` result to prove the protected bearer
- * round-trip works end to end. Real feature pages arrive in later slices.
+ * Post-login home. Renders the `/api/me` result to prove the protected bearer
+ * round-trip works end to end. Lives inside the responsive app shell; real
+ * dashboard content arrives in later slices.
  */
 export function LandingPage() {
   const { data, isPending, isError, error } = useMe()
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-50 px-6 text-center text-slate-900">
-      <h1 className="text-3xl font-bold">Jadlify</h1>
+    <section className="flex flex-col gap-3">
+      <h1 className="text-2xl font-bold">Home</h1>
 
       {isPending && (
         <p role="status" aria-live="polite" className="text-slate-600">
@@ -30,6 +31,6 @@ export function LandingPage() {
           <span className="font-mono font-semibold">{data.userId}</span>
         </p>
       )}
-    </main>
+    </section>
   )
 }

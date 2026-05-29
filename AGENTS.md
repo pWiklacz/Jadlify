@@ -32,6 +32,17 @@ Useful script options:
 
 Run these scripts sequentially because they share `.logs/*.log` files and some integration tests share local resources.
 
+### Frontend (`src/Jadlify.Web`)
+
+The SPA is a Vite + React + TypeScript app served single-origin from the API's `wwwroot`. Local dev runs **two processes**: the backend and the Vite dev server, which proxies `/api` and `/health` to `https://localhost:7206` (no CORS).
+
+```bash
+dotnet run --project src/Jadlify.API   # terminal 1: backend
+cd src/Jadlify.Web && npm run dev       # terminal 2: Vite dev server (HMR)
+```
+
+Frontend npm scripts (run from `src/Jadlify.Web`): `npm run lint`, `npm test` (Vitest + RTL), `npm run build`. `dotnet publish -c Release` bundles the SPA into the API `wwwroot` via an MSBuild target, so the publish command is unchanged. See `src/Jadlify.Web/README.md` for details.
+
 ## Coding And Naming
 
 Use file-scoped namespaces matching the project namespace, as in `@src/Jadlify.Domain/AssemblyReference.cs`. Keep layer-specific code in its owning project; shared abstractions belong in `Jadlify.SharedKernel` only when they are truly cross-layer.
