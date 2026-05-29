@@ -14,15 +14,15 @@ This project follows **GitHub Flow (Trunk-Based Development)** with strict conve
 
 ## The Golden Rule
 
-The `master` branch is sacred and always production-ready. **Never push directly to `master`.** All changes go through Pull Requests.
+The `main` branch is sacred and always production-ready. **Never push directly to `main`.** All changes go through Pull Requests.
 
-> This repo is private on a free GitHub account — branch protection may not be enforced by the platform. Discipline is the only safeguard. Double-check before any push to `master`.
+> This repo is private on a free GitHub account — branch protection may not be enforced by the platform. Discipline is the only safeguard. Double-check before any push to `main`.
 
 ---
 
 ## Branch Naming
 
-Always create branches from the latest `master`. Use these prefixes:
+Always create branches from the latest `main`. Use these prefixes:
 
 | Prefix       | Purpose                                      | Example                          |
 |--------------|----------------------------------------------|----------------------------------|
@@ -32,7 +32,7 @@ Always create branches from the latest `master`. Use these prefixes:
 
 ```bash
 # Sync first, then branch
-git checkout master && git pull origin master
+git checkout main && git pull origin main
 git checkout -b feature/your-feature-name
 ```
 
@@ -58,7 +58,7 @@ The prefix must match the type of change. The description is lowercase, imperati
 
 ## Opening a Pull Request
 
-Use `gh pr create` targeting `master`. Every PR must:
+Use `gh pr create` targeting `main`. Every PR must:
 
 1. Have a clear, concise title (under 70 characters).
 2. Include a summary in the body describing **what** and **why**.
@@ -73,7 +73,7 @@ git push origin feature/your-feature-name
 
 # Create PR
 gh pr create \
-  --base master \
+  --base main \
   --title "feat: add microphone capture service" \
   --body "$(cat <<'EOF'
 ## Summary
@@ -91,9 +91,9 @@ EOF
 
 ## Merging — Always Squash and Merge
 
-**Never use standard merge commits.** Always use **Squash and Merge** to keep `master` history clean.
+**Never use standard merge commits.** Always use **Squash and Merge** to keep `main` history clean.
 
-This collapses all developmental commits ("wip", "typo fix", "it works") into one clean commit on `master`.
+This collapses all developmental commits ("wip", "typo fix", "it works") into one clean commit on `main`.
 
 ```bash
 # Merge with squash via gh CLI
@@ -106,7 +106,7 @@ The `--delete-branch` flag cleans up the remote branch after merge.
 
 ## Releases & Versioning (SemVer)
 
-Use **Semantic Versioning** via GitHub Releases. No release branches — tag directly from `master`.
+Use **Semantic Versioning** via GitHub Releases. No release branches — tag directly from `main`.
 
 | Tag Format        | When to use                                    |
 |-------------------|------------------------------------------------|
@@ -118,7 +118,7 @@ Use **Semantic Versioning** via GitHub Releases. No release branches — tag dir
 ```bash
 # Create a release with auto-generated notes
 gh release create v1.0.0 \
-  --target master \
+  --target main \
   --title "v1.0.0 — MVP Release" \
   --generate-notes
 ```
@@ -129,7 +129,7 @@ gh release create v1.0.0 \
 
 ```bash
 # 1. Sync
-git checkout master && git pull origin master
+git checkout main && git pull origin main
 
 # 2. Branch
 git checkout -b feature/groq-integration
@@ -142,21 +142,21 @@ git commit -m "feat: integrate Groq Whisper API for audio transcription"
 git push origin feature/groq-integration
 
 # 5. Open PR
-gh pr create --base master --title "feat: integrate Groq Whisper STT" --body "..."
+gh pr create --base main --title "feat: integrate Groq Whisper STT" --body "..."
 
 # 6. After approval — squash merge & cleanup
 gh pr merge --squash --delete-branch
 
-# 7. Sync master locally
-git checkout master && git pull origin master
+# 7. Sync main locally
+git checkout main && git pull origin main
 ```
 
 ---
 
 ## What NOT to Do
 
-- **Do not** run `git push origin master` — ever.
+- **Do not** run `git push origin main` — ever.
 - **Do not** use standard merge commits on PRs — always squash.
 - **Do not** create long-lived release branches — use tags + GitHub Releases.
-- **Do not** forget to sync `master` before creating a new branch.
+- **Do not** forget to sync `main` before creating a new branch.
 - **Do not** leave merged remote branches around — use `--delete-branch`.
