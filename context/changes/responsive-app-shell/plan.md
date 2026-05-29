@@ -374,24 +374,24 @@ Wrap the protected area in a responsive app-bar/drawer layout with placeholder r
 
 #### Automated
 
-- [x] 1.1 Frontend installs and builds (`npm ci && npm run build` → `dist/`)
-- [x] 1.2 Frontend lint passes (`npm run lint`)
-- [x] 1.3 Frontend test runner executes (`npm test`)
-- [x] 1.4 Publish bundles the SPA (`dotnet publish -c Release` → `.publish/wwwroot/index.html`)
-- [x] 1.5 Backend still builds and tests green (`pwsh ./.scripts/verify-min.ps1`)
+- [x] 1.1 Frontend installs and builds (`npm ci && npm run build` → `dist/`) — 1885fac
+- [x] 1.2 Frontend lint passes (`npm run lint`) — 1885fac
+- [x] 1.3 Frontend test runner executes (`npm test`) — 1885fac
+- [x] 1.4 Publish bundles the SPA (`dotnet publish -c Release` → `.publish/wwwroot/index.html`) — 1885fac
+- [x] 1.5 Backend still builds and tests green (`pwsh ./.scripts/verify-min.ps1`) — 1885fac
 
 #### Manual
 
-- [x] 1.6 Published app serves SPA at `/` and deep link returns `index.html`
-- [x] 1.7 `npm run dev` proxies `/api`/`/health` to backend without CORS errors
-- [x] 1.8 `/health` still returns 200 anonymously
+- [x] 1.6 Published app serves SPA at `/` and deep link returns `index.html` — 1885fac
+- [x] 1.7 `npm run dev` proxies `/api`/`/health` to backend without CORS errors — 1885fac
+- [x] 1.8 `/health` still returns 200 anonymously — 1885fac
 
 ### Phase 2: Authenticated `/api/me` Endpoint
 
 #### Automated
 
-- [ ] 2.1 New `/api/me` endpoint tests pass (`test-min.ps1 -Project tests/Jadlify.API.Tests`)
-- [ ] 2.2 Full backend verify is green (`pwsh ./.scripts/verify-min.ps1`)
+- [x] 2.1 New `/api/me` endpoint tests pass (`test-min.ps1 -Project tests/Jadlify.API.Tests`)
+- [x] 2.2 Full backend verify is green (`pwsh ./.scripts/verify-min.ps1`)
 
 #### Manual
 

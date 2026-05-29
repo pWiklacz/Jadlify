@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using Jadlify.API.Authentication;
+using Jadlify.API.Session;
 using Jadlify.Application;
 using Jadlify.Application.Identity;
 using Jadlify.Infrastructure;
@@ -77,6 +78,14 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGet("/health", () => Results.Ok()).AllowAnonymous();
+
+// Authenticated session probe: returns the caller's stable Supabase subject so the
+// SPA can confirm its bearer token reaches the backend. No persistence — it reads
+// ICurrentUser. Deliberately NOT AllowAnonymous, so it inherits the global fallback
+// policy (authenticated + 'sub' claim). Lives under /api so the SPA fallback below
+// does not shadow it.
+app.MapGet("/api/me", (ICurrentUser currentUser) =>
+    Results.Ok(new MeResponse(currentUser.UserId.Value)));
 
 // Client-side routing: serve index.html for non-API deep links. Must be
 // AllowAnonymous, otherwise the global fallback policy 401s the SPA entrypoint
