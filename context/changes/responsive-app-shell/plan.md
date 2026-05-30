@@ -514,9 +514,9 @@ The **validation wrinkle**: the Supabase CLI stack (v2.84.x) signs user access t
 
 #### Automated
 
-- [x] 5.1 `supabase/config.toml` committed with unique `project_id` + shifted port range
-- [x] 5.2 Asymmetric-JWT test passes (ES256→`200`, wrong-key/expired→`401`, missing-`sub`→`403`)
-- [x] 5.3 Full backend verify green (`pwsh ./.scripts/verify-min.ps1`)
+- [x] 5.1 `supabase/config.toml` committed with unique `project_id` + shifted port range — fa09c6d
+- [x] 5.2 Asymmetric-JWT test passes (ES256→`200`, wrong-key/expired→`401`, missing-`sub`→`403`) — fa09c6d
+- [x] 5.3 Full backend verify green (`pwsh ./.scripts/verify-min.ps1`) — fa09c6d
 
 #### Manual
 
