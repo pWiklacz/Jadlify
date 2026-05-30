@@ -225,13 +225,13 @@ No data migration. **Configuration dependency:** this flow assumes the Supabase 
 
 #### Automated
 
-- [x] 2.1 Lint passes: `npm run lint`
-- [x] 2.2 Type-check + build passes: `npm run build`
-- [x] 2.3 Menu unit tests pass: renders email, open/close via trigger + `Escape` + outside-click, **Wyloguj** calls `signOut`; `AppShell.test.tsx` still green
+- [x] 2.1 Lint passes: `npm run lint` — 52d1c57
+- [x] 2.2 Type-check + build passes: `npm run build` — 52d1c57
+- [x] 2.3 Menu unit tests pass: renders email, open/close via trigger + `Escape` + outside-click, **Wyloguj** calls `signOut`; `AppShell.test.tsx` still green — 52d1c57
 
 #### Manual
 
-- [x] 2.4 Account menu shows the signed-in user's email
-- [x] 2.5 **Wyloguj** clears the session and returns to `/login`
-- [x] 2.6 Menu is keyboard-operable and closes on outside click
-- [x] 2.7 After sign-out, visiting a protected route redirects to `/login`
+- [x] 2.4 Account menu shows the signed-in user's email — 52d1c57
+- [x] 2.5 **Wyloguj** clears the session and returns to `/login` — 52d1c57
+- [x] 2.6 Menu is keyboard-operable and closes on outside click — 52d1c57
+- [x] 2.7 After sign-out, visiting a protected route redirects to `/login` — 52d1c57

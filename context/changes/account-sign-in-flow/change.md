@@ -1,7 +1,7 @@
 ---
 change_id: account-sign-in-flow
 title: Account sign-in flow
-status: implementing
+status: implemented
 created: 2026-05-30
 updated: 2026-05-30
 archived_at: null
