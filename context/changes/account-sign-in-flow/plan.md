@@ -209,29 +209,29 @@ No data migration. **Configuration dependency:** this flow assumes the Supabase 
 
 #### Automated
 
-- [x] 1.1 Lint passes: `npm run lint`
-- [x] 1.2 Type-check + build passes: `npm run build`
-- [x] 1.3 Flow unit tests pass: sign-in success → `/`, invalid creds → mapped error, sign-up → session → `/`, authed visitor redirected off `/login`
-- [x] 1.4 `toAuthMessage` unit tests pass and never echo input
+- [x] 1.1 Lint passes: `npm run lint` — a7c7b0e
+- [x] 1.2 Type-check + build passes: `npm run build` — a7c7b0e
+- [x] 1.3 Flow unit tests pass: sign-in success → `/`, invalid creds → mapped error, sign-up → session → `/`, authed visitor redirected off `/login` — a7c7b0e
+- [x] 1.4 `toAuthMessage` unit tests pass and never echo input — a7c7b0e
 
 #### Manual
 
-- [x] 1.5 Real-account login lands on home showing `/api/me` id
-- [x] 1.6 New-email registration creates a session and enters the app (no confirmation step)
-- [x] 1.7 Wrong password shows a readable message; no password/token in console or network
-- [x] 1.8 Visiting `/login` while signed in redirects to `/`
+- [x] 1.5 Real-account login lands on home showing `/api/me` id — a7c7b0e
+- [x] 1.6 New-email registration creates a session and enters the app (no confirmation step) — a7c7b0e
+- [x] 1.7 Wrong password shows a readable message; no password/token in console or network — a7c7b0e
+- [x] 1.8 Visiting `/login` while signed in redirects to `/` — a7c7b0e
 
 ### Phase 2: Exit — Account Menu + Sign-Out (AppShell)
 
 #### Automated
 
-- [ ] 2.1 Lint passes: `npm run lint`
-- [ ] 2.2 Type-check + build passes: `npm run build`
-- [ ] 2.3 Menu unit tests pass: renders email, open/close via trigger + `Escape` + outside-click, **Wyloguj** calls `signOut`; `AppShell.test.tsx` still green
+- [x] 2.1 Lint passes: `npm run lint`
+- [x] 2.2 Type-check + build passes: `npm run build`
+- [x] 2.3 Menu unit tests pass: renders email, open/close via trigger + `Escape` + outside-click, **Wyloguj** calls `signOut`; `AppShell.test.tsx` still green
 
 #### Manual
 
-- [ ] 2.4 Account menu shows the signed-in user's email
-- [ ] 2.5 **Wyloguj** clears the session and returns to `/login`
-- [ ] 2.6 Menu is keyboard-operable and closes on outside click
-- [ ] 2.7 After sign-out, visiting a protected route redirects to `/login`
+- [x] 2.4 Account menu shows the signed-in user's email
+- [x] 2.5 **Wyloguj** clears the session and returns to `/login`
+- [x] 2.6 Menu is keyboard-operable and closes on outside click
+- [x] 2.7 After sign-out, visiting a protected route redirects to `/login`
