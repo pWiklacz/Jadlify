@@ -1,4 +1,4 @@
-﻿using Jadlify.Application.Common.Behaviours;
+using Jadlify.Application.Common.Behaviours;
 using Jadlify.SharedKernel;
 
 namespace Jadlify.Application.Common.Mediator;

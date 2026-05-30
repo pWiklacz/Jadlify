@@ -1,4 +1,4 @@
-﻿namespace Jadlify.SharedKernel;
+namespace Jadlify.SharedKernel;
 
 public sealed record ValidationError : Error
 {

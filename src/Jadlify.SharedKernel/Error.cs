@@ -1,4 +1,4 @@
-﻿namespace Jadlify.SharedKernel;
+namespace Jadlify.SharedKernel;
 
 public record Error
 {
