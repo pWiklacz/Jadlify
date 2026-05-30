@@ -8,8 +8,10 @@ on:
 
 env:
   DOTNET_VERSION: 10.0.x
+  NODE_VERSION: 22
   AZURE_WEBAPP_NAME: jadlify-mvp-wikla
   API_PROJECT: src/Jadlify.API/Jadlify.API.csproj
+  WEB_DIR: src/Jadlify.Web
   PUBLISH_DIR: ./publish
 
 jobs:
@@ -24,6 +26,22 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # Node is needed both for the frontend quality gate below and for the
+      # publish-time MSBuild target (BuildSpa) that builds the SPA into wwwroot.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: ${{ env.WEB_DIR }}/package-lock.json
+
+      - name: Frontend quality gate
+        working-directory: ${{ env.WEB_DIR }}
+        run: |
+          npm ci
+          npm run lint
+          npm test
 
       - name: Restore
         run: dotnet restore Jadlify.slnx

@@ -4,6 +4,10 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Enables `dotnet user-secrets` for local dev config (Supabase issuer/audience/signing
+         key). User secrets load automatically in the Development environment; production
+         values come from hosting configuration. -->
+    <UserSecretsId>000e6781-a9d8-4572-9cfd-4024480ae371</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,5 +21,29 @@
     <ProjectReference Include="..\Jadlify.Infrastructure\Jadlify.Infrastructure.csproj" />
     <ProjectReference Include="..\Jadlify.SharedKernel\Jadlify.SharedKernel.csproj" />
   </ItemGroup>
+
+  <!-- Single-source the SPA location so dev and publish agree. -->
+  <PropertyGroup>
+    <SpaRoot>..\Jadlify.Web\</SpaRoot>
+  </PropertyGroup>
+
+  <!--
+    Build the Vite SPA and stage its dist/ output under the published wwwroot/.
+    Hooked to ComputeFilesToPublish so it runs ONLY during `dotnet publish`
+    (and not on every inner-loop `dotnet build`/test), keeping backend
+    iteration fast and node-free. Requires Node + npm on the machine/runner.
+  -->
+  <Target Name="BuildSpa" BeforeTargets="ComputeFilesToPublish">
+    <Message Importance="high" Text="Building Jadlify.Web SPA from $(SpaRoot)" />
+    <Exec Command="npm ci" WorkingDirectory="$(SpaRoot)" />
+    <Exec Command="npm run build" WorkingDirectory="$(SpaRoot)" />
+    <ItemGroup>
+      <_SpaDistFiles Include="$(SpaRoot)dist\**" />
+      <ResolvedFileToPublish Include="@(_SpaDistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>wwwroot\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
 
 </Project>

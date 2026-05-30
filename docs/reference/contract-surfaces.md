@@ -19,9 +19,16 @@ This registry records names that future changes must reuse when building user-ow
 - `MacroCalculator` (`src/Jadlify.Domain/Nutrition/MacroCalculator.cs`) is the single deterministic macro-math surface: product-amount, recipe-total, recipe-per-serving, and meal-entry calculations. Reuse it instead of recomputing macros; do not persist precomputed recipe/day totals in F-02.
 - Quantities are grams-only for the MVP: `GramAmount` (`src/Jadlify.Domain/Nutrition/GramAmount.cs`) holds positive `decimal` grams, and macro values use `MacroNutrients` (`src/Jadlify.Domain/Nutrition/MacroNutrients.cs`) with `decimal` components. Recipe ingredient amounts (`RecipeIngredient.WholeRecipeAmount`) are whole-recipe quantities, not per serving. Adding non-gram units is a new change.
 
+## Frontend Hosting and Session Probe (F-03)
+
+- `GET /api/me` (`src/Jadlify.API/Program.cs`) is the authenticated session probe: it reads `ICurrentUser` and returns `200` with a `MeResponse` (`src/Jadlify.API/Session/MeResponse.cs`) body carrying the caller's `sub` (`ICurrentUser.UserId.Value`). It is the single read-only endpoint the SPA uses to confirm its bearer token reaches the backend — it persists nothing. Reuse it for "who am I" rather than adding a parallel identity endpoint.
+- `/api/me` is intentionally **not** `AllowAnonymous`: it inherits the global fallback policy, so anonymous → `401`, authenticated-without-`sub` → `403`, valid token → `200`. New protected endpoints should follow the same pattern (rely on the fallback policy; live under `/api`).
+- The SPA is served single-origin from the API's `wwwroot` (built in via the `dotnet publish` MSBuild target). Static assets serve before authentication, and `MapFallbackToFile("index.html")` is the one anonymous catch-all so unauthenticated visitors can load the app shell and reach the future login screen. All `/api/*` and `/health` routes match before the fallback and keep their own auth behavior; domain data still flows only through `/api/*`.
+
 ## Handoff Rules
 
 - Supabase Auth access tokens map their `sub` claim to `ApplicationUserId`; inbound claim remapping stays disabled so code reads `sub` literally.
+- Access tokens are validated through one asymmetric path: the API discovers Supabase's (ES256) public key via JWKS/OIDC under `SupabaseAuth:Authority`. Production discovers over HTTPS; local dev against a Supabase CLI stack sets `SupabaseAuth:RequireHttpsMetadata=false` because that stack's discovery endpoint is HTTP. There is no symmetric/shared-secret validation path.
 - ASP.NET Core API endpoints are the backend boundary for domain data. The browser may use Supabase for auth/session, but product, recipe, plan, goal, and shopping-list data must go through the API.
 - `/health` is the only intentionally anonymous runtime endpoint. Future endpoints must rely on the fallback authenticated policy or state an explicit exception in their change plan.
 - User-owned persistence in F-02 must store an owner `ApplicationUserId` value or equivalent persisted subject and pass it through `UserScope` before returning data.

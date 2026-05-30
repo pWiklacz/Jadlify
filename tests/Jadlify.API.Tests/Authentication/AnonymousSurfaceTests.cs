@@ -40,6 +40,7 @@ public class AnonymousSurfaceTests
 
         RouteEndpoint[] anonymousNonHealthEndpoints = endpoints
             .Where(endpoint => !IsHealthEndpoint(endpoint))
+            .Where(endpoint => !IsSpaFallbackEndpoint(endpoint))
             .Where(endpoint => endpoint.Metadata.GetMetadata<IAllowAnonymous>() is not null)
             .ToArray();
 
@@ -70,5 +71,16 @@ public class AnonymousSurfaceTests
         string route = endpoint.RoutePattern.RawText ?? string.Empty;
 
         return route.TrimStart('/').Equals("health", StringComparison.OrdinalIgnoreCase);
+    }
+
+    // The SPA client-side-routing fallback (MapFallbackToFile("index.html")) is a
+    // catch-all route that is intentionally anonymous so unauthenticated visitors
+    // can load the app shell and reach the (future) login screen. It serves a static
+    // file, not an API surface; real API/health routes never use a catch-all pattern.
+    private static bool IsSpaFallbackEndpoint(RouteEndpoint endpoint)
+    {
+        string route = endpoint.RoutePattern.RawText ?? string.Empty;
+
+        return route.Contains("{*", StringComparison.Ordinal);
     }
 }
