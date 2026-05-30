@@ -43,6 +43,8 @@ cd src/Jadlify.Web && npm run dev       # terminal 2: Vite dev server (HMR)
 
 Frontend npm scripts (run from `src/Jadlify.Web`): `npm run lint`, `npm test` (Vitest + RTL), `npm run build`. `dotnet publish -c Release` bundles the SPA into the API `wwwroot` via an MSBuild target, so the publish command is unchanged. See `src/Jadlify.Web/README.md` for details.
 
+Local auth runs against a Supabase CLI stack defined by `supabase/config.toml` (`project_id = "jadlify"`, dedicated `544xx` ports so it coexists with other local Supabase stacks). Run `supabase start` / `supabase status`, then put the printed values in the SPA `.env` and the API user secrets (`SupabaseAuth:Authority`/`Issuer`/`Audience`). Supabase signs user tokens asymmetrically (ES256); the API validates them via JWKS discovered from `Authority` — same as production, except dev sets `SupabaseAuth:RequireHttpsMetadata=false` because the local discovery endpoint is HTTP. Full steps in `src/Jadlify.Web/README.md`.
+
 ## Coding And Naming
 
 Use file-scoped namespaces matching the project namespace, as in `@src/Jadlify.Domain/AssemblyReference.cs`. Keep layer-specific code in its owning project; shared abstractions belong in `Jadlify.SharedKernel` only when they are truly cross-layer.

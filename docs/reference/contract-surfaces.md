@@ -28,6 +28,7 @@ This registry records names that future changes must reuse when building user-ow
 ## Handoff Rules
 
 - Supabase Auth access tokens map their `sub` claim to `ApplicationUserId`; inbound claim remapping stays disabled so code reads `sub` literally.
+- Access tokens are validated through one asymmetric path: the API discovers Supabase's (ES256) public key via JWKS/OIDC under `SupabaseAuth:Authority`. Production discovers over HTTPS; local dev against a Supabase CLI stack sets `SupabaseAuth:RequireHttpsMetadata=false` because that stack's discovery endpoint is HTTP. There is no symmetric/shared-secret validation path.
 - ASP.NET Core API endpoints are the backend boundary for domain data. The browser may use Supabase for auth/session, but product, recipe, plan, goal, and shopping-list data must go through the API.
 - `/health` is the only intentionally anonymous runtime endpoint. Future endpoints must rely on the fallback authenticated policy or state an explicit exception in their change plan.
 - User-owned persistence in F-02 must store an owner `ApplicationUserId` value or equivalent persisted subject and pass it through `UserScope` before returning data.

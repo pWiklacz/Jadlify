@@ -336,7 +336,9 @@ Stand up a **local Supabase stack** (Supabase CLI + Docker) dedicated to Jadlify
 
 The **coexistence mechanism**: the Supabase CLI namespaces all Docker containers/volumes by `project_id`, so two distinct `project_id`s are fully isolated stacks (separate DB, volumes, data). The only real conflict is host ports, resolved by giving Jadlify its own shifted port range.
 
-The **validation wrinkle**: local GoTrue (CLI default) signs tokens **HS256 with a shared symmetric secret over HTTP**, while `Program.cs` is currently wired for **asymmetric JWKS discovery over HTTPS** (`Authority`/`MetadataAddress`, `RequireHttpsMetadata = true`). This phase adds a symmetric-key validation path used in Development, keeping the asymmetric JWKS path for Production unchanged.
+The **validation wrinkle**: the Supabase CLI stack (v2.84.x) signs user access tokens **asymmetrically (ES256)** and publishes the public key via **JWKS / OIDC discovery served over HTTP**, while `Program.cs` hard-codes `RequireHttpsMetadata = true`. This phase makes `RequireHttpsMetadata` configurable so Development can discover the local stack's signing key over HTTP through the existing asymmetric path; Production keeps HTTPS discovery unchanged.
+
+> **Implementation note (2026-05-29):** An earlier draft of this phase assumed local GoTrue signed tokens **HS256 with a shared symmetric secret** (true for older CLI versions). The installed CLI (v2.84.2) issues **ES256** user tokens via JWKS instead — `JWT_SECRET` now only signs the legacy `anon`/`service_role` keys. Per a decision during implementation, the symmetric `SigningKey` path was **dropped** in favour of the production-aligned asymmetric path plus a `RequireHttpsMetadata` dev toggle. The text below reflects the as-built asymmetric approach.
 
 ### Changes Required:
 
@@ -348,21 +350,21 @@ The **validation wrinkle**: local GoTrue (CLI default) signs tokens **HS256 with
 
 **Contract**: `project_id = "jadlify"`; shift every host-published port to a dedicated range (api `54421`, db `54422`, db `shadow_port 54420`, pooler `54429`, studio `54423`, inbucket `54424`, analytics `54427`); set `[auth] site_url` to the Vite dev URL (`http://127.0.0.1:5173`) and include it in `additional_redirect_urls`. CLI-generated `supabase/.branches` and `supabase/.temp` are gitignored.
 
-#### 2. Symmetric (dev) JWT validation option
+#### 2. HTTP metadata-discovery toggle (dev)
 
 **File**: `src/Jadlify.API/Authentication/SupabaseJwtOptions.cs`
 
-**Intent**: Allow Development to validate locally-issued HS256 tokens via a shared secret, without breaking the production JWKS path.
+**Intent**: Allow Development to discover the local stack's (ES256) signing key over HTTP, without weakening the production HTTPS-discovery default.
 
-**Contract**: Add an optional `SigningKey` (the symmetric secret). When present, validation uses it as the `IssuerSigningKey`; when absent, behavior is unchanged (asymmetric JWKS via `Authority`/`MetadataAddress`).
+**Contract**: Add `RequireHttpsMetadata` (bool, default `true`). Production leaves it `true`; only local dev sets it `false`. The `SigningKey` idea is dropped — Supabase signs asymmetrically, so there is no shared secret to validate against.
 
-#### 3. Branch the JWT bearer wiring
+#### 3. Make the JWT bearer wiring honour `RequireHttpsMetadata`
 
 **File**: `src/Jadlify.API/Program.cs`
 
-**Intent**: Use symmetric-key validation when `SigningKey` is configured (local/dev), otherwise keep the existing asymmetric JWKS discovery.
+**Intent**: Keep the single asymmetric JWKS path for all environments, with HTTPS-metadata enforcement configurable.
 
-**Contract**: When `SupabaseJwtOptions.SigningKey` is set, set `TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey))` and skip HTTPS-metadata discovery; `ValidIssuer`/`ValidAudience`/`NameClaimType=sub`/lifetime validation remain identical. The global fallback policy and the `sub`-as-`ApplicationUserId` contract are untouched. Production (no `SigningKey`) keeps `Authority`/JWKS + `RequireHttpsMetadata = true`.
+**Contract**: The JwtBearer wiring uses `Authority`/`MetadataAddress` for JWKS/OIDC discovery and sets `options.RequireHttpsMetadata = SupabaseJwtOptions.RequireHttpsMetadata`. `ValidIssuer`/`ValidAudience`/`NameClaimType=sub`/lifetime validation are unchanged across environments. The global fallback policy and the `sub`-as-`ApplicationUserId` contract are untouched. The options are bound from DI-resolved `IOptions<SupabaseJwtOptions>` (lazy) rather than an eager config snapshot, so test/host config overrides apply before the options bind.
 
 #### 4. Local dev configuration values
 
@@ -370,15 +372,15 @@ The **validation wrinkle**: local GoTrue (CLI default) signs tokens **HS256 with
 
 **Intent**: Point both processes at the local stack without committing secrets.
 
-**Contract**: API user-secrets set `SupabaseAuth:Issuer = http://127.0.0.1:54421/auth/v1`, `SupabaseAuth:Audience = authenticated`, and `SupabaseAuth:SigningKey = <JWT secret from "supabase status">`. SPA `.env` sets `VITE_SUPABASE_URL=http://127.0.0.1:54421` and `VITE_SUPABASE_ANON_KEY=<anon key from "supabase status">`. Real values stay out of git (only `.env.example` is committed); the local JWT secret is a well-known dev constant but still goes in user-secrets per the repo's no-secrets-in-appsettings rule.
+**Contract**: API user-secrets set `SupabaseAuth:Authority = http://127.0.0.1:54421/auth/v1`, `SupabaseAuth:Issuer = http://127.0.0.1:54421/auth/v1`, `SupabaseAuth:Audience = authenticated`, and `SupabaseAuth:RequireHttpsMetadata = false`. SPA `.env` sets `VITE_SUPABASE_URL=http://127.0.0.1:54421` and `VITE_SUPABASE_ANON_KEY=<anon key from "supabase status">`. Real values stay out of git (only `.env.example` is committed). The API project gains a `UserSecretsId` so the Development host loads these automatically.
 
 #### 5. Real-pipeline JWT validation test
 
-**File**: `tests/Jadlify.API.Tests/` (new test class, e.g. `Authentication/SymmetricJwtValidationTests.cs`)
+**File**: `tests/Jadlify.API.Tests/` (new test class, `Authentication/AsymmetricJwtValidationTests.cs`)
 
-**Intent**: Lock the Development symmetric-key path through the real `JwtBearer` middleware (the existing `AuthBoundaryTests` bypass it via `TestAuthenticationHandler`).
+**Intent**: Lock the asymmetric (ES256) validation path through the real `JwtBearer` middleware (the existing `AuthBoundaryTests` bypass it via `TestAuthenticationHandler`).
 
-**Contract**: A `WebApplicationFactory<Program>` configured with a test `SupabaseAuth:SigningKey`/`Issuer`/`Audience` mints HS256 tokens in-test (no Docker required). Assert: a well-formed token (correct issuer/audience/`sub`, unexpired) → `200` with the `sub`; a token signed with the wrong key or expired → `401`; a token missing `sub` → `403`.
+**Contract**: A `WebApplicationFactory<Program>` mints ES256 tokens in-test with an in-process ECDSA P-256 key, injecting that key's public part as the `IssuerSigningKey` (so no live JWKS endpoint is needed; JWKS/`kid` resolution against a real stack is left to manual verification). Assert: a well-formed token (correct issuer/audience/`sub`, unexpired) → `200` with the `sub`; a token signed with the wrong key or expired → `401`; a token missing `sub` → `403`.
 
 #### 6. Dev setup documentation
 
@@ -393,7 +395,7 @@ The **validation wrinkle**: local GoTrue (CLI default) signs tokens **HS256 with
 #### Automated Verification:
 
 - `supabase/config.toml` is committed with a unique `project_id` and the shifted port range (no service left on a default `5432x` port)
-- New symmetric-JWT test passes: dev-secret-signed token → `200`; wrong-key/expired → `401`; missing-`sub` → `403` (real `JwtBearer` pipeline)
+- New asymmetric-JWT test passes: correctly-signed ES256 token → `200`; wrong-key/expired → `401`; missing-`sub` → `403` (real `JwtBearer` pipeline)
 - Full backend verify is green: `pwsh ./.scripts/verify-min.ps1`
 
 #### Manual Verification:
@@ -496,10 +498,10 @@ The **validation wrinkle**: local GoTrue (CLI default) signs tokens **HS256 with
 
 #### Automated
 
-- [x] 4.1 Frontend lint + tests + build pass
-- [x] 4.2 Full backend verify green (`pwsh ./.scripts/verify-min.ps1`)
-- [x] 4.3 Publish bundles SPA into `wwwroot` (`.publish/wwwroot/index.html`)
-- [x] 4.4 Workflow YAML valid with Node setup + frontend step before publish
+- [x] 4.1 Frontend lint + tests + build pass — cff2012
+- [x] 4.2 Full backend verify green (`pwsh ./.scripts/verify-min.ps1`) — cff2012
+- [x] 4.3 Publish bundles SPA into `wwwroot` (`.publish/wwwroot/index.html`) — cff2012
+- [x] 4.4 Workflow YAML valid with Node setup + frontend step before publish — cff2012
 
 #### Manual
 
@@ -512,9 +514,9 @@ The **validation wrinkle**: local GoTrue (CLI default) signs tokens **HS256 with
 
 #### Automated
 
-- [ ] 5.1 `supabase/config.toml` committed with unique `project_id` + shifted port range
-- [ ] 5.2 Symmetric-JWT test passes (dev-secret→`200`, wrong-key/expired→`401`, missing-`sub`→`403`)
-- [ ] 5.3 Full backend verify green (`pwsh ./.scripts/verify-min.ps1`)
+- [x] 5.1 `supabase/config.toml` committed with unique `project_id` + shifted port range
+- [x] 5.2 Asymmetric-JWT test passes (ES256→`200`, wrong-key/expired→`401`, missing-`sub`→`403`)
+- [x] 5.3 Full backend verify green (`pwsh ./.scripts/verify-min.ps1`)
 
 #### Manual
 

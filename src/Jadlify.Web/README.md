@@ -42,7 +42,47 @@ cp .env.example .env
 # VITE_SUPABASE_ANON_KEY=...
 ```
 
-In production these are provided as build-time env on the CI runner / Azure build. Local Supabase stack setup (ports, secrets) is covered by the local-dev-environment work (plan Phase 5).
+In production these are provided as build-time env on the CI runner / Azure build. For local dev, get the values from a local Supabase stack — see below.
+
+## Local Supabase stack (dev auth)
+
+Local auth runs against a Supabase CLI stack (Docker) defined by `supabase/config.toml` at the repo root. It uses `project_id = "jadlify"` and a dedicated `544xx` host-port range, so it **coexists** with any other project's default-port (`5432x`) Supabase stack on the same machine — the CLI namespaces all containers/volumes per `project_id`.
+
+```bash
+# from the repo root — starts only the Jadlify stack (API on http://127.0.0.1:54421)
+supabase start
+supabase status          # prints URLs, anon key, and service_role key
+supabase stop            # stops only the Jadlify stack
+```
+
+Copy the printed values into the two processes (none of these are committed):
+
+1. **SPA** — `src/Jadlify.Web/.env`:
+
+   ```bash
+   VITE_SUPABASE_URL=http://127.0.0.1:54421
+   VITE_SUPABASE_ANON_KEY=<anon key from "supabase status">
+   ```
+
+2. **API** — user secrets (run from `src/Jadlify.API`). Supabase signs user access tokens **asymmetrically (ES256)** and publishes the public key via JWKS, so the API validates them by discovering that key from `SupabaseAuth:Authority` — the same mechanism production uses. The local stack serves discovery over **HTTP**, so dev sets `RequireHttpsMetadata` to `false` (production leaves it `true`):
+
+   ```bash
+   dotnet user-secrets set "SupabaseAuth:Authority"            "http://127.0.0.1:54421/auth/v1"
+   dotnet user-secrets set "SupabaseAuth:Issuer"               "http://127.0.0.1:54421/auth/v1"
+   dotnet user-secrets set "SupabaseAuth:Audience"             "authenticated"
+   dotnet user-secrets set "SupabaseAuth:RequireHttpsMetadata" "false"
+   ```
+
+Create a local test user via Supabase Studio (`http://127.0.0.1:54423` → Authentication → Add user, "Auto Confirm User") or the GoTrue admin API using the service-role key:
+
+```bash
+curl -X POST http://127.0.0.1:54421/auth/v1/admin/users \
+  -H "apikey: <service_role key>" -H "Authorization: Bearer <service_role key>" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"dev@jadlify.local","password":"password123","email_confirm":true}'
+```
+
+Then run the two-process dev loop (backend + `npm run dev`), sign in, and the landing page renders the `/api/me` result — confirming the bearer token reaches the backend.
 
 ## Production build & deploy
 

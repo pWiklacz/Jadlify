@@ -4,6 +4,10 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Enables `dotnet user-secrets` for local dev config (Supabase issuer/audience/signing
+         key). User secrets load automatically in the Development environment; production
+         values come from hosting configuration. -->
+    <UserSecretsId>000e6781-a9d8-4572-9cfd-4024480ae371</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,6 +6,7 @@ using Jadlify.Application.Identity;
 using Jadlify.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -27,28 +28,42 @@ SupabaseJwtOptions supabaseJwtOptions = builder.Configuration
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    .AddJwtBearer();
+
+// Configure JwtBearer from SupabaseJwtOptions resolved through DI (bound lazily) rather
+// than from an eager configuration snapshot, so configuration applied after the host is
+// built — e.g. a test host's in-memory overrides — is honoured before the options bind.
+builder.Services
+    .AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+    .Configure<IOptions<SupabaseJwtOptions>>((options, supabaseOptionsAccessor) =>
     {
+        SupabaseJwtOptions supabase = supabaseOptionsAccessor.Value;
         options.MapInboundClaims = false;
-        options.Authority = NullIfWhiteSpace(supabaseJwtOptions.Authority);
-        string? metadataAddress = NullIfWhiteSpace(supabaseJwtOptions.MetadataAddress);
+
+        // Supabase signs user access tokens asymmetrically (ES256) and publishes the public
+        // key via JWKS/OIDC discovery under Authority. Production discovers over HTTPS; a local
+        // Supabase CLI stack serves the same endpoints over HTTP, so RequireHttpsMetadata is
+        // configurable (defaults to true — only local dev sets it false). Issuer/audience/
+        // lifetime/sub name claim are identical across environments.
+        options.Authority = NullIfWhiteSpace(supabase.Authority);
+        string? metadataAddress = NullIfWhiteSpace(supabase.MetadataAddress);
         if (metadataAddress is not null)
         {
             options.MetadataAddress = metadataAddress;
         }
 
-        options.RequireHttpsMetadata = true;
+        options.RequireHttpsMetadata = supabase.RequireHttpsMetadata;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
             ValidateIssuer = true,
-            ValidIssuer = supabaseJwtOptions.Issuer ?? string.Empty,
+            ValidIssuer = supabase.Issuer ?? string.Empty,
             ValidateAudience = true,
-            ValidAudience = supabaseJwtOptions.Audience ?? string.Empty,
+            ValidAudience = supabase.Audience ?? string.Empty,
             ValidateLifetime = true,
             RequireExpirationTime = true,
             RequireSignedTokens = true,
-            NameClaimType = supabaseJwtOptions.RequiredSubjectClaimName,
+            NameClaimType = supabase.RequiredSubjectClaimName,
             RoleClaimType = "role"
         };
     });
