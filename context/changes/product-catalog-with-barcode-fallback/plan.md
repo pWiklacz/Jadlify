@@ -380,29 +380,29 @@ No schema or EF migration: the `products` table, owned macros, barcode column, a
 
 #### Automated
 
-- [x] 2.1 Build passes (`build-min.ps1 -Project src/Jadlify.Infrastructure`)
-- [x] 2.2 Infrastructure tests pass (adapter + updated delete test)
-- [x] 2.3 Adapter tests cover all OFF outcomes (found/partial/only-kJ/status:0/404/302/timeout/malformed)
-- [x] 2.4 Format check passes (`format-min.ps1 -Project src/Jadlify.Infrastructure`)
+- [x] 2.1 Build passes (`build-min.ps1 -Project src/Jadlify.Infrastructure`) — a4ca39c
+- [x] 2.2 Infrastructure tests pass (adapter + updated delete test) — a4ca39c
+- [x] 2.3 Adapter tests cover all OFF outcomes (found/partial/only-kJ/status:0/404/302/timeout/malformed) — a4ca39c
+- [x] 2.4 Format check passes (`format-min.ps1 -Project src/Jadlify.Infrastructure`) — a4ca39c
 
 #### Manual
 
-- [x] 2.5 Smoke against production OFF (Nutella `3017624010701`) maps correctly
-- [x] 2.6 Unreachable/timeout `BaseUrl` returns "not found" without throwing
+- [x] 2.5 Smoke against production OFF (Nutella `3017624010701`) maps correctly — a4ca39c
+- [x] 2.6 Unreachable/timeout `BaseUrl` returns "not found" without throwing — a4ca39c
 
 ### Phase 3: API — Product Endpoints & Result→HTTP Mapping
 
 #### Automated
 
-- [ ] 3.1 Build passes (`build-min.ps1 -Project src/Jadlify.API`)
-- [ ] 3.2 API integration tests pass
-- [ ] 3.3 Cross-user isolation test (user B → user A product → 404) passes
-- [ ] 3.4 Verify script passes (`verify-min.ps1 -BuildProject src/Jadlify.API -TestProject tests/Jadlify.API.Tests`)
+- [x] 3.1 Build passes (`build-min.ps1 -Project src/Jadlify.API`)
+- [x] 3.2 API integration tests pass
+- [x] 3.3 Cross-user isolation test (user B → user A product → 404) passes
+- [x] 3.4 Verify script passes (`verify-min.ps1 -BuildProject src/Jadlify.API -TestProject tests/Jadlify.API.Tests`)
 
 #### Manual
 
-- [ ] 3.5 Manual CRUD over real token returns expected 201/200/204/404/400
-- [ ] 3.6 Barcode lookup endpoint returns Found body and HTTP-200 NotFound
+- [x] 3.5 Manual CRUD over real token returns expected 201/200/204/404/400
+- [x] 3.6 Barcode lookup endpoint returns Found body and HTTP-200 NotFound
 
 ### Phase 4: Frontend — Products Page (List + Modal Form + Barcode Pre-fill)
 
