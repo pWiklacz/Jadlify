@@ -16,6 +16,9 @@ export type AccessTokenResolver = () => Promise<string | null>
 
 export interface ApiClient {
   get<T>(path: string): Promise<T>
+  post<T>(path: string, body: unknown): Promise<T>
+  put<T>(path: string, body: unknown): Promise<T>
+  del(path: string): Promise<void>
 }
 
 /**
@@ -24,7 +27,7 @@ export interface ApiClient {
  * Targets relative `/api/...` URLs — single-origin, no CORS.
  */
 export function createApiClient(getAccessToken: AccessTokenResolver): ApiClient {
-  async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  async function request<T>(path: string, init: RequestInit = {}, body?: unknown): Promise<T> {
     const token = await getAccessToken()
 
     const headers = new Headers(init.headers)
@@ -33,7 +36,13 @@ export function createApiClient(getAccessToken: AccessTokenResolver): ApiClient 
       headers.set('Authorization', `Bearer ${token}`)
     }
 
-    const response = await fetch(path, { ...init, headers })
+    let serializedBody: BodyInit | undefined
+    if (body !== undefined) {
+      headers.set('Content-Type', 'application/json')
+      serializedBody = JSON.stringify(body)
+    }
+
+    const response = await fetch(path, { ...init, headers, body: serializedBody })
 
     if (!response.ok) {
       const body = await safeReadBody(response)
@@ -53,6 +62,9 @@ export function createApiClient(getAccessToken: AccessTokenResolver): ApiClient 
 
   return {
     get: <T>(path: string) => request<T>(path, { method: 'GET' }),
+    post: <T>(path: string, body: unknown) => request<T>(path, { method: 'POST' }, body),
+    put: <T>(path: string, body: unknown) => request<T>(path, { method: 'PUT' }, body),
+    del: (path: string) => request<void>(path, { method: 'DELETE' }),
   }
 }
 

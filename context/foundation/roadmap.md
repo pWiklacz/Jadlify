@@ -3,7 +3,7 @@ project: Jadlify
 version: 1
 status: draft
 created: 2026-05-26
-updated: 2026-05-27
+updated: 2026-05-31
 prd_version: 1
 main_goal: low-complexity
 top_blocker: capacity
@@ -127,7 +127,12 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** -
 - **Unknowns:**
   - Co dzieje sie z przepisami i planami po usunieciu uzywanego produktu? Owner: user. Block: no.
-  - Czy dane produktu pobrane po kodzie kreskowym zostaja zamrozone w momencie dodania? Owner: implementator. Block: no.
+  - ~~Czy dane produktu pobrane po kodzie kreskowym zostaja zamrozone w momencie dodania?~~ Resolved 2026-05-31: yes - snapshot OFF fields into the user's product row at add-time; user can edit afterwards.
+- **Planning guidance:**
+  - Use the **Open Food Facts API** for barcode lookup: `GET https://world.openfoodfacts.org/api/v2/product/{barcode}?fields=product_name,brands,nutriments`. Free, no key, ODbL, EU/PL-strong. Full research + alternatives in `context/changes/product-catalog-with-barcode-fallback/research-barcode-api.md`.
+  - Lookup runs server-side through the backend API (per F-01), not the browser. Set a real `User-Agent` (`Jadlify - Web - Version <x.y> - <url>`); respect the 15 req/min/IP read limit; do not normalize barcodes client-side (OFF normalizes EAN/UPC).
+  - Snapshot fields into the user-owned product row at add-time (`*_100g` -> kcal/protein/carbs/fat per 100g, `product_name`, `brands`). Treat the source as a thin adapter so it can be swapped later (e.g. FatSecret Premier for localized PL data) without touching the rest of the slice.
+  - `"status": 0` (not found) is not an error - branch straight into the manual-entry fallback (FR-006).
 - **Risk:** Kod kreskowy jest pomocny, ale nie moze byc blokujaca integracja; fallback reczny utrzymuje scope MVP.
 - **Status:** proposed
 
@@ -200,7 +205,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 1. **Zachowanie zaleznych danych po usunieciu produktu/przepisu.** Owner: user. Block: no; affects S-02 and S-03 before first production deployment.
 2. **Jednostki miary produktow (g / ml / szt).** Owner: user. Block: no; affects F-02, S-02, and S-06.
-3. **Strategia danych po kodzie kreskowym.** Owner: implementator. Block: no; affects S-02.
+3. ~~**Strategia danych po kodzie kreskowym.** Owner: implementator. Block: no; affects S-02.~~ Resolved 2026-05-31: Open Food Facts API; snapshot fields into the user's product row at add-time, manual entry as fallback. See `context/changes/product-catalog-with-barcode-fallback/research-barcode-api.md`.
 4. **Granice gramatur w przepisie: per-przepis czy per-porcja.** Owner: implementator. Block: no; affects F-02 and S-03.
 5. **Edycja celow dziennych - czy sa wersjonowane lub sa jednym aktualnym zestawem.** Owner: implementator. Block: no; affects S-04.
 

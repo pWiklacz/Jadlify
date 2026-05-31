@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using Jadlify.API.Authentication;
+using Jadlify.API.Products;
 using Jadlify.API.Session;
 using Jadlify.Application;
 using Jadlify.Application.Identity;
@@ -82,7 +83,13 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+// HTTPS redirect in non-dev only. In local dev the SPA is served by Vite and
+// proxies /api over http to the backend's http endpoint; forcing a redirect to
+// https here would 307 those proxied calls to a port Vite isn't targeting.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 // Serve the built SPA from wwwroot. UseStaticFiles runs before authentication so
 // static assets are returned without hitting the global "must be authenticated"
@@ -101,6 +108,10 @@ app.MapGet("/health", () => Results.Ok()).AllowAnonymous();
 // does not shadow it.
 app.MapGet("/api/me", (ICurrentUser currentUser) =>
     Results.Ok(new MeResponse(currentUser.UserId.Value)));
+
+// Product catalog (S-02): list/get/create/update/delete + barcode lookup. All routes
+// inherit the global fallback auth policy (authenticated + 'sub'), so no AllowAnonymous.
+app.MapProductEndpoints();
 
 // Client-side routing: serve index.html for non-API deep links. Must be
 // AllowAnonymous, otherwise the global fallback policy 401s the SPA entrypoint

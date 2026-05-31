@@ -64,6 +64,85 @@ public class ProductRepositoryTests
     }
 
     [Fact]
+    public async Task AddAsync_PersistsPackageSizeAndExtendedFields()
+    {
+        using SqliteTestDatabase database = new();
+        var productId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            await repository.AddAsync(new Product(
+                productId,
+                "Nutella",
+                new MacroNutrients(539m, 6.3m, 30.9m, 57.5m),
+                "3017624010701",
+                packageSizeGrams: 400m,
+                details: new NutritionFacts(saturatedFat: 10.6m, sugars: 56.3m, vitaminD: 0.000005m)));
+        }
+
+        Product? stored;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            stored = await repository.GetByIdAsync(productId);
+        }
+
+        Assert.NotNull(stored);
+        Assert.Equal(400m, stored.PackageSizeGrams);
+        Assert.Equal(10.6m, stored.Details.SaturatedFat);
+        Assert.Equal(56.3m, stored.Details.Sugars);
+        Assert.Equal(0.000005m, stored.Details.VitaminD);
+        Assert.Null(stored.Details.Fiber);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_PersistsChangedPackageSizeAndExtendedFields()
+    {
+        using SqliteTestDatabase database = new();
+        var productId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            await repository.AddAsync(new Product(
+                productId,
+                "Nutella",
+                new MacroNutrients(539m, 6.3m, 30.9m, 57.5m),
+                "3017624010701",
+                packageSizeGrams: 400m,
+                details: new NutritionFacts(saturatedFat: 10.6m, sugars: 56.3m)));
+        }
+
+        Result result;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            result = await repository.UpdateAsync(new Product(
+                productId,
+                "Nutella",
+                new MacroNutrients(539m, 6.3m, 30.9m, 57.5m),
+                "3017624010701",
+                packageSizeGrams: 350m,
+                details: new NutritionFacts(saturatedFat: 11m, sugars: 50m, fiber: 2m)));
+        }
+
+        Product? stored;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            stored = await repository.GetByIdAsync(productId);
+        }
+
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(stored);
+        Assert.Equal(350m, stored.PackageSizeGrams);
+        Assert.Equal(11m, stored.Details.SaturatedFat);
+        Assert.Equal(50m, stored.Details.Sugars);
+        Assert.Equal(2m, stored.Details.Fiber);
+    }
+
+    [Fact]
     public async Task GetByIdAsync_DoesNotReturnAnotherUsersProduct()
     {
         using SqliteTestDatabase database = new();
@@ -112,7 +191,7 @@ public class ProductRepositoryTests
     }
 
     [Fact]
-    public async Task DeleteAsync_ReturnsConflict_WhenProductUsedByRecipe()
+    public async Task DeleteAsync_RemovesProduct_EvenWhenUsedByRecipe()
     {
         using SqliteTestDatabase database = new();
         var productId = Guid.NewGuid();
@@ -135,9 +214,16 @@ public class ProductRepositoryTests
             result = await products.DeleteAsync(productId);
         }
 
-        Assert.True(result.IsFailure);
-        Assert.Equal(ErrorType.Conflict, result.Error.Type);
-        Assert.Equal("Product.InUse", result.Error.Code);
+        Product? remaining;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository products = new(context, new TestCurrentUser(OwnerId));
+            remaining = await products.GetByIdAsync(productId);
+        }
+
+        // "Keep historical": deletion succeeds even though a recipe references the product.
+        Assert.True(result.IsSuccess);
+        Assert.Null(remaining);
     }
 
     [Fact]

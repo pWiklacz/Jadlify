@@ -38,6 +38,57 @@ public class JadlifyModelTests
     }
 
     [Fact]
+    public void ProductExtendedNutrition_UsesHighPrecisionScale()
+    {
+        using SqliteTestDatabase database = new();
+        using JadlifyDbContext context = database.CreateContext();
+
+        IEntityType product = context.Model.FindEntityType(typeof(Product))!;
+        IEntityType details = product.FindNavigation(nameof(Product.Details))!.TargetEntityType;
+
+        string[] components =
+        [
+            nameof(NutritionFacts.SaturatedFat),
+            nameof(NutritionFacts.MonounsaturatedFat),
+            nameof(NutritionFacts.PolyunsaturatedFat),
+            nameof(NutritionFacts.TransFat),
+            nameof(NutritionFacts.Sugars),
+            nameof(NutritionFacts.Fiber),
+            nameof(NutritionFacts.Salt),
+            nameof(NutritionFacts.Sodium),
+            nameof(NutritionFacts.Potassium),
+            nameof(NutritionFacts.Calcium),
+            nameof(NutritionFacts.Iron),
+            nameof(NutritionFacts.VitaminA),
+            nameof(NutritionFacts.VitaminC),
+            nameof(NutritionFacts.VitaminD),
+        ];
+
+        foreach (string component in components)
+        {
+            IProperty mapped = details.FindProperty(component)!;
+            // (12,6) so OFF's gram-normalized sub-milligram micros are not truncated to zero.
+            Assert.Equal(12, mapped.GetPrecision()!.Value);
+            Assert.Equal(6, mapped.GetScale()!.Value);
+            Assert.True(mapped.IsNullable);
+        }
+    }
+
+    [Fact]
+    public void ProductPackageSize_UsesTwoDecimalScale_AndIsNullable()
+    {
+        using SqliteTestDatabase database = new();
+        using JadlifyDbContext context = database.CreateContext();
+
+        IEntityType product = context.Model.FindEntityType(typeof(Product))!;
+        IProperty packageSize = product.FindProperty(nameof(Product.PackageSizeGrams))!;
+
+        Assert.Equal(10, packageSize.GetPrecision()!.Value);
+        Assert.Equal(2, packageSize.GetScale()!.Value);
+        Assert.True(packageSize.IsNullable);
+    }
+
+    [Fact]
     public void DailyMacroGoalTarget_UsesTwoDecimalScale()
     {
         AssertMacroPrecision<DailyMacroGoal>(nameof(DailyMacroGoal.Target));
@@ -58,16 +109,18 @@ public class JadlifyModelTests
     }
 
     [Fact]
-    public void RecipeIngredient_RestrictsProductDeletionButCascadesWithRecipe()
+    public void RecipeIngredient_HasNoProductForeignKey_ButCascadesWithRecipe()
     {
         using SqliteTestDatabase database = new();
         using JadlifyDbContext context = database.CreateContext();
 
         IEntityType ingredient = SingleEntityType<RecipeIngredient>(context);
 
-        IForeignKey productForeignKey = ingredient.GetForeignKeys()
-            .Single(foreignKey => foreignKey.PrincipalEntityType.ClrType == typeof(Product));
-        Assert.Equal(DeleteBehavior.Restrict, productForeignKey.DeleteBehavior);
+        // "Keep historical" (S-02): no FK to products, so a product can be deleted while the
+        // recipe-ingredient row survives carrying its (now unenforced) product_id.
+        Assert.DoesNotContain(
+            ingredient.GetForeignKeys(),
+            foreignKey => foreignKey.PrincipalEntityType.ClrType == typeof(Product));
 
         IForeignKey ownershipForeignKey = ingredient.GetForeignKeys()
             .Single(foreignKey => foreignKey.PrincipalEntityType.ClrType == typeof(Recipe));

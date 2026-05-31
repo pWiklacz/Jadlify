@@ -69,4 +69,45 @@ describe('createApiClient', () => {
     await expect(client.get('/api/me')).rejects.toBeInstanceOf(ApiError)
     await expect(client.get('/api/me')).rejects.toMatchObject({ status: 401 })
   })
+
+  it('posts a JSON body with the Content-Type header and returns the parsed response', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ id: 'p-1' }, 201))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const client = createApiClient(async () => 'token-abc')
+    const result = await client.post<{ id: string }>('/api/products', { name: 'Oats' })
+
+    expect(result).toEqual({ id: 'p-1' })
+    const [path, init] = fetchMock.mock.calls[0]
+    expect(path).toBe('/api/products')
+    expect(init.method).toBe('POST')
+    expect(init.body).toBe(JSON.stringify({ name: 'Oats' }))
+    expect(new Headers(init.headers).get('Content-Type')).toBe('application/json')
+  })
+
+  it('returns undefined from put on a 204 No Content response', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const client = createApiClient(async () => null)
+    const result = await client.put<void>('/api/products/p-1', { name: 'Oats' })
+
+    expect(result).toBeUndefined()
+    const [, init] = fetchMock.mock.calls[0]
+    expect(init.method).toBe('PUT')
+    expect(init.body).toBe(JSON.stringify({ name: 'Oats' }))
+  })
+
+  it('issues a DELETE without a body and resolves to void', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const client = createApiClient(async () => null)
+    await expect(client.del('/api/products/p-1')).resolves.toBeUndefined()
+
+    const [path, init] = fetchMock.mock.calls[0]
+    expect(path).toBe('/api/products/p-1')
+    expect(init.method).toBe('DELETE')
+    expect(init.body).toBeUndefined()
+  })
 })
