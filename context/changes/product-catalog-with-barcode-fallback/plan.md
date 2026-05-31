@@ -367,28 +367,28 @@ No schema or EF migration: the `products` table, owned macros, barcode column, a
 
 #### Automated
 
-- [x] 1.1 Build passes (`build-min.ps1 -Project src/Jadlify.Application`)
-- [x] 1.2 Application unit tests pass (handlers + validators)
-- [x] 1.3 Format check passes (`format-min.ps1 -Project src/Jadlify.Application`)
+- [x] 1.1 Build passes (`build-min.ps1 -Project src/Jadlify.Application`) — 78a39de
+- [x] 1.2 Application unit tests pass (handlers + validators) — 78a39de
+- [x] 1.3 Format check passes (`format-min.ps1 -Project src/Jadlify.Application`) — 78a39de
 
 #### Manual
 
-- [x] 1.4 `LookupBarcodeQuery` resolves own-catalog hit before OFF
-- [x] 1.5 Validators reject impossible values, accept realistic data
+- [x] 1.4 `LookupBarcodeQuery` resolves own-catalog hit before OFF — 78a39de
+- [x] 1.5 Validators reject impossible values, accept realistic data — 78a39de
 
 ### Phase 2: Infrastructure — Open Food Facts Adapter & Delete-Policy Alignment
 
 #### Automated
 
-- [ ] 2.1 Build passes (`build-min.ps1 -Project src/Jadlify.Infrastructure`)
-- [ ] 2.2 Infrastructure tests pass (adapter + updated delete test)
-- [ ] 2.3 Adapter tests cover all OFF outcomes (found/partial/only-kJ/status:0/404/302/timeout/malformed)
-- [ ] 2.4 Format check passes (`format-min.ps1 -Project src/Jadlify.Infrastructure`)
+- [x] 2.1 Build passes (`build-min.ps1 -Project src/Jadlify.Infrastructure`)
+- [x] 2.2 Infrastructure tests pass (adapter + updated delete test)
+- [x] 2.3 Adapter tests cover all OFF outcomes (found/partial/only-kJ/status:0/404/302/timeout/malformed)
+- [x] 2.4 Format check passes (`format-min.ps1 -Project src/Jadlify.Infrastructure`)
 
 #### Manual
 
-- [ ] 2.5 Smoke against production OFF (Nutella `3017624010701`) maps correctly
-- [ ] 2.6 Unreachable/timeout `BaseUrl` returns "not found" without throwing
+- [x] 2.5 Smoke against production OFF (Nutella `3017624010701`) maps correctly
+- [x] 2.6 Unreachable/timeout `BaseUrl` returns "not found" without throwing
 
 ### Phase 3: API — Product Endpoints & Result→HTTP Mapping
 

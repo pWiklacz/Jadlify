@@ -112,7 +112,7 @@ public class ProductRepositoryTests
     }
 
     [Fact]
-    public async Task DeleteAsync_ReturnsConflict_WhenProductUsedByRecipe()
+    public async Task DeleteAsync_RemovesProduct_EvenWhenUsedByRecipe()
     {
         using SqliteTestDatabase database = new();
         var productId = Guid.NewGuid();
@@ -135,9 +135,16 @@ public class ProductRepositoryTests
             result = await products.DeleteAsync(productId);
         }
 
-        Assert.True(result.IsFailure);
-        Assert.Equal(ErrorType.Conflict, result.Error.Type);
-        Assert.Equal("Product.InUse", result.Error.Code);
+        Product? remaining;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository products = new(context, new TestCurrentUser(OwnerId));
+            remaining = await products.GetByIdAsync(productId);
+        }
+
+        // "Keep historical": deletion succeeds even though a recipe references the product.
+        Assert.True(result.IsSuccess);
+        Assert.Null(remaining);
     }
 
     [Fact]

@@ -11,9 +11,6 @@ internal sealed class ProductRepository : IProductRepository
     private static readonly Error NotFound =
         Error.NotFound("Product.NotFound", "The product was not found for the current user.");
 
-    private static readonly Error InUse =
-        Error.Conflict("Product.InUse", "The product is used by a recipe and cannot be deleted.");
-
     private readonly JadlifyDbContext _context;
     private readonly ICurrentUser _currentUser;
 
@@ -120,16 +117,9 @@ internal sealed class ProductRepository : IProductRepository
             return Result.Fail(NotFound);
         }
 
-        bool inUse = await _context.Recipes
-            .Where(recipe => EF.Property<string>(recipe, PersistenceConstants.UserIdProperty) == owner)
-            .AnyAsync(
-                recipe => recipe.Ingredients.Any(ingredient => ingredient.ProductId == id),
-                cancellationToken);
-        if (inUse)
-        {
-            return Result.Fail(InUse);
-        }
-
+        // "Keep historical" policy: deleting an owned product always succeeds. There is no
+        // in-use guard — S-03's RecipeIngredient snapshots product macros at add-time, so a
+        // recipe keeps correct totals even after its product is deleted (cross-slice contract).
         _context.Products.Remove(existing);
         await _context.SaveChangesAsync(cancellationToken);
         return Result.Ok();

@@ -1,4 +1,3 @@
-using Jadlify.Domain.Products;
 using Jadlify.Domain.Recipes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -36,10 +35,11 @@ internal sealed class RecipeConfiguration : IEntityTypeConfiguration<Recipe>
             });
             ingredient.Navigation(i => i.WholeRecipeAmount).IsRequired();
 
-            ingredient.HasOne<Product>()
-                .WithMany()
-                .HasForeignKey(i => i.ProductId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // No FK to products: the "keep historical" delete policy (S-02) requires a product
+            // to be deletable while the recipe-ingredient row survives carrying its product_id.
+            // S-03 snapshots the product's name + per-100g macros into the ingredient so a recipe
+            // keeps correct totals after its product is gone (cross-slice contract).
+            ingredient.HasIndex(i => i.ProductId);
         });
     }
 }

@@ -58,16 +58,18 @@ public class JadlifyModelTests
     }
 
     [Fact]
-    public void RecipeIngredient_RestrictsProductDeletionButCascadesWithRecipe()
+    public void RecipeIngredient_HasNoProductForeignKey_ButCascadesWithRecipe()
     {
         using SqliteTestDatabase database = new();
         using JadlifyDbContext context = database.CreateContext();
 
         IEntityType ingredient = SingleEntityType<RecipeIngredient>(context);
 
-        IForeignKey productForeignKey = ingredient.GetForeignKeys()
-            .Single(foreignKey => foreignKey.PrincipalEntityType.ClrType == typeof(Product));
-        Assert.Equal(DeleteBehavior.Restrict, productForeignKey.DeleteBehavior);
+        // "Keep historical" (S-02): no FK to products, so a product can be deleted while the
+        // recipe-ingredient row survives carrying its (now unenforced) product_id.
+        Assert.DoesNotContain(
+            ingredient.GetForeignKeys(),
+            foreignKey => foreignKey.PrincipalEntityType.ClrType == typeof(Product));
 
         IForeignKey ownershipForeignKey = ingredient.GetForeignKeys()
             .Single(foreignKey => foreignKey.PrincipalEntityType.ClrType == typeof(Recipe));
