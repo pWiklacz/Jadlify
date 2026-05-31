@@ -314,7 +314,113 @@ Replace the `ProductsPage` placeholder with a real catalog UI: a list, an **Add 
 - [ ] Edit and delete (with confirmation) work and the list updates.
 - [ ] Usable on a mobile-width viewport; interactions give visible feedback and long operations show progress.
 
-**Implementation Note**: This is the final phase — confirm the full manual end-to-end walkthrough before closing the slice.
+**Implementation Note**: After automated verification passes, pause for manual confirmation before proceeding.
+
+---
+
+## Phase 5: Extended Nutrition Facts & Package Size (Richer OFF Snapshot)
+
+### Overview
+
+Pull and store much more of each product's nutrition profile so the user can track a healthy diet precisely: net **package size** (enabling per-package macro math), the **fat breakdown** (saturated / mono- / polyunsaturated / trans), **sugars** and **fiber**, **salt / sodium / potassium**, and a compact **micronutrient** set (calcium, iron, vitamins A / C / D). Every new field is **optional/nullable** end-to-end — OFF coverage is sparse and manual entry stays the fallback (FR-006). This is the first S-02 change that alters the schema, so it adds **one EF migration**. The core `MacroNutrients` (kcal/protein/fat/carbs) is left untouched so daily-goal and meal-plan math is unaffected; the extended set lives in a **new owned value object**.
+
+### Changes Required:
+
+#### 1. Domain — `NutritionFacts` value object + Product package size
+
+**File**: `src/Jadlify.Domain/Nutrition/NutritionFacts.cs`, `src/Jadlify.Domain/Products/Product.cs`
+
+**Intent**: Add a per-100g extended-nutrient value object alongside `MacroNutrients`, and a package-size scalar on `Product`.
+
+**Contract**:
+- `NutritionFacts` — a record of **all-nullable** `decimal?` per-100g fields: `SaturatedFat, MonounsaturatedFat, PolyunsaturatedFat, TransFat, Sugars, Fiber, Salt, Sodium, Potassium, Calcium, Iron, VitaminA, VitaminC, VitaminD`. Each non-null value must be ≥ 0 (guard in the constructor). Expose `NutritionFacts.Empty` (all null). Pure value object, mirroring `MacroNutrients` (no behavior beyond validation).
+- `Product` — add `decimal? PackageSizeGrams` and an owned `NutritionFacts Details`. Extend the constructor with optional params (`decimal? packageSizeGrams = null, NutritionFacts? details = null`) so existing callers keep compiling; default `details` to `NutritionFacts.Empty`. `PackageSizeGrams`, when present, must be > 0.
+
+#### 2. Infrastructure — EF mapping + migration
+
+**File**: `src/Jadlify.Infrastructure/Persistence/Configurations/ProductConfiguration.cs`, new migration under `Persistence/Migrations`
+
+**Intent**: Map the new scalar + owned value object to nullable columns and generate the Postgres migration.
+
+**Contract**:
+- Map `Product.PackageSizeGrams` → `package_size_grams` (nullable, `HasPrecision(10, 2)`).
+- `builder.OwnsOne(p => p.Details, …)` mapping each field to a nullable column (`saturated_fat_per_100g`, `monounsaturated_fat_per_100g`, `polyunsaturated_fat_per_100g`, `trans_fat_per_100g`, `sugars_per_100g`, `fiber_per_100g`, `salt_per_100g`, `sodium_per_100g`, `potassium_per_100g`, `calcium_per_100g`, `iron_per_100g`, `vitamin_a_per_100g`, `vitamin_c_per_100g`, `vitamin_d_per_100g`). Use **`HasPrecision(12, 6)`** for these — OFF normalizes vitamins/minerals to grams, so values are sub-milligram (e.g. `0.0006` g) and a `(10,2)` precision would truncate them to zero.
+- Generate the migration: `dotnet ef migrations add ExtendedNutritionFacts -p src/Jadlify.Infrastructure -s src/Jadlify.API`. SQLite test DBs use `EnsureCreated` and pick the new columns up from the model automatically; the migration targets the real Postgres.
+- Confirm `ProductRepository.UpdateAsync` propagates the new scalar + owned values onto the tracked entity (owned types update with the aggregate — verify no manual copy is missed).
+
+#### 3. Infrastructure — OFF adapter mapping (extended nutriments + package size)
+
+**File**: `src/Jadlify.Infrastructure/OpenFoodFacts/OpenFoodFactsResponse.cs`, `OpenFoodFactsBarcodeLookup.cs`
+
+**Intent**: Request and map the additional nutriment keys and the numeric package quantity.
+
+**Contract**:
+- Add `product_quantity` (numeric grams) to `OpenFoodFactsProduct`, and the extended `*_100g` keys to `OpenFoodFactsNutriments`: `saturated-fat_100g`, `monounsaturated-fat_100g`, `polyunsaturated-fat_100g`, `trans-fat_100g`, `sugars_100g`, `fiber_100g`, `salt_100g`, `sodium_100g`, `potassium_100g`, `calcium_100g`, `iron_100g`, `vitamin-a_100g`, `vitamin-c_100g`, `vitamin-d_100g`. Add `product_quantity` to the `fields=` allowlist (keep `nutriments`).
+- `Map` builds a `NutritionFacts` from the new keys (each `null` when absent) and resolves package size: prefer `product_quantity` (already grams); else parse the leading number from `quantity` text **only when its unit is g/kg** (kg → ×1000); otherwise `null`. Volumes (`ml`/`cl`/`l`) are out of scope for the grams model → `null`.
+- All new fields stay non-blocking: any parse failure / missing key yields `null`, never an error (FR-006). Existing all-outcome resilience is preserved.
+
+#### 4. Application — DTOs, commands, validators, lookup mapping
+
+**File**: `src/Jadlify.Application/Products/*` (`ProductDto`, `BarcodeLookupResult`, `IBarcodeProductLookup` `BarcodeProductData`, `CreateProduct/*`, `UpdateProduct/*`, `ListProducts`/`GetProduct` mapping, `LookupBarcode/*`)
+
+**Intent**: Thread the new optional fields through the use-cases.
+
+**Contract**:
+- `BarcodeProductData`, `ProductDto`, and `BarcodeLookupResult` gain `decimal? PackageSizeGrams` + the 14 nullable `NutritionFacts` fields.
+- `CreateProductCommand`/`UpdateProductCommand` gain the same optional fields; handlers build `NutritionFacts` + set `PackageSizeGrams` on the `Product`.
+- Entity→`ProductDto` mapping copies the new fields.
+- `LookupBarcodeQuery`: `Found` maps the extended fields from `BarcodeProductData`; `AlreadyInCatalog` maps them from the existing product's `Details` + `PackageSizeGrams`.
+- Validators: each present extended field ≥ 0 and ≤ a sane per-100g bound (fats/sugars/fiber/salt ≤ 100 g; sodium/potassium/minerals/vitamins stored in grams ≤ a generous bound, e.g. ≤ 100); `PackageSizeGrams` > 0 and ≤ a large bound (e.g. ≤ 100000 g). Reuse the bound-constant pattern next to the validators. No cross-field coherence checks (e.g. saturated ≤ total fat) — deferred.
+
+#### 5. API — contracts + endpoints
+
+**File**: `src/Jadlify.API/Products/ProductContracts.cs`, `ProductEndpoints.cs`
+
+**Intent**: Expose the new fields over the wire.
+
+**Contract**: Extend `CreateProductRequest`, `UpdateProductRequest`, `ProductResponse`, and `BarcodeLookupResponse` with `PackageSizeGrams` + the 14 nullable extended fields. Endpoints pass them through the commands/queries (including the 201 create body). Update the mapping helpers (`ProductResponse.FromDto`, `BarcodeLookupResponse.FromResult`).
+
+#### 6. Frontend — extended form, pre-fill, and display
+
+**File**: `src/Jadlify.Web/src/products/types.ts`, `ProductFormModal.tsx`, `ProductsPage.tsx` (+ tests)
+
+**Intent**: Let the user see and edit the richer data, pre-filled by lookup, and surface package size + per-package macros.
+
+**Contract**:
+- `types.ts`: extend `Product`, `CreateProductRequest`, `UpdateProductRequest`, `BarcodeLookupResponse` with `packageSizeGrams` + the 14 nullable fields.
+- `ProductFormModal`: add a **collapsible "Additional nutrition" section** (so the core form stays compact) with inputs for package size + the extended fields, grouped (Fats / Carbohydrates / Minerals / Vitamins). A barcode `Found` pre-fills present extended fields (missing left blank); existing NotFound/AlreadyInCatalog behavior is unchanged. Submit sends the full payload; blank inputs map to `null`.
+- `ProductsPage`: show package size on the card and, when present, a computed **per-package** kcal/macros line (`per100g × packageSizeGrams / 100`). Optionally surface a few key extended fields compactly (e.g. saturated fat, sugars, fiber, salt); full detail lives in the edit form.
+- Units: store/transmit the raw per-100g grams OFF provides; the display layer formats sub-gram micros as mg/µg.
+
+#### 7. Tests (all layers)
+
+**File**: domain / application / infrastructure / API / web test projects
+
+**Contract**:
+- Domain: `NutritionFacts` rejects negatives, accepts nulls; `Product` rejects non-positive `PackageSizeGrams`.
+- Application: create/update round-trip the new fields; validators reject out-of-range extended values; `LookupBarcodeQuery` Found/AlreadyInCatalog carry extended fields.
+- Infrastructure: OFF adapter maps extended nutriments + `product_quantity`; `quantity`-text fallback (g/kg parsed, volume → null); missing keys → null; the existing all-outcome coverage still passes.
+- API: create→get round-trips package size + extended fields; barcode lookup returns them; cross-user isolation still holds.
+- Web: form pre-fills extended fields from a Found lookup; per-package macro line renders when package size is set; manual edit of extended fields submits them.
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- [ ] Solution build passes: `dotnet build` (Domain, Application, Infrastructure, API).
+- [ ] EF migration `ExtendedNutritionFacts` is generated and applies cleanly (review the generated `Up`/`Down`).
+- [ ] Backend tests pass: `pwsh ./.scripts/test-min.ps1` for `tests/Jadlify.Application.Tests`, `tests/Jadlify.Infrastructure.Tests`, and `tests/Jadlify.API.Tests`.
+- [ ] Format checks pass for the touched backend projects (`format-min.ps1`).
+- [ ] Frontend passes: `npm run lint`, `npm test`, `npm run build` (in `src/Jadlify.Web`).
+
+#### Manual Verification:
+
+- [ ] OFF smoke (`3017624010701`): saturated fat, sugars, salt (and any present micros) + package size map correctly.
+- [ ] Add via barcode pre-fills the extended fields OFF has; missing ones stay blank and editable.
+- [ ] A product with a package size shows a per-package kcal/macros line in the list.
+- [ ] Manual entry/edit of extended fields persists and re-displays after reload.
+
+**Implementation Note**: This is the final phase — confirm the full manual end-to-end walkthrough (including the extended fields and per-package math) before closing the slice.
 
 ---
 
@@ -345,7 +451,9 @@ Single-user MVP, small data volumes — well under the NFR ceiling (~1000 produc
 
 ## Migration Notes
 
-No schema or EF migration: the `products` table, owned macros, barcode column, and `(user_id, barcode)` index are already defined by `ProductConfiguration` (F-02). Removing the in-use delete guard is a behavior change in `ProductRepository`, not a schema change.
+Phases 1–4 require no schema or EF migration: the `products` table, owned macros, barcode column, and `(user_id, barcode)` index are already defined by `ProductConfiguration` (F-02). Removing the in-use delete guard is a behavior change in `ProductRepository`, not a schema change.
+
+**Phase 5 is the exception** — it adds the `package_size_grams` column plus the owned `NutritionFacts` columns, so it introduces **one EF migration** (`ExtendedNutritionFacts`) against Postgres. SQLite test databases use `EnsureCreated`, so they pick the new columns up from the model without running the migration.
 
 ## References
 
@@ -394,27 +502,44 @@ No schema or EF migration: the `products` table, owned macros, barcode column, a
 
 #### Automated
 
-- [x] 3.1 Build passes (`build-min.ps1 -Project src/Jadlify.API`)
-- [x] 3.2 API integration tests pass
-- [x] 3.3 Cross-user isolation test (user B → user A product → 404) passes
-- [x] 3.4 Verify script passes (`verify-min.ps1 -BuildProject src/Jadlify.API -TestProject tests/Jadlify.API.Tests`)
+- [x] 3.1 Build passes (`build-min.ps1 -Project src/Jadlify.API`) — f77cbfc
+- [x] 3.2 API integration tests pass — f77cbfc
+- [x] 3.3 Cross-user isolation test (user B → user A product → 404) passes — f77cbfc
+- [x] 3.4 Verify script passes (`verify-min.ps1 -BuildProject src/Jadlify.API -TestProject tests/Jadlify.API.Tests`) — f77cbfc
 
 #### Manual
 
-- [x] 3.5 Manual CRUD over real token returns expected 201/200/204/404/400
-- [x] 3.6 Barcode lookup endpoint returns Found body and HTTP-200 NotFound
+- [x] 3.5 Manual CRUD over real token returns expected 201/200/204/404/400 — f77cbfc
+- [x] 3.6 Barcode lookup endpoint returns Found body and HTTP-200 NotFound — f77cbfc
 
 ### Phase 4: Frontend — Products Page (List + Modal Form + Barcode Pre-fill)
 
 #### Automated
 
-- [ ] 4.1 Lint passes (`npm run lint`)
-- [ ] 4.2 Frontend tests pass (`npm test`)
-- [ ] 4.3 Production build passes (`npm run build`)
+- [x] 4.1 Lint passes (`npm run lint`)
+- [x] 4.2 Frontend tests pass (`npm test`)
+- [x] 4.3 Production build passes (`npm run build`)
 
 #### Manual
 
-- [ ] 4.4 Manual add shows product in list
-- [ ] 4.5 Barcode flow: Found / partial / not-found / already-in-catalog all behave per US-02
-- [ ] 4.6 Edit and delete (with confirmation) update the list
-- [ ] 4.7 Usable at mobile width with visible feedback / progress
+- [x] 4.4 Manual add shows product in list
+- [x] 4.5 Barcode flow: Found / partial / not-found / already-in-catalog all behave per US-02
+- [x] 4.6 Edit and delete (with confirmation) update the list
+- [x] 4.7 Usable at mobile width with visible feedback / progress
+
+### Phase 5: Extended Nutrition Facts & Package Size
+
+#### Automated
+
+- [ ] 5.1 Solution build passes (`dotnet build`)
+- [ ] 5.2 EF migration `ExtendedNutritionFacts` generated and applies
+- [ ] 5.3 Backend tests pass (Application + Infrastructure + API)
+- [ ] 5.4 Format checks pass for touched backend projects
+- [ ] 5.5 Frontend lint + tests + build pass
+
+#### Manual
+
+- [ ] 5.6 OFF smoke maps extended fields + package size
+- [ ] 5.7 Barcode pre-fills extended fields (missing stay blank)
+- [ ] 5.8 Per-package macro line shows when package size is set
+- [ ] 5.9 Manual extended-field entry persists and re-displays

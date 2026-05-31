@@ -83,7 +83,13 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+// HTTPS redirect in non-dev only. In local dev the SPA is served by Vite and
+// proxies /api over http to the backend's http endpoint; forcing a redirect to
+// https here would 307 those proxied calls to a port Vite isn't targeting.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 // Serve the built SPA from wwwroot. UseStaticFiles runs before authentication so
 // static assets are returned without hitting the global "must be authenticated"
