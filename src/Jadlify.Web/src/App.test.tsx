@@ -17,7 +17,7 @@ vi.mock('./lib/supabase', () => ({
 }))
 
 describe('App', () => {
-  it('redirects an anonymous visitor to the login placeholder', async () => {
+  it('redirects an anonymous visitor to the login route', async () => {
     const queryClient = new QueryClient()
 
     render(
@@ -29,7 +29,7 @@ describe('App', () => {
     )
 
     expect(
-      await screen.findByRole('heading', { name: /sign in/i }),
+      await screen.findByRole('heading', { name: 'Zaloguj się' }),
     ).toBeInTheDocument()
   })
 })
