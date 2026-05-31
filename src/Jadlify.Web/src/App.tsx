@@ -13,7 +13,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public placeholder; real auth UI is slice S-01. */}
+        {/* Public sign-in / registration route; LoginPage redirects authed visitors to /. */}
         <Route path="/login" element={<LoginPage />} />
 
         {/* Protected area: the guard gates access, the shell frames it. */}

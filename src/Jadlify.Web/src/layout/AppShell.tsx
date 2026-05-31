@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { navItems } from './navItems'
+import { AccountMenu } from './AccountMenu'
 
 /**
  * Persistent responsive shell for the protected area: a top app bar with a
  * brand, inline navigation on desktop that collapses to a hamburger-toggled
- * drawer on mobile, and an account-area placeholder slot (sign-out wiring is
- * roadmap slice S-01). Renders the routed content in the main outlet.
+ * drawer on mobile, and an account menu (e-mail + sign-out). Renders the routed
+ * content in the main outlet.
  *
  * Tailwind breakpoints (`md:`) drive desktop vs. mobile presentation. The
  * mobile drawer is conditionally mounted from `open` state so its toggle is
@@ -58,8 +59,8 @@ export function AppShell() {
             ))}
           </nav>
 
-          {/* Account-area placeholder; real account/sign-out UI is slice S-01. */}
-          <span className="ml-auto text-sm text-slate-400">Account</span>
+          {/* Account menu: signed-in user's e-mail + Wyloguj (sign-out). */}
+          <AccountMenu />
         </div>
 
         {open && (
