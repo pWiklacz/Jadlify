@@ -13,8 +13,10 @@ public interface IBarcodeProductLookup
 
 /// <summary>
 /// Pre-fill data mapped from an external source. Every field is optional:
-/// crowdsourced sources frequently lack one or more macros, and a missing field
-/// simply leaves the corresponding form input blank.
+/// crowdsourced sources frequently lack one or more values, and a missing field
+/// simply leaves the corresponding form input blank. Beyond the core macros it also
+/// carries the net package size and the extended per-100g profile (fat breakdown,
+/// sugars/fiber, salt/sodium/potassium, and a small micronutrient set).
 /// </summary>
 public sealed record BarcodeProductData(
     string? Name = null,
@@ -22,4 +24,19 @@ public sealed record BarcodeProductData(
     decimal? Calories = null,
     decimal? Protein = null,
     decimal? Fat = null,
-    decimal? Carbohydrates = null);
+    decimal? Carbohydrates = null,
+    decimal? PackageSizeGrams = null,
+    decimal? SaturatedFat = null,
+    decimal? MonounsaturatedFat = null,
+    decimal? PolyunsaturatedFat = null,
+    decimal? TransFat = null,
+    decimal? Sugars = null,
+    decimal? Fiber = null,
+    decimal? Salt = null,
+    decimal? Sodium = null,
+    decimal? Potassium = null,
+    decimal? Calcium = null,
+    decimal? Iron = null,
+    decimal? VitaminA = null,
+    decimal? VitaminC = null,
+    decimal? VitaminD = null);

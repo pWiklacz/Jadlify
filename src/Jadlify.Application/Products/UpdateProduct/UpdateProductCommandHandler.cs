@@ -21,9 +21,10 @@ public sealed class UpdateProductCommandHandler : ICommandHandler<UpdateProductC
             command.Protein,
             command.Fat,
             command.Carbohydrates);
+        var details = command.ToNutritionFacts();
         string? barcode = string.IsNullOrWhiteSpace(command.Barcode) ? null : command.Barcode;
 
-        var product = new Product(command.Id, command.Name, macros, barcode);
+        var product = new Product(command.Id, command.Name, macros, barcode, command.PackageSizeGrams, details);
 
         // The repository scopes to the current user and returns NotFound when the
         // product does not belong to them; forward that Result unchanged.

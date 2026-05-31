@@ -239,6 +239,158 @@ public class OpenFoodFactsBarcodeLookupTests
         Assert.Contains("nutriments", requested, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task LookupAsync_MapsExtendedNutrimentsAndProductQuantity()
+    {
+        const string json = """
+            {
+              "status": 1,
+              "product": {
+                "product_name": "Nutella",
+                "quantity": "400 g",
+                "product_quantity": 400,
+                "nutriments": {
+                  "energy-kcal_100g": 539,
+                  "proteins_100g": 6.3,
+                  "fat_100g": 30.9,
+                  "carbohydrates_100g": 57.5,
+                  "saturated-fat_100g": 10.6,
+                  "monounsaturated-fat_100g": 8.1,
+                  "polyunsaturated-fat_100g": 4.2,
+                  "trans-fat_100g": 0,
+                  "sugars_100g": 56.3,
+                  "fiber_100g": 0,
+                  "salt_100g": 0.107,
+                  "sodium_100g": 0.0428,
+                  "potassium_100g": 0.4,
+                  "calcium_100g": 0.11,
+                  "iron_100g": 0.003,
+                  "vitamin-a_100g": 0.00012,
+                  "vitamin-c_100g": 0,
+                  "vitamin-d_100g": 0.0000057
+                }
+              }
+            }
+            """;
+        OpenFoodFactsBarcodeLookup lookup = CreateLookup(StubHttpMessageHandler.Json(HttpStatusCode.OK, json));
+
+        BarcodeProductData? data = await lookup.LookupAsync("3017624010701");
+
+        Assert.NotNull(data);
+        Assert.Equal(400m, data.PackageSizeGrams);
+        Assert.Equal(10.6m, data.SaturatedFat);
+        Assert.Equal(8.1m, data.MonounsaturatedFat);
+        Assert.Equal(4.2m, data.PolyunsaturatedFat);
+        Assert.Equal(0m, data.TransFat);
+        Assert.Equal(56.3m, data.Sugars);
+        Assert.Equal(0m, data.Fiber);
+        Assert.Equal(0.107m, data.Salt);
+        Assert.Equal(0.0428m, data.Sodium);
+        Assert.Equal(0.4m, data.Potassium);
+        Assert.Equal(0.11m, data.Calcium);
+        Assert.Equal(0.003m, data.Iron);
+        Assert.Equal(0.00012m, data.VitaminA);
+        Assert.Equal(0m, data.VitaminC);
+        Assert.Equal(0.0000057m, data.VitaminD);
+    }
+
+    [Fact]
+    public async Task LookupAsync_LeavesExtendedFieldsNull_WhenAbsent()
+    {
+        const string json = """
+            {
+              "status": 1,
+              "product": {
+                "product_name": "Bare bones",
+                "nutriments": {
+                  "energy-kcal_100g": 100,
+                  "proteins_100g": 5
+                }
+              }
+            }
+            """;
+        OpenFoodFactsBarcodeLookup lookup = CreateLookup(StubHttpMessageHandler.Json(HttpStatusCode.OK, json));
+
+        BarcodeProductData? data = await lookup.LookupAsync("123");
+
+        Assert.NotNull(data);
+        Assert.Null(data.PackageSizeGrams);
+        Assert.Null(data.SaturatedFat);
+        Assert.Null(data.Sugars);
+        Assert.Null(data.Salt);
+        Assert.Null(data.VitaminD);
+    }
+
+    [Theory]
+    [InlineData("400 g", 400)]
+    [InlineData("250g", 250)]
+    [InlineData("1.5 kg", 1500)]
+    [InlineData("1,5 kg", 1500)]
+    public async Task LookupAsync_ParsesPackageSizeFromQuantityText_WhenMass(string quantity, int expectedGrams)
+    {
+        string json = $$"""
+            {
+              "status": 1,
+              "product": {
+                "product_name": "By text quantity",
+                "quantity": "{{quantity}}"
+              }
+            }
+            """;
+        OpenFoodFactsBarcodeLookup lookup = CreateLookup(StubHttpMessageHandler.Json(HttpStatusCode.OK, json));
+
+        BarcodeProductData? data = await lookup.LookupAsync("123");
+
+        Assert.NotNull(data);
+        Assert.Equal((decimal?)expectedGrams, data.PackageSizeGrams);
+    }
+
+    [Theory]
+    [InlineData("330 ml")]
+    [InlineData("1 l")]
+    [InlineData("a handful")]
+    [InlineData("")]
+    public async Task LookupAsync_LeavesPackageSizeNull_ForVolumeOrUnparseableQuantity(string quantity)
+    {
+        string json = $$"""
+            {
+              "status": 1,
+              "product": {
+                "product_name": "Not a mass",
+                "quantity": "{{quantity}}"
+              }
+            }
+            """;
+        OpenFoodFactsBarcodeLookup lookup = CreateLookup(StubHttpMessageHandler.Json(HttpStatusCode.OK, json));
+
+        BarcodeProductData? data = await lookup.LookupAsync("123");
+
+        Assert.NotNull(data);
+        Assert.Null(data.PackageSizeGrams);
+    }
+
+    [Fact]
+    public async Task LookupAsync_PrefersNumericProductQuantity_OverQuantityText()
+    {
+        // product_quantity is authoritative grams; the free text disagrees on purpose.
+        const string json = """
+            {
+              "status": 1,
+              "product": {
+                "product_name": "Mismatch",
+                "quantity": "1 kg",
+                "product_quantity": 350
+              }
+            }
+            """;
+        OpenFoodFactsBarcodeLookup lookup = CreateLookup(StubHttpMessageHandler.Json(HttpStatusCode.OK, json));
+
+        BarcodeProductData? data = await lookup.LookupAsync("123");
+
+        Assert.NotNull(data);
+        Assert.Equal(350m, data.PackageSizeGrams);
+    }
+
     private static OpenFoodFactsBarcodeLookup CreateLookup(StubHttpMessageHandler handler) =>
         new(new HttpClient(handler) { BaseAddress = new Uri("https://off.test/") });
 }

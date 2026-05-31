@@ -78,4 +78,49 @@ public class CreateProductCommandValidatorTests
     {
         Assert.True(_validator.Validate(Valid(barcode: barcode)).IsValid);
     }
+
+    [Fact]
+    public void Accepts_RealisticExtendedFieldsAndPackageSize()
+    {
+        CreateProductCommand command = Valid() with
+        {
+            PackageSizeGrams = 400m,
+            SaturatedFat = 10.6m,
+            Sugars = 56.3m,
+            Fiber = 0m,
+            Salt = 0.107m,
+            // Sub-milligram vitamin value (stored in grams) must pass.
+            VitaminD = 0.000005m,
+        };
+
+        Assert.True(_validator.Validate(command).IsValid);
+    }
+
+    [Fact]
+    public void Rejects_NegativeExtendedField()
+    {
+        CreateProductCommand command = Valid() with { Sugars = -1m };
+
+        Assert.False(_validator.Validate(command).IsValid);
+    }
+
+    [Fact]
+    public void Rejects_ExtendedFieldOverBound()
+    {
+        // > 100 g per 100 g is physically impossible.
+        CreateProductCommand command = Valid() with { SaturatedFat = 150m };
+
+        Assert.False(_validator.Validate(command).IsValid);
+    }
+
+    [Theory]
+    [InlineData(0)]        // must be strictly positive
+    [InlineData(-5)]
+    [InlineData(200_000)]  // beyond the ~100 kg ceiling
+    public void Rejects_OutOfRangePackageSize(int packageSize)
+    {
+        CreateProductCommand command = Valid() with { PackageSizeGrams = packageSize };
+
+        Assert.False(_validator.Validate(command).IsValid);
+    }
 }

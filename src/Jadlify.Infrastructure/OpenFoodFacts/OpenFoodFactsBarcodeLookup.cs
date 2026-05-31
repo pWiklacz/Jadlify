@@ -1,6 +1,8 @@
+using System.Globalization;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using Jadlify.Application.Products;
 
 namespace Jadlify.Infrastructure.OpenFoodFacts;
@@ -19,7 +21,14 @@ internal sealed class OpenFoodFactsBarcodeLookup : IBarcodeProductLookup
     private const decimal KilojoulesPerKilocalorie = 4.184m;
 
     // Only request the fields we snapshot — a full product object is huge (off-api-reference §4).
-    private const string Fields = "product_name,product_name_pl,brands,quantity,nutriments";
+    private const string Fields =
+        "product_name,product_name_pl,brands,quantity,product_quantity,nutriments";
+
+    // Leading mass at the start of a free-text quantity (e.g. "400 g", "1,5 kg"). Only g/kg
+    // are mapped — the grams model has no place for volumes (ml/cl/l), which fall through to null.
+    private static readonly Regex QuantityMassPattern = new(
+        @"^\s*(?<num>\d+(?:[.,]\d+)?)\s*(?<unit>kg|g)\b",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
@@ -83,7 +92,58 @@ internal sealed class OpenFoodFactsBarcodeLookup : IBarcodeProductLookup
             Calories: ResolveCalories(nutriments),
             Protein: nutriments?.ProteinsPer100g,
             Fat: nutriments?.FatPer100g,
-            Carbohydrates: nutriments?.CarbohydratesPer100g);
+            Carbohydrates: nutriments?.CarbohydratesPer100g,
+            PackageSizeGrams: ResolvePackageSizeGrams(product),
+            SaturatedFat: nutriments?.SaturatedFatPer100g,
+            MonounsaturatedFat: nutriments?.MonounsaturatedFatPer100g,
+            PolyunsaturatedFat: nutriments?.PolyunsaturatedFatPer100g,
+            TransFat: nutriments?.TransFatPer100g,
+            Sugars: nutriments?.SugarsPer100g,
+            Fiber: nutriments?.FiberPer100g,
+            Salt: nutriments?.SaltPer100g,
+            Sodium: nutriments?.SodiumPer100g,
+            Potassium: nutriments?.PotassiumPer100g,
+            Calcium: nutriments?.CalciumPer100g,
+            Iron: nutriments?.IronPer100g,
+            VitaminA: nutriments?.VitaminAPer100g,
+            VitaminC: nutriments?.VitaminCPer100g,
+            VitaminD: nutriments?.VitaminDPer100g);
+    }
+
+    private static decimal? ResolvePackageSizeGrams(OpenFoodFactsProduct product)
+    {
+        // Prefer the numeric product_quantity (already grams); otherwise parse the free-text
+        // quantity, but only when it is a mass — volumes are out of scope for the grams model.
+        if (product.ProductQuantity is { } grams && grams > 0m)
+        {
+            return grams;
+        }
+
+        return ParseMassGrams(product.Quantity);
+    }
+
+    private static decimal? ParseMassGrams(string? quantity)
+    {
+        if (string.IsNullOrWhiteSpace(quantity))
+        {
+            return null;
+        }
+
+        Match match = QuantityMassPattern.Match(quantity);
+        if (!match.Success)
+        {
+            return null;
+        }
+
+        string number = match.Groups["num"].Value.Replace(',', '.');
+        if (!decimal.TryParse(number, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal value)
+            || value <= 0m)
+        {
+            return null;
+        }
+
+        bool isKilograms = match.Groups["unit"].Value.Equals("kg", StringComparison.OrdinalIgnoreCase);
+        return isKilograms ? value * 1000m : value;
     }
 
     private static decimal? ResolveCalories(OpenFoodFactsNutriments? nutriments)

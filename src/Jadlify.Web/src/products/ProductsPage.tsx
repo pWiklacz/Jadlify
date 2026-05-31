@@ -2,9 +2,17 @@ import { useState } from 'react'
 import { DeleteProductDialog } from './DeleteProductDialog'
 import { ProductFormModal } from './ProductFormModal'
 import { useProducts } from './useProducts'
-import type { Product } from './types'
+import type { ExtendedNutritionKey, Product } from './types'
 
 type ModalState = { mode: 'create' } | { mode: 'edit'; product: Product } | null
+
+/** A few high-signal extended fields surfaced compactly on the card; full detail lives in the edit form. */
+const CARD_EXTENDED_FIELDS: { key: ExtendedNutritionKey; label: string }[] = [
+  { key: 'saturatedFat', label: 'Saturated fat' },
+  { key: 'sugars', label: 'Sugars' },
+  { key: 'fiber', label: 'Fiber' },
+  { key: 'salt', label: 'Salt' },
+]
 
 /**
  * Product catalog page: lists the signed-in user's products and hosts the
@@ -66,6 +74,33 @@ export function ProductsPage() {
                 <Macro label="Fat" value={product.fat} />
                 <Macro label="Carbs" value={product.carbohydrates} />
               </dl>
+
+              {product.packageSizeGrams != null && (
+                <div className="rounded-md bg-slate-50 px-3 py-2 text-sm">
+                  <p className="text-slate-500">Package: {formatNumber(product.packageSizeGrams)} g</p>
+                  <p className="font-medium text-slate-700">
+                    Per package: {formatNumber(perPackage(product.calories, product.packageSizeGrams))} kcal
+                    {` · P ${formatNumber(perPackage(product.protein, product.packageSizeGrams))} g`}
+                    {` · F ${formatNumber(perPackage(product.fat, product.packageSizeGrams))} g`}
+                    {` · C ${formatNumber(perPackage(product.carbohydrates, product.packageSizeGrams))} g`}
+                  </p>
+                </div>
+              )}
+
+              {CARD_EXTENDED_FIELDS.some((field) => product[field.key] != null) && (
+                <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm text-slate-700">
+                  {CARD_EXTENDED_FIELDS.map((field) => {
+                    const value = product[field.key]
+                    return value == null ? null : (
+                      <div key={field.key} className="flex justify-between gap-2">
+                        <dt className="text-slate-500">{field.label}</dt>
+                        <dd className="font-medium">{formatMass(value)}</dd>
+                      </div>
+                    )
+                  })}
+                </dl>
+              )}
+
               <div className="mt-1 flex gap-2">
                 <button
                   type="button"
@@ -113,4 +148,25 @@ function Macro({ label, value }: { label: string; value: number }) {
       <dd className="font-medium">{value}</dd>
     </div>
   )
+}
+
+/** Rounds to at most one decimal and drops a trailing `.0`. */
+function formatNumber(value: number): string {
+  return String(Math.round(value * 10) / 10)
+}
+
+/** Scales a per-100g value to the whole package. */
+function perPackage(per100g: number, packageSizeGrams: number): number {
+  return (per100g * packageSizeGrams) / 100
+}
+
+/** Formats a grams value, dropping to mg / µg so sub-gram micronutrients stay readable. */
+function formatMass(grams: number): string {
+  if (grams === 0 || grams >= 1) {
+    return `${formatNumber(grams)} g`
+  }
+  if (grams >= 0.001) {
+    return `${formatNumber(grams * 1000)} mg`
+  }
+  return `${formatNumber(grams * 1_000_000)} µg`
 }

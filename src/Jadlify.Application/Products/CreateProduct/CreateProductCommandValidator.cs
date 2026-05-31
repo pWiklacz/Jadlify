@@ -26,5 +26,22 @@ public sealed class CreateProductCommandValidator : AbstractValidator<CreateProd
             RuleFor(x => x.Barcode!)
                 .Matches(ProductValidationBounds.BarcodePattern)
                 .WithMessage("Barcode must be 8 to 14 digits."));
+
+        this.ApplyExtendedNutritionRules(
+            x => x.PackageSizeGrams,
+            x => x.SaturatedFat,
+            x => x.MonounsaturatedFat,
+            x => x.PolyunsaturatedFat,
+            x => x.TransFat,
+            x => x.Sugars,
+            x => x.Fiber,
+            x => x.Salt,
+            x => x.Sodium,
+            x => x.Potassium,
+            x => x.Calcium,
+            x => x.Iron,
+            x => x.VitaminA,
+            x => x.VitaminC,
+            x => x.VitaminD);
     }
 }

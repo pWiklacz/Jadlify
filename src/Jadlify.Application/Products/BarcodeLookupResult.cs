@@ -17,8 +17,10 @@ public enum BarcodeLookupOutcome
 }
 
 /// <summary>
-/// Result of looking a barcode up. Macro/name fields are nullable so partial
-/// external data maps to blank form fields the user can complete.
+/// Result of looking a barcode up. Every value field is nullable so partial external
+/// data maps to blank form fields the user can complete: the core macros plus the
+/// optional package size and extended per-100g profile (fat breakdown, sugars/fiber,
+/// salt/sodium/potassium, and micronutrients).
 /// </summary>
 public sealed record BarcodeLookupResult(
     BarcodeLookupOutcome Outcome,
@@ -29,7 +31,22 @@ public sealed record BarcodeLookupResult(
     decimal? Calories = null,
     decimal? Protein = null,
     decimal? Fat = null,
-    decimal? Carbohydrates = null)
+    decimal? Carbohydrates = null,
+    decimal? PackageSizeGrams = null,
+    decimal? SaturatedFat = null,
+    decimal? MonounsaturatedFat = null,
+    decimal? PolyunsaturatedFat = null,
+    decimal? TransFat = null,
+    decimal? Sugars = null,
+    decimal? Fiber = null,
+    decimal? Salt = null,
+    decimal? Sodium = null,
+    decimal? Potassium = null,
+    decimal? Calcium = null,
+    decimal? Iron = null,
+    decimal? VitaminA = null,
+    decimal? VitaminC = null,
+    decimal? VitaminD = null)
 {
     public static BarcodeLookupResult NotFound(string barcode) =>
         new(BarcodeLookupOutcome.NotFound, barcode);
@@ -44,7 +61,22 @@ public sealed record BarcodeLookupResult(
             Calories: data.Calories,
             Protein: data.Protein,
             Fat: data.Fat,
-            Carbohydrates: data.Carbohydrates);
+            Carbohydrates: data.Carbohydrates,
+            PackageSizeGrams: data.PackageSizeGrams,
+            SaturatedFat: data.SaturatedFat,
+            MonounsaturatedFat: data.MonounsaturatedFat,
+            PolyunsaturatedFat: data.PolyunsaturatedFat,
+            TransFat: data.TransFat,
+            Sugars: data.Sugars,
+            Fiber: data.Fiber,
+            Salt: data.Salt,
+            Sodium: data.Sodium,
+            Potassium: data.Potassium,
+            Calcium: data.Calcium,
+            Iron: data.Iron,
+            VitaminA: data.VitaminA,
+            VitaminC: data.VitaminC,
+            VitaminD: data.VitaminD);
 
     public static BarcodeLookupResult AlreadyInCatalog(string barcode, ProductDto existing) =>
         new(
@@ -56,5 +88,20 @@ public sealed record BarcodeLookupResult(
             Calories: existing.Calories,
             Protein: existing.Protein,
             Fat: existing.Fat,
-            Carbohydrates: existing.Carbohydrates);
+            Carbohydrates: existing.Carbohydrates,
+            PackageSizeGrams: existing.PackageSizeGrams,
+            SaturatedFat: existing.SaturatedFat,
+            MonounsaturatedFat: existing.MonounsaturatedFat,
+            PolyunsaturatedFat: existing.PolyunsaturatedFat,
+            TransFat: existing.TransFat,
+            Sugars: existing.Sugars,
+            Fiber: existing.Fiber,
+            Salt: existing.Salt,
+            Sodium: existing.Sodium,
+            Potassium: existing.Potassium,
+            Calcium: existing.Calcium,
+            Iron: existing.Iron,
+            VitaminA: existing.VitaminA,
+            VitaminC: existing.VitaminC,
+            VitaminD: existing.VitaminD);
 }

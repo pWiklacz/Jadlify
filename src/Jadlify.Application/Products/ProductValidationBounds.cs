@@ -19,6 +19,19 @@ public static class ProductValidationBounds
     /// </summary>
     public const decimal MaxCaloriesPer100g = 900m;
 
+    /// <summary>
+    /// Upper bound for any extended per-100g nutrient (fat components, sugars, fiber,
+    /// salt, and the gram-stored minerals/vitamins). All are grams per 100 g, so 100 is
+    /// the physical ceiling — generous for the sub-gram micros, which never approach it.
+    /// </summary>
+    public const decimal MaxNutrientGramsPer100g = 100m;
+
+    /// <summary>
+    /// Upper bound for net package size in grams (~100 kg) — far above any realistic
+    /// retail food package while still rejecting obvious data-entry mistakes.
+    /// </summary>
+    public const decimal MaxPackageSizeGrams = 100_000m;
+
     /// <summary>EAN-8 through GTIN-14, digits only, not normalized client-side.</summary>
     public const string BarcodePattern = @"^\d{8,14}$";
 }

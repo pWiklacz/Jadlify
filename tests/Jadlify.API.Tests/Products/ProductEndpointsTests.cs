@@ -148,7 +148,7 @@ public class ProductEndpointsTests
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
-        using JsonDocument problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         Assert.True(problem.RootElement.TryGetProperty("errors", out JsonElement errors));
         Assert.True(errors.EnumerateObject().Any());
     }
@@ -221,6 +221,63 @@ public class ProductEndpointsTests
         Assert.Equal("00000000", body.Barcode);
         Assert.Null(body.Name);
         Assert.Null(body.ExistingProductId);
+    }
+
+    [Fact]
+    public async Task Create_RoundTripsPackageSizeAndExtendedFields()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+
+        CreateProductRequest request = new("Nutella", "3017624010701", 539m, 6.3m, 30.9m, 57.5m)
+        {
+            PackageSizeGrams = 400m,
+            SaturatedFat = 10.6m,
+            Sugars = 56.3m,
+            Salt = 0.107m,
+            VitaminD = 0.000005m,
+        };
+
+        HttpResponseMessage create = await client.PostAsJsonAsync("/api/products", request);
+        Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+        ProductResponse created = (await create.Content.ReadFromJsonAsync<ProductResponse>())!;
+        Assert.Equal(400m, created.PackageSizeGrams);
+        Assert.Equal(0.000005m, created.VitaminD);
+
+        ProductResponse? fetched = await client.GetFromJsonAsync<ProductResponse>($"/api/products/{created.Id}");
+
+        Assert.NotNull(fetched);
+        Assert.Equal(400m, fetched!.PackageSizeGrams);
+        Assert.Equal(10.6m, fetched.SaturatedFat);
+        Assert.Equal(56.3m, fetched.Sugars);
+        Assert.Equal(0.107m, fetched.Salt);
+        Assert.Equal(0.000005m, fetched.VitaminD);
+        Assert.Null(fetched.Fiber);
+    }
+
+    [Fact]
+    public async Task BarcodeLookup_ReturnsExtendedFields_WhenStubHasData()
+    {
+        using TestApiFactory factory = new();
+        factory.BarcodeLookup.OnLookup = _ => new BarcodeProductData(
+            Name: "Nutella",
+            Calories: 539m,
+            PackageSizeGrams: 400m,
+            SaturatedFat: 10.6m,
+            Sugars: 56.3m,
+            VitaminD: 0.000005m);
+        using HttpClient client = factory.CreateClientAs(UserA);
+
+        BarcodeLookupResponse? body =
+            await client.GetFromJsonAsync<BarcodeLookupResponse>("/api/products/barcode/3017624010701");
+
+        Assert.NotNull(body);
+        Assert.Equal("Found", body!.Outcome);
+        Assert.Equal(400m, body.PackageSizeGrams);
+        Assert.Equal(10.6m, body.SaturatedFat);
+        Assert.Equal(56.3m, body.Sugars);
+        Assert.Equal(0.000005m, body.VitaminD);
+        Assert.Null(body.Fiber);
     }
 
     [Fact]

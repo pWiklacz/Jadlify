@@ -1,7 +1,12 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from 'react'
 import { useBarcodeLookup } from './useBarcodeLookup'
 import { useCreateProduct, useUpdateProduct } from './useProductMutations'
-import type { Product } from './types'
+import {
+  EXTENDED_NUTRITION_KEYS,
+  type CreateProductRequest,
+  type ExtendedNutritionKey,
+  type Product,
+} from './types'
 
 type Mode = 'create' | 'edit'
 
@@ -14,14 +19,15 @@ interface ProductFormModalProps {
   onEditExisting: (productId: string) => void
 }
 
-interface FormState {
+type FormState = {
   name: string
   barcode: string
   calories: string
   protein: string
   fat: string
   carbohydrates: string
-}
+  packageSizeGrams: string
+} & Record<ExtendedNutritionKey, string>
 
 type LookupNotice =
   | { kind: 'none' }
@@ -36,6 +42,30 @@ const MACRO_FIELDS = [
   { key: 'carbohydrates', label: 'Carbohydrates (g / 100 g)' },
 ] as const
 
+const EXTENDED_FIELD_LABELS: Record<ExtendedNutritionKey, string> = {
+  saturatedFat: 'Saturated fat (g / 100 g)',
+  monounsaturatedFat: 'Monounsaturated fat (g / 100 g)',
+  polyunsaturatedFat: 'Polyunsaturated fat (g / 100 g)',
+  transFat: 'Trans fat (g / 100 g)',
+  sugars: 'Sugars (g / 100 g)',
+  fiber: 'Fiber (g / 100 g)',
+  salt: 'Salt (g / 100 g)',
+  sodium: 'Sodium (g / 100 g)',
+  potassium: 'Potassium (g / 100 g)',
+  calcium: 'Calcium (g / 100 g)',
+  iron: 'Iron (g / 100 g)',
+  vitaminA: 'Vitamin A (g / 100 g)',
+  vitaminC: 'Vitamin C (g / 100 g)',
+  vitaminD: 'Vitamin D (g / 100 g)',
+}
+
+const EXTENDED_FIELD_GROUPS: { legend: string; keys: ExtendedNutritionKey[] }[] = [
+  { legend: 'Fats', keys: ['saturatedFat', 'monounsaturatedFat', 'polyunsaturatedFat', 'transFat'] },
+  { legend: 'Carbohydrates', keys: ['sugars', 'fiber'] },
+  { legend: 'Minerals', keys: ['salt', 'sodium', 'potassium', 'calcium', 'iron'] },
+  { legend: 'Vitamins', keys: ['vitaminA', 'vitaminC', 'vitaminD'] },
+]
+
 function toFormState(product?: Product): FormState {
   return {
     name: product?.name ?? '',
@@ -44,7 +74,29 @@ function toFormState(product?: Product): FormState {
     protein: numField(product?.protein),
     fat: numField(product?.fat),
     carbohydrates: numField(product?.carbohydrates),
+    packageSizeGrams: numField(product?.packageSizeGrams),
+    ...extendedStrings(product),
   }
+}
+
+/** Maps the extended-nutrient values of any product/lookup shape to form-input strings. */
+function extendedStrings(
+  source: Partial<Record<ExtendedNutritionKey, number | null>> | undefined,
+): Record<ExtendedNutritionKey, string> {
+  return Object.fromEntries(
+    EXTENDED_NUTRITION_KEYS.map((key) => [key, numField(source?.[key])]),
+  ) as Record<ExtendedNutritionKey, string>
+}
+
+/** Parses the extended-field inputs back to numbers, blank → null. */
+function extendedNumbers(form: FormState): Record<ExtendedNutritionKey, number | null> {
+  return Object.fromEntries(
+    EXTENDED_NUTRITION_KEYS.map((key) => [key, parseOptionalNum(form[key])]),
+  ) as Record<ExtendedNutritionKey, number | null>
+}
+
+function hasExtendedValues(source: Partial<Record<ExtendedNutritionKey, number | null>> & { packageSizeGrams?: number | null }): boolean {
+  return source.packageSizeGrams != null || EXTENDED_NUTRITION_KEYS.some((key) => source[key] != null)
 }
 
 function numField(value: number | null | undefined): string {
@@ -54,6 +106,16 @@ function numField(value: number | null | undefined): string {
 function parseNum(value: string): number {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : 0
+}
+
+/** Blank input → null; otherwise the parsed number (NaN guarded to null). */
+function parseOptionalNum(value: string): number | null {
+  const trimmed = value.trim()
+  if (!trimmed) {
+    return null
+  }
+  const parsed = Number(trimmed)
+  return Number.isFinite(parsed) ? parsed : null
 }
 
 /**
@@ -66,11 +128,15 @@ function parseNum(value: string): number {
 export function ProductFormModal({ mode, product, onClose, onEditExisting }: ProductFormModalProps) {
   const [form, setForm] = useState<FormState>(() => toFormState(product))
   const [notice, setNotice] = useState<LookupNotice>({ kind: 'none' })
+  // Keep the core form compact; auto-expand when editing a product that already
+  // carries extended data so it is visible without a click.
+  const [showExtended, setShowExtended] = useState(() => (product ? hasExtendedValues(product) : false))
 
   const dialogRef = useRef<HTMLDivElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
   const baseId = useId()
   const titleId = `${baseId}-title`
+  const extendedId = `${baseId}-extended`
 
   const lookup = useBarcodeLookup()
   const createProduct = useCreateProduct()
@@ -151,7 +217,13 @@ export function ProductFormModal({ mode, product, onClose, onEditExisting }: Pro
           protein: numField(result.protein),
           fat: numField(result.fat),
           carbohydrates: numField(result.carbohydrates),
+          packageSizeGrams: numField(result.packageSizeGrams),
+          ...extendedStrings(result),
         }))
+        // Reveal the extended section if the lookup actually returned any of it.
+        if (hasExtendedValues(result)) {
+          setShowExtended(true)
+        }
         setNotice({ kind: 'found' })
         return
       }
@@ -170,13 +242,15 @@ export function ProductFormModal({ mode, product, onClose, onEditExisting }: Pro
     if (!trimmedName) {
       return
     }
-    const body = {
+    const body: CreateProductRequest = {
       name: trimmedName,
       barcode: form.barcode.trim() || null,
       calories: parseNum(form.calories),
       protein: parseNum(form.protein),
       fat: parseNum(form.fat),
       carbohydrates: parseNum(form.carbohydrates),
+      packageSizeGrams: parseOptionalNum(form.packageSizeGrams),
+      ...extendedNumbers(form),
     }
     if (mode === 'edit' && product) {
       updateProduct.mutate({ id: product.id, body }, { onSuccess: onClose })
@@ -273,6 +347,61 @@ export function ProductFormModal({ mode, product, onClose, onEditExisting }: Pro
                 />
               </div>
             ))}
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-slate-200 pt-3">
+            <button
+              type="button"
+              onClick={() => setShowExtended((value) => !value)}
+              aria-expanded={showExtended}
+              aria-controls={extendedId}
+              className="self-start text-sm font-medium text-slate-700 underline"
+            >
+              {showExtended ? 'Hide additional nutrition' : 'Additional nutrition'}
+            </button>
+
+            {showExtended && (
+              <div id={extendedId} className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
+                  <label htmlFor={`${baseId}-packageSizeGrams`} className="text-sm font-medium">
+                    Package size (g)
+                  </label>
+                  <input
+                    id={`${baseId}-packageSizeGrams`}
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={form.packageSizeGrams}
+                    onChange={(event) => setField('packageSizeGrams', event.target.value)}
+                    className="rounded-md border border-slate-300 px-3 py-2"
+                  />
+                </div>
+
+                {EXTENDED_FIELD_GROUPS.map((group) => (
+                  <fieldset key={group.legend} className="flex flex-col gap-2">
+                    <legend className="text-sm font-semibold text-slate-600">{group.legend}</legend>
+                    <div className="grid grid-cols-2 gap-3">
+                      {group.keys.map((key) => (
+                        <div key={key} className="flex flex-col gap-1">
+                          <label htmlFor={`${baseId}-${key}`} className="text-sm font-medium">
+                            {EXTENDED_FIELD_LABELS[key]}
+                          </label>
+                          <input
+                            id={`${baseId}-${key}`}
+                            type="number"
+                            min="0"
+                            step="any"
+                            value={form[key]}
+                            onChange={(event) => setField(key, event.target.value)}
+                            className="rounded-md border border-slate-300 px-3 py-2"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </fieldset>
+                ))}
+              </div>
+            )}
           </div>
 
           {saveFailed && (

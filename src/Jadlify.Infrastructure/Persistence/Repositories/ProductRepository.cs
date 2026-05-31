@@ -96,9 +96,14 @@ internal sealed class ProductRepository : IProductRepository
             return Result.Fail(NotFound);
         }
 
+        // SetValues copies the owner's scalars (name, barcode, package size); the owned value
+        // objects each need their own SetValues so a changed macro or extended-nutrient value
+        // is propagated onto the tracked aggregate.
         _context.Entry(existing).CurrentValues.SetValues(product);
         _context.Entry(existing).Reference(p => p.Per100Grams).TargetEntry!
             .CurrentValues.SetValues(product.Per100Grams);
+        _context.Entry(existing).Reference(p => p.Details).TargetEntry!
+            .CurrentValues.SetValues(product.Details);
 
         await _context.SaveChangesAsync(cancellationToken);
         return Result.Ok();

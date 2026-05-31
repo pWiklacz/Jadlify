@@ -19,6 +19,25 @@ vi.mock('../auth/useSession', () => ({
   useSession: () => ({ session: { user: { id: 'u1' } }, isLoading: false }),
 }))
 
+/** The package-size + 14 extended fields, all null — the default for products without extended data. */
+const nullExtended = {
+  packageSizeGrams: null,
+  saturatedFat: null,
+  monounsaturatedFat: null,
+  polyunsaturatedFat: null,
+  transFat: null,
+  sugars: null,
+  fiber: null,
+  salt: null,
+  sodium: null,
+  potassium: null,
+  calcium: null,
+  iron: null,
+  vitaminA: null,
+  vitaminC: null,
+  vitaminD: null,
+}
+
 const p1: Product = {
   id: 'p1',
   name: 'Existing Oats',
@@ -27,6 +46,7 @@ const p1: Product = {
   protein: 10,
   fat: 5,
   carbohydrates: 60,
+  ...nullExtended,
 }
 
 let listResponse: Product[] = []
@@ -98,6 +118,7 @@ describe('ProductsPage', () => {
       protein: 0,
       fat: 0,
       carbohydrates: 0,
+      ...nullExtended,
     })
     expect(await screen.findByRole('heading', { name: 'Granola' })).toBeInTheDocument()
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
@@ -115,6 +136,10 @@ describe('ProductsPage', () => {
       protein: 6.3,
       fat: 30.9,
       carbohydrates: 57.5,
+      ...nullExtended,
+      packageSizeGrams: 400,
+      saturatedFat: 10.6,
+      sugars: 56.3,
     }
     renderPage()
 
@@ -129,6 +154,10 @@ describe('ProductsPage', () => {
     expect((screen.getByLabelText(/^Calories/i) as HTMLInputElement).value).toBe('539')
     expect((screen.getByLabelText(/^Protein/i) as HTMLInputElement).value).toBe('6.3')
     expect(screen.getByRole('status')).toHaveTextContent(/pre-filled/i)
+    // The extended section auto-expands and pre-fills the fields OFF returned.
+    expect((screen.getByLabelText(/package size/i) as HTMLInputElement).value).toBe('400')
+    expect((screen.getByLabelText(/^Saturated fat/i) as HTMLInputElement).value).toBe('10.6')
+    expect((screen.getByLabelText(/^Sugars/i) as HTMLInputElement).value).toBe('56.3')
   })
 
   it('keeps the barcode and blanks the macros on a NotFound lookup', async () => {
@@ -143,6 +172,7 @@ describe('ProductsPage', () => {
       protein: null,
       fat: null,
       carbohydrates: null,
+      ...nullExtended,
     }
     renderPage()
 
@@ -170,6 +200,7 @@ describe('ProductsPage', () => {
       protein: 10,
       fat: 5,
       carbohydrates: 60,
+      ...nullExtended,
     }
     renderPage()
 
@@ -206,8 +237,48 @@ describe('ProductsPage', () => {
       protein: 10,
       fat: 5,
       carbohydrates: 60,
+      ...nullExtended,
     })
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  })
+
+  it('shows a per-package macro line when package size is set', async () => {
+    listResponse = [{ ...p1, packageSizeGrams: 400 }]
+    renderPage()
+
+    await screen.findByRole('heading', { name: 'Existing Oats' })
+    // 350 kcal/100g × 400 g = 1400 kcal per package.
+    expect(screen.getByText(/per package: 1400 kcal/i)).toBeInTheDocument()
+  })
+
+  it('submits manually entered extended fields', async () => {
+    const user = userEvent.setup()
+    mockApiClient.post.mockImplementation(async (_path: string, body: unknown) => ({
+      id: 'new-1',
+      ...(body as Omit<Product, 'id'>),
+    }))
+    renderPage()
+
+    await screen.findByText(/no products yet/i)
+    await user.click(screen.getByRole('button', { name: 'Add product' }))
+    await user.type(screen.getByLabelText('Name'), 'Yogurt')
+    await user.type(screen.getByLabelText(/^Calories/i), '60')
+
+    await user.click(screen.getByRole('button', { name: /additional nutrition/i }))
+    await user.type(screen.getByLabelText(/package size/i), '500')
+    await user.type(screen.getByLabelText(/^Sugars/i), '4.5')
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+
+    expect(mockApiClient.post).toHaveBeenCalledWith(
+      '/api/products',
+      expect.objectContaining({
+        name: 'Yogurt',
+        calories: 60,
+        packageSizeGrams: 500,
+        sugars: 4.5,
+        saturatedFat: null,
+      }),
+    )
   })
 
   it('deletes a product after confirmation', async () => {

@@ -84,6 +84,59 @@ public class LookupBarcodeQueryHandlerTests
     }
 
     [Fact]
+    public async Task HandleAsync_Found_CarriesPackageSizeAndExtendedFields()
+    {
+        var lookup = new FakeBarcodeProductLookup(
+            new BarcodeProductData(
+                Name: "Nutella",
+                Calories: 539m,
+                PackageSizeGrams: 400m,
+                SaturatedFat: 10.6m,
+                Sugars: 56.3m,
+                Salt: 0.107m,
+                VitaminD: 0.000005m));
+        var handler = new LookupBarcodeQueryHandler(new FakeProductRepository(), lookup);
+
+        Result<BarcodeLookupResult> result = await handler.HandleAsync(
+            new LookupBarcodeQuery(Barcode),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(BarcodeLookupOutcome.Found, result.Value.Outcome);
+        Assert.Equal(400m, result.Value.PackageSizeGrams);
+        Assert.Equal(10.6m, result.Value.SaturatedFat);
+        Assert.Equal(56.3m, result.Value.Sugars);
+        Assert.Equal(0.107m, result.Value.Salt);
+        Assert.Equal(0.000005m, result.Value.VitaminD);
+        Assert.Null(result.Value.Fiber);
+    }
+
+    [Fact]
+    public async Task HandleAsync_AlreadyInCatalog_CarriesPackageSizeAndExtendedFields()
+    {
+        var existing = new Product(
+            Guid.NewGuid(),
+            "Nutella",
+            new MacroNutrients(539m, 6.3m, 30.9m, 57.5m),
+            Barcode,
+            packageSizeGrams: 400m,
+            details: new NutritionFacts(saturatedFat: 10.6m, sugars: 56.3m));
+        var repository = new FakeProductRepository(existing);
+        var handler = new LookupBarcodeQueryHandler(repository, new FakeBarcodeProductLookup());
+
+        Result<BarcodeLookupResult> result = await handler.HandleAsync(
+            new LookupBarcodeQuery(Barcode),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(BarcodeLookupOutcome.AlreadyInCatalog, result.Value.Outcome);
+        Assert.Equal(400m, result.Value.PackageSizeGrams);
+        Assert.Equal(10.6m, result.Value.SaturatedFat);
+        Assert.Equal(56.3m, result.Value.Sugars);
+        Assert.Null(result.Value.Fiber);
+    }
+
+    [Fact]
     public async Task HandleAsync_ReturnsNotFound_WithBarcodeEchoed_WhenOffMisses()
     {
         var lookup = new FakeBarcodeProductLookup(result: null);

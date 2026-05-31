@@ -41,4 +41,33 @@ public class CreateProductCommandHandlerTests
         Product added = Assert.Single(repository.Products);
         Assert.Null(added.Barcode);
     }
+
+    [Fact]
+    public async Task HandleAsync_PersistsPackageSizeAndExtendedFields()
+    {
+        var repository = new FakeProductRepository();
+        var handler = new CreateProductCommandHandler(repository);
+        var command = new CreateProductCommand("Nutella", "3017624010701", 539m, 6.3m, 30.9m, 57.5m)
+        {
+            PackageSizeGrams = 400m,
+            SaturatedFat = 10.6m,
+            Sugars = 56.3m,
+            Fiber = 0m,
+            Salt = 0.107m,
+            VitaminD = 0.000005m,
+        };
+
+        Result<Guid> result = await handler.HandleAsync(command, CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Product added = Assert.Single(repository.Products);
+        Assert.Equal(400m, added.PackageSizeGrams);
+        Assert.Equal(10.6m, added.Details.SaturatedFat);
+        Assert.Equal(56.3m, added.Details.Sugars);
+        Assert.Equal(0m, added.Details.Fiber);
+        Assert.Equal(0.107m, added.Details.Salt);
+        Assert.Equal(0.000005m, added.Details.VitaminD);
+        // Fields the command left null stay null on the stored product.
+        Assert.Null(added.Details.Potassium);
+    }
 }

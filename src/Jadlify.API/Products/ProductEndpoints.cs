@@ -55,7 +55,22 @@ public static class ProductEndpoints
                     request.Calories,
                     request.Protein,
                     request.Fat,
-                    request.Carbohydrates),
+                    request.Carbohydrates,
+                    request.PackageSizeGrams,
+                    request.SaturatedFat,
+                    request.MonounsaturatedFat,
+                    request.PolyunsaturatedFat,
+                    request.TransFat,
+                    request.Sugars,
+                    request.Fiber,
+                    request.Salt,
+                    request.Sodium,
+                    request.Potassium,
+                    request.Calcium,
+                    request.Iron,
+                    request.VitaminA,
+                    request.VitaminC,
+                    request.VitaminD),
                 cancellationToken);
 
             if (result.IsFailure)
@@ -64,14 +79,7 @@ public static class ProductEndpoints
             }
 
             Guid id = result.Value;
-            ProductResponse response = new(
-                id,
-                request.Name,
-                NormalizeBarcode(request.Barcode),
-                request.Calories,
-                request.Protein,
-                request.Fat,
-                request.Carbohydrates);
+            var response = ProductResponse.Created(id, request);
 
             return Results.Created($"/api/products/{id}", response);
         });
@@ -90,7 +98,22 @@ public static class ProductEndpoints
                     request.Calories,
                     request.Protein,
                     request.Fat,
-                    request.Carbohydrates),
+                    request.Carbohydrates,
+                    request.PackageSizeGrams,
+                    request.SaturatedFat,
+                    request.MonounsaturatedFat,
+                    request.PolyunsaturatedFat,
+                    request.TransFat,
+                    request.Sugars,
+                    request.Fiber,
+                    request.Salt,
+                    request.Sodium,
+                    request.Potassium,
+                    request.Calcium,
+                    request.Iron,
+                    request.VitaminA,
+                    request.VitaminC,
+                    request.VitaminD),
                 cancellationToken);
 
             return result.IsSuccess ? Results.NoContent() : result.ToProblem();
@@ -124,8 +147,4 @@ public static class ProductEndpoints
 
         return app;
     }
-
-    // Mirror the handler's normalization so the 201 body matches what was persisted.
-    private static string? NormalizeBarcode(string? barcode) =>
-        string.IsNullOrWhiteSpace(barcode) ? null : barcode;
 }

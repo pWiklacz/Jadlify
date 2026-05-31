@@ -61,7 +61,7 @@ internal sealed class TestApiFactory : WebApplicationFactory<Program>
             // Drop every DbContextOptions / provider-configuration descriptor before re-adding,
             // otherwise EF Core applies the leftover Npgsql configuration alongside SQLite and
             // throws "only a single database provider can be registered".
-            List<ServiceDescriptor> dbDescriptors = services
+            var dbDescriptors = services
                 .Where(descriptor =>
                     descriptor.ServiceType.FullName is { } name &&
                     (name.Contains("DbContextOptions", StringComparison.Ordinal) ||

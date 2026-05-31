@@ -516,26 +516,26 @@ Phases 1–4 require no schema or EF migration: the `products` table, owned macr
 
 #### Automated
 
-- [x] 4.1 Lint passes (`npm run lint`)
-- [x] 4.2 Frontend tests pass (`npm test`)
-- [x] 4.3 Production build passes (`npm run build`)
+- [x] 4.1 Lint passes (`npm run lint`) — 0d0a97d
+- [x] 4.2 Frontend tests pass (`npm test`) — 0d0a97d
+- [x] 4.3 Production build passes (`npm run build`) — 0d0a97d
 
 #### Manual
 
-- [x] 4.4 Manual add shows product in list
-- [x] 4.5 Barcode flow: Found / partial / not-found / already-in-catalog all behave per US-02
-- [x] 4.6 Edit and delete (with confirmation) update the list
-- [x] 4.7 Usable at mobile width with visible feedback / progress
+- [x] 4.4 Manual add shows product in list — 0d0a97d
+- [x] 4.5 Barcode flow: Found / partial / not-found / already-in-catalog all behave per US-02 — 0d0a97d
+- [x] 4.6 Edit and delete (with confirmation) update the list — 0d0a97d
+- [x] 4.7 Usable at mobile width with visible feedback / progress — 0d0a97d
 
 ### Phase 5: Extended Nutrition Facts & Package Size
 
 #### Automated
 
-- [ ] 5.1 Solution build passes (`dotnet build`)
-- [ ] 5.2 EF migration `ExtendedNutritionFacts` generated and applies
-- [ ] 5.3 Backend tests pass (Application + Infrastructure + API)
-- [ ] 5.4 Format checks pass for touched backend projects
-- [ ] 5.5 Frontend lint + tests + build pass
+- [x] 5.1 Solution build passes (`dotnet build`)
+- [x] 5.2 EF migration `ExtendedNutritionFacts` generated and applies
+- [x] 5.3 Backend tests pass (Application + Infrastructure + API)
+- [x] 5.4 Format checks pass for touched backend projects
+- [x] 5.5 Frontend lint + tests + build pass
 
 #### Manual
 
