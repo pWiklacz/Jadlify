@@ -531,15 +531,15 @@ Phases 1–4 require no schema or EF migration: the `products` table, owned macr
 
 #### Automated
 
-- [x] 5.1 Solution build passes (`dotnet build`)
-- [x] 5.2 EF migration `ExtendedNutritionFacts` generated and applies
-- [x] 5.3 Backend tests pass (Application + Infrastructure + API)
-- [x] 5.4 Format checks pass for touched backend projects
-- [x] 5.5 Frontend lint + tests + build pass
+- [x] 5.1 Solution build passes (`dotnet build`) — cb8f5d0
+- [x] 5.2 EF migration `ExtendedNutritionFacts` generated and applies — cb8f5d0
+- [x] 5.3 Backend tests pass (Application + Infrastructure + API) — cb8f5d0
+- [x] 5.4 Format checks pass for touched backend projects — cb8f5d0
+- [x] 5.5 Frontend lint + tests + build pass — cb8f5d0
 
 #### Manual
 
-- [ ] 5.6 OFF smoke maps extended fields + package size
-- [ ] 5.7 Barcode pre-fills extended fields (missing stay blank)
-- [ ] 5.8 Per-package macro line shows when package size is set
-- [ ] 5.9 Manual extended-field entry persists and re-displays
+- [x] 5.6 OFF smoke maps extended fields + package size — cb8f5d0
+- [x] 5.7 Barcode pre-fills extended fields (missing stay blank) — cb8f5d0
+- [x] 5.8 Per-package macro line shows when package size is set — cb8f5d0
+- [x] 5.9 Manual extended-field entry persists and re-displays — cb8f5d0

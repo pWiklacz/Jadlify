@@ -1,7 +1,7 @@
 ---
 change_id: product-catalog-with-barcode-fallback
 title: Product catalog with barcode fallback
-status: implementing
+status: implemented
 created: 2026-05-31
 updated: 2026-05-31
 archived_at: null
