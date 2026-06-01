@@ -16,41 +16,31 @@ public static class MacroCalculator
         return product.Per100Grams.Scale(amount.Value / NutrientBasisGrams);
     }
 
-    public static MacroNutrients RecipeTotal(Recipe recipe, IReadOnlyDictionary<Guid, Product> productsById)
+    public static MacroNutrients RecipeTotal(Recipe recipe)
     {
         ArgumentNullException.ThrowIfNull(recipe);
-        ArgumentNullException.ThrowIfNull(productsById);
 
         MacroNutrients total = MacroNutrients.Zero;
 
         foreach (RecipeIngredient ingredient in recipe.Ingredients)
         {
-            if (!productsById.TryGetValue(ingredient.ProductId, out Product? product))
-            {
-                throw new InvalidOperationException(
-                    $"Product {ingredient.ProductId} required by recipe {recipe.Id} was not provided.");
-            }
-
-            total += ForProductAmount(product, ingredient.WholeRecipeAmount);
+            total += ingredient.Per100Grams.Scale(ingredient.WholeRecipeAmount.Value / NutrientBasisGrams);
         }
 
         return total;
     }
 
-    public static MacroNutrients RecipePerServing(Recipe recipe, IReadOnlyDictionary<Guid, Product> productsById)
+    public static MacroNutrients RecipePerServing(Recipe recipe)
     {
         ArgumentNullException.ThrowIfNull(recipe);
 
-        return RecipeTotal(recipe, productsById).Scale(1m / recipe.Portions);
+        return RecipeTotal(recipe).Scale(1m / recipe.Portions);
     }
 
-    public static MacroNutrients ForMealEntry(
-        MealPlanEntry entry,
-        Recipe recipe,
-        IReadOnlyDictionary<Guid, Product> productsById)
+    public static MacroNutrients ForMealEntry(MealPlanEntry entry, Recipe recipe)
     {
         ArgumentNullException.ThrowIfNull(entry);
 
-        return RecipePerServing(recipe, productsById).Scale(entry.Portions);
+        return RecipePerServing(recipe).Scale(entry.Portions);
     }
 }

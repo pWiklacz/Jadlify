@@ -34,4 +34,33 @@ public sealed class Recipe
 
         _ingredients.Add(ingredient);
     }
+
+    public void ReplaceDetails(string name, int portions, IEnumerable<RecipeIngredient> ingredients)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(portions);
+        ArgumentNullException.ThrowIfNull(ingredients);
+
+        var replacement = ingredients.ToList();
+        if (replacement.Count == 0)
+        {
+            throw new InvalidOperationException($"Recipe {Id} must have at least one ingredient.");
+        }
+
+        Guid? duplicateProductId = replacement
+            .GroupBy(ingredient => ingredient.ProductId)
+            .Where(group => group.Count() > 1)
+            .Select(group => (Guid?)group.Key)
+            .FirstOrDefault();
+        if (duplicateProductId is { } productId)
+        {
+            throw new InvalidOperationException(
+                $"Product {productId} is already an ingredient of recipe {Id}.");
+        }
+
+        Name = name;
+        Portions = portions;
+        _ingredients.Clear();
+        _ingredients.AddRange(replacement);
+    }
 }
