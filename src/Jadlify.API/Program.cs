@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using Jadlify.API.Authentication;
 using Jadlify.API.Products;
+using Jadlify.API.Recipes;
 using Jadlify.API.Session;
 using Jadlify.Application;
 using Jadlify.Application.Identity;
@@ -112,6 +113,10 @@ app.MapGet("/api/me", (ICurrentUser currentUser) =>
 // Product catalog (S-02): list/get/create/update/delete + barcode lookup. All routes
 // inherit the global fallback auth policy (authenticated + 'sub'), so no AllowAnonymous.
 app.MapProductEndpoints();
+
+// Recipe builder (S-03): list/get/create/update/delete. All routes inherit the global
+// fallback auth policy and keep recipe data behind the API boundary.
+app.MapRecipeEndpoints();
 
 // Client-side routing: serve index.html for non-API deep links. Must be
 // AllowAnonymous, otherwise the global fallback policy 401s the SPA entrypoint

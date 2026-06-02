@@ -33,8 +33,22 @@ internal sealed class FakeProductRepository : IProductRepository
     public Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         Task.FromResult(_products.SingleOrDefault(p => p.Id == id));
 
-    public Task<IReadOnlyList<Product>> ListAsync(CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<Product>>([.. _products]);
+    public Task<IReadOnlyList<Product>> ListAsync(
+        string? search = null,
+        int skip = 0,
+        int take = ProductListBounds.DefaultTake,
+        CancellationToken cancellationToken = default)
+    {
+        IEnumerable<Product> query = _products;
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(product =>
+                product.Name.Contains(search, StringComparison.OrdinalIgnoreCase)
+                || (product.Barcode?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false));
+        }
+
+        return Task.FromResult<IReadOnlyList<Product>>([.. query.Skip(skip).Take(take)]);
+    }
 
     public Task<IReadOnlyList<Product>> ListByIdsAsync(
         IReadOnlyCollection<Guid> ids,

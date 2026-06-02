@@ -5,8 +5,8 @@ namespace Jadlify.Application.Recipes;
 
 /// <summary>
 /// Owner-scoped persistence for user recipes. Reads include recipe ingredients so
-/// deterministic macro calculations can run against an owner-scoped graph; product
-/// nutrient values are loaded through <see cref="Products.IProductRepository"/>.
+/// deterministic macro calculations can run against the ingredient snapshots in
+/// an owner-scoped graph.
 /// </summary>
 public interface IRecipeRepository
 {
@@ -18,8 +18,8 @@ public interface IRecipeRepository
     Task<IReadOnlyList<Recipe>> ListAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Persists recipe metadata (name, portions) for the current user. Ingredient
-    /// composition reconciliation is out of scope for the F-02 foundation.
+    /// Persists the complete recipe aggregate for the current user, including
+    /// ingredient composition and product macro snapshots.
     /// </summary>
     Task<Result> UpdateAsync(Recipe recipe, CancellationToken cancellationToken = default);
 

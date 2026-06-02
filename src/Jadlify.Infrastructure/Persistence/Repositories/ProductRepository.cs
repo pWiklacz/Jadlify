@@ -41,12 +41,30 @@ internal sealed class ProductRepository : IProductRepository
             cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Product>> ListAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<Product>> ListAsync(
+        string? search = null,
+        int skip = 0,
+        int take = ProductListBounds.DefaultTake,
+        CancellationToken cancellationToken = default)
     {
         string owner = _currentUser.UserId.Value;
 
-        return await _context.Products
-            .Where(product => EF.Property<string>(product, PersistenceConstants.UserIdProperty) == owner)
+        IQueryable<Product> query = _context.Products
+            .Where(product => EF.Property<string>(product, PersistenceConstants.UserIdProperty) == owner);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            string normalizedSearch = search.Trim().ToLowerInvariant();
+            query = query.Where(product =>
+                product.Name.ToLower().Contains(normalizedSearch)
+                || product.Barcode != null && product.Barcode.ToLower().Contains(normalizedSearch));
+        }
+
+        return await query
+            .OrderBy(product => product.Name)
+            .ThenBy(product => product.Id)
+            .Skip(skip)
+            .Take(take)
             .ToListAsync(cancellationToken);
     }
 

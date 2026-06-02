@@ -109,6 +109,43 @@ public class JadlifyModelTests
     }
 
     [Fact]
+    public void RecipeIngredientProductName_IsRequired()
+    {
+        using SqliteTestDatabase database = new();
+        using JadlifyDbContext context = database.CreateContext();
+
+        IEntityType ingredient = SingleEntityType<RecipeIngredient>(context);
+        IProperty productName = ingredient.FindProperty(nameof(RecipeIngredient.ProductName))!;
+
+        Assert.False(productName.IsNullable);
+    }
+
+    [Fact]
+    public void RecipeIngredientSnapshotMacros_UseTwoDecimalScale()
+    {
+        using SqliteTestDatabase database = new();
+        using JadlifyDbContext context = database.CreateContext();
+
+        IEntityType ingredient = SingleEntityType<RecipeIngredient>(context);
+        IEntityType macros = ingredient.FindNavigation(nameof(RecipeIngredient.Per100Grams))!.TargetEntityType;
+
+        string[] components =
+        [
+            nameof(MacroNutrients.Calories),
+            nameof(MacroNutrients.Protein),
+            nameof(MacroNutrients.Fat),
+            nameof(MacroNutrients.Carbohydrates),
+        ];
+
+        foreach (string component in components)
+        {
+            IProperty mapped = macros.FindProperty(component)!;
+            Assert.Equal(10, mapped.GetPrecision()!.Value);
+            Assert.Equal(2, mapped.GetScale()!.Value);
+        }
+    }
+
+    [Fact]
     public void RecipeIngredient_HasNoProductForeignKey_ButCascadesWithRecipe()
     {
         using SqliteTestDatabase database = new();

@@ -330,6 +330,11 @@ namespace Jadlify.Infrastructure.Persistence.Migrations
                                 .HasColumnType("uuid")
                                 .HasColumnName("product_id");
 
+                            b1.Property<string>("ProductName")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("product_name");
+
                             b1.HasKey("RecipeId", "ProductId");
 
                             b1.HasIndex("ProductId");
@@ -359,6 +364,45 @@ namespace Jadlify.Infrastructure.Persistence.Migrations
                                     b2.WithOwner()
                                         .HasForeignKey("RecipeIngredientRecipeId", "RecipeIngredientProductId");
                                 });
+
+                            b1.OwnsOne("Jadlify.Domain.Nutrition.MacroNutrients", "Per100Grams", b2 =>
+                                {
+                                    b2.Property<Guid>("RecipeIngredientRecipeId")
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<Guid>("RecipeIngredientProductId")
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<decimal>("Calories")
+                                        .HasPrecision(10, 2)
+                                        .HasColumnType("numeric(10,2)")
+                                        .HasColumnName("calories_per_100g");
+
+                                    b2.Property<decimal>("Carbohydrates")
+                                        .HasPrecision(10, 2)
+                                        .HasColumnType("numeric(10,2)")
+                                        .HasColumnName("carbohydrates_per_100g");
+
+                                    b2.Property<decimal>("Fat")
+                                        .HasPrecision(10, 2)
+                                        .HasColumnType("numeric(10,2)")
+                                        .HasColumnName("fat_per_100g");
+
+                                    b2.Property<decimal>("Protein")
+                                        .HasPrecision(10, 2)
+                                        .HasColumnType("numeric(10,2)")
+                                        .HasColumnName("protein_per_100g");
+
+                                    b2.HasKey("RecipeIngredientRecipeId", "RecipeIngredientProductId");
+
+                                    b2.ToTable("recipe_ingredients");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("RecipeIngredientRecipeId", "RecipeIngredientProductId");
+                                });
+
+                            b1.Navigation("Per100Grams")
+                                .IsRequired();
 
                             b1.Navigation("WholeRecipeAmount")
                                 .IsRequired();

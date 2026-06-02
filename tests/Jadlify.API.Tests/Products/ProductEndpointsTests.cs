@@ -80,6 +80,24 @@ public class ProductEndpointsTests
     }
 
     [Fact]
+    public async Task List_AcceptsSearchSkipAndTake()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+
+        await CreateProductAsync(client, new CreateProductRequest("Almond milk", "11111111", 40m, 1m, 2.5m, 3m));
+        await CreateProductAsync(client, new CreateProductRequest("Cow milk", "22222222", 64m, 3.3m, 3.6m, 4.8m));
+        await CreateProductAsync(client, new CreateProductRequest("Oat flakes", "33333333", 370m, 13m, 7m, 60m));
+
+        ProductResponse[]? firstMilkPage =
+            await client.GetFromJsonAsync<ProductResponse[]>("/api/products?search=milk&skip=1&take=1");
+
+        Assert.NotNull(firstMilkPage);
+        ProductResponse product = Assert.Single(firstMilkPage!);
+        Assert.Equal("Cow milk", product.Name);
+    }
+
+    [Fact]
     public async Task UserB_CannotAccessUserAProduct_Returns404()
     {
         using TestApiFactory factory = new();

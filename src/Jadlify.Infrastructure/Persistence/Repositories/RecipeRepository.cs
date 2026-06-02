@@ -38,10 +38,12 @@ internal sealed class RecipeRepository : IRecipeRepository
     {
         string owner = _currentUser.UserId.Value;
 
-        return await _context.Recipes.SingleOrDefaultAsync(
-            recipe => recipe.Id == id
-                && EF.Property<string>(recipe, PersistenceConstants.UserIdProperty) == owner,
-            cancellationToken);
+        return await _context.Recipes
+            .Include(recipe => recipe.Ingredients)
+            .SingleOrDefaultAsync(
+                recipe => recipe.Id == id
+                    && EF.Property<string>(recipe, PersistenceConstants.UserIdProperty) == owner,
+                cancellationToken);
     }
 
     public async Task<IReadOnlyList<Recipe>> ListAsync(CancellationToken cancellationToken = default)
@@ -49,6 +51,7 @@ internal sealed class RecipeRepository : IRecipeRepository
         string owner = _currentUser.UserId.Value;
 
         return await _context.Recipes
+            .Include(recipe => recipe.Ingredients)
             .Where(recipe => EF.Property<string>(recipe, PersistenceConstants.UserIdProperty) == owner)
             .ToListAsync(cancellationToken);
     }
@@ -59,16 +62,18 @@ internal sealed class RecipeRepository : IRecipeRepository
 
         string owner = _currentUser.UserId.Value;
 
-        Recipe? existing = await _context.Recipes.SingleOrDefaultAsync(
-            candidate => candidate.Id == recipe.Id
-                && EF.Property<string>(candidate, PersistenceConstants.UserIdProperty) == owner,
-            cancellationToken);
+        Recipe? existing = await _context.Recipes
+            .Include(candidate => candidate.Ingredients)
+            .SingleOrDefaultAsync(
+                candidate => candidate.Id == recipe.Id
+                    && EF.Property<string>(candidate, PersistenceConstants.UserIdProperty) == owner,
+                cancellationToken);
         if (existing is null)
         {
             return Result.Fail(NotFound);
         }
 
-        _context.Entry(existing).CurrentValues.SetValues(recipe);
+        existing.ReplaceDetails(recipe.Name, recipe.Portions, recipe.Ingredients);
 
         await _context.SaveChangesAsync(cancellationToken);
         return Result.Ok();

@@ -14,6 +14,17 @@ public sealed class Recipe
         Portions = portions;
     }
 
+    public Recipe(Guid id, string name, int portions, IEnumerable<RecipeIngredient> ingredients)
+        : this(id, name, portions)
+    {
+        ArgumentNullException.ThrowIfNull(ingredients);
+
+        foreach (RecipeIngredient ingredient in ingredients)
+        {
+            AddIngredient(ingredient);
+        }
+    }
+
     public Guid Id { get; }
 
     public string Name { get; private set; }
@@ -33,5 +44,52 @@ public sealed class Recipe
         }
 
         _ingredients.Add(ingredient);
+    }
+
+    public void ReplaceDetails(string name, int portions, IEnumerable<RecipeIngredient> ingredients)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(portions);
+        ArgumentNullException.ThrowIfNull(ingredients);
+
+        var replacement = ingredients.ToList();
+        if (replacement.Count == 0)
+        {
+            throw new InvalidOperationException($"Recipe {Id} must have at least one ingredient.");
+        }
+
+        Guid? duplicateProductId = replacement
+            .GroupBy(ingredient => ingredient.ProductId)
+            .Where(group => group.Count() > 1)
+            .Select(group => (Guid?)group.Key)
+            .FirstOrDefault();
+        if (duplicateProductId is { } productId)
+        {
+            throw new InvalidOperationException(
+                $"Product {productId} is already an ingredient of recipe {Id}.");
+        }
+
+        Name = name;
+        Portions = portions;
+
+        var replacementByProductId = replacement.ToDictionary(ingredient => ingredient.ProductId);
+        _ingredients.RemoveAll(existing => !replacementByProductId.ContainsKey(existing.ProductId));
+
+        foreach (RecipeIngredient ingredient in replacement)
+        {
+            RecipeIngredient? existing = _ingredients
+                .SingleOrDefault(candidate => candidate.ProductId == ingredient.ProductId);
+
+            if (existing is null)
+            {
+                _ingredients.Add(ingredient);
+                continue;
+            }
+
+            existing.ReplaceSnapshot(
+                ingredient.ProductName,
+                ingredient.Per100Grams,
+                ingredient.WholeRecipeAmount);
+        }
     }
 }

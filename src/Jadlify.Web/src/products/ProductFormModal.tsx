@@ -15,6 +15,8 @@ interface ProductFormModalProps {
   /** The product being edited; required in edit mode, ignored in create mode. */
   product?: Product
   onClose: () => void
+  /** Optional create-mode callback used by parent flows that need the new product immediately. */
+  onCreated?: (product: Product) => void
   /** Invoked when a barcode lookup reveals the code is already in the catalog. */
   onEditExisting: (productId: string) => void
 }
@@ -125,7 +127,13 @@ function parseOptionalNum(value: string): number | null {
  * macros for manual entry; AlreadyInCatalog offers to edit the existing product.
  * The lookup never blocks manual completion (FR-006).
  */
-export function ProductFormModal({ mode, product, onClose, onEditExisting }: ProductFormModalProps) {
+export function ProductFormModal({
+  mode,
+  product,
+  onClose,
+  onCreated,
+  onEditExisting,
+}: ProductFormModalProps) {
   const [form, setForm] = useState<FormState>(() => toFormState(product))
   const [notice, setNotice] = useState<LookupNotice>({ kind: 'none' })
   // Keep the core form compact; auto-expand when editing a product that already
@@ -255,7 +263,12 @@ export function ProductFormModal({ mode, product, onClose, onEditExisting }: Pro
     if (mode === 'edit' && product) {
       updateProduct.mutate({ id: product.id, body }, { onSuccess: onClose })
     } else {
-      createProduct.mutate(body, { onSuccess: onClose })
+      createProduct.mutate(body, {
+        onSuccess: (createdProduct) => {
+          onCreated?.(createdProduct)
+          onClose()
+        },
+      })
     }
   }
 

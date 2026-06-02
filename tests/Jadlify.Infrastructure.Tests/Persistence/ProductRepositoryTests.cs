@@ -202,7 +202,11 @@ public class ProductRepositoryTests
             await products.AddAsync(NewProduct(productId, "Oats"));
 
             Recipe recipe = new(Guid.NewGuid(), "Porridge", 2);
-            recipe.AddIngredient(new RecipeIngredient(productId, new GramAmount(150m)));
+            recipe.AddIngredient(new RecipeIngredient(
+                productId,
+                "Oats",
+                new MacroNutrients(100m, 10m, 5m, 20m),
+                new GramAmount(150m)));
             RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
             await recipes.AddAsync(recipe);
         }
