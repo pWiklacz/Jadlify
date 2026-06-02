@@ -3,7 +3,7 @@ change_id: recipe-builder-with-macro-calculation
 title: Recipe builder with macro calculation
 status: implementing
 created: 2026-05-31
-updated: 2026-06-01
+updated: 2026-06-02
 archived_at: null
 ---
 

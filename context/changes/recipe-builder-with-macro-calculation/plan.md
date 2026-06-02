@@ -465,18 +465,18 @@ This change requires an EF migration for recipe ingredient snapshot columns. Exi
 
 #### Automated
 
-- [ ] 3.1 Recipe frontend component tests pass: `cd src/Jadlify.Web; npm test -- src/recipes`
-- [ ] 3.2 Existing product frontend tests still pass: `cd src/Jadlify.Web; npm test -- src/products`
-- [ ] 3.3 Frontend lint passes: `cd src/Jadlify.Web; npm run lint`
-- [ ] 3.4 Frontend build passes: `cd src/Jadlify.Web; npm run build`
+- [x] 3.1 Recipe frontend component tests pass: `cd src/Jadlify.Web; npm test -- src/recipes`
+- [x] 3.2 Existing product frontend tests still pass: `cd src/Jadlify.Web; npm test -- src/products`
+- [x] 3.3 Frontend lint passes: `cd src/Jadlify.Web; npm run lint`
+- [x] 3.4 Frontend build passes: `cd src/Jadlify.Web; npm run build`
 
 #### Manual
 
-- [ ] 3.5 In the browser, create a recipe with two products and confirm live total and per-serving macros match manual 100g proportional math.
-- [ ] 3.6 Add a missing product from inside the recipe builder, return to the recipe draft, select it, and save without losing prior ingredient rows.
-- [ ] 3.7 Edit a recipe by changing portions and ingredient grams; confirm the list reflects updated totals.
-- [ ] 3.8 Delete an unused recipe and confirm it disappears from the list.
-- [ ] 3.9 Verify the layout is usable on desktop and a narrow mobile viewport without text overlap.
+- [x] 3.5 In the browser, create a recipe with two products and confirm live total and per-serving macros match manual 100g proportional math.
+- [x] 3.6 Add a missing product from inside the recipe builder, return to the recipe draft, select it, and save without losing prior ingredient rows.
+- [x] 3.7 Edit a recipe by changing portions and ingredient grams; confirm the list reflects updated totals.
+- [x] 3.8 Delete an unused recipe and confirm it disappears from the list.
+- [x] 3.9 Verify the layout is usable on desktop and a narrow mobile viewport without text overlap.
 
 ### Phase 4: Vertical Verification And Handoff
 
