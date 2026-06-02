@@ -28,8 +28,7 @@ public sealed class CreateRecipeCommandHandler : ICommandHandler<CreateRecipeCom
             return Result.Fail<Guid>(ingredientResult.Error);
         }
 
-        var recipe = new Recipe(Guid.NewGuid(), command.Name, command.Portions);
-        recipe.ReplaceDetails(command.Name, command.Portions, ingredientResult.Value);
+        var recipe = new Recipe(Guid.NewGuid(), command.Name, command.Portions, ingredientResult.Value);
 
         await _recipes.AddAsync(recipe, cancellationToken);
 

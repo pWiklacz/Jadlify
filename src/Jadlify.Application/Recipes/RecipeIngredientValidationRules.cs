@@ -9,6 +9,8 @@ internal static class RecipeIngredientValidationRules
         this IRuleBuilder<T, IReadOnlyList<RecipeIngredientInput>> ruleBuilder) =>
         ruleBuilder
             .NotEmpty()
+            .Must(ingredients => ingredients is null || ingredients.Count <= RecipeValidationBounds.MaxIngredients)
+            .WithMessage($"Recipe must not contain more than {RecipeValidationBounds.MaxIngredients} ingredients.")
             .Must(HaveUniqueProductIds)
             .WithMessage("Recipe ingredients must not contain duplicate products.");
 

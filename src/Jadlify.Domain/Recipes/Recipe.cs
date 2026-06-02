@@ -14,6 +14,17 @@ public sealed class Recipe
         Portions = portions;
     }
 
+    public Recipe(Guid id, string name, int portions, IEnumerable<RecipeIngredient> ingredients)
+        : this(id, name, portions)
+    {
+        ArgumentNullException.ThrowIfNull(ingredients);
+
+        foreach (RecipeIngredient ingredient in ingredients)
+        {
+            AddIngredient(ingredient);
+        }
+    }
+
     public Guid Id { get; }
 
     public string Name { get; private set; }

@@ -28,8 +28,7 @@ public sealed class UpdateRecipeCommandHandler : ICommandHandler<UpdateRecipeCom
             return Result.Fail(ingredientResult.Error);
         }
 
-        var recipe = new Recipe(command.Id, command.Name, command.Portions);
-        recipe.ReplaceDetails(command.Name, command.Portions, ingredientResult.Value);
+        var recipe = new Recipe(command.Id, command.Name, command.Portions, ingredientResult.Value);
 
         return await _recipes.UpdateAsync(recipe, cancellationToken);
     }
