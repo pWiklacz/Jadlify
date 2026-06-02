@@ -451,15 +451,15 @@ This change requires an EF migration for recipe ingredient snapshot columns. Exi
 
 #### Automated
 
-- [ ] 2.1 Infrastructure recipe repository and model tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.Infrastructure.Tests -FullyQualifiedNameContains Recipe`
-- [ ] 2.2 API recipe endpoint tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.API.Tests -FullyQualifiedNameContains Recipe`
-- [ ] 2.3 Product endpoint regression tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.API.Tests -FullyQualifiedNameContains Product`
-- [ ] 2.4 Backend verification for touched projects passes: `pwsh ./.scripts/verify-min.ps1 -BuildProject src/Jadlify.API/Jadlify.API.csproj -TestProject tests/Jadlify.API.Tests/Jadlify.API.Tests.csproj`
+- [x] 2.1 Infrastructure recipe repository and model tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.Infrastructure.Tests -FullyQualifiedNameContains Recipe`
+- [x] 2.2 API recipe endpoint tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.API.Tests -FullyQualifiedNameContains Recipe`
+- [x] 2.3 Product endpoint regression tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.API.Tests -FullyQualifiedNameContains Product`
+- [x] 2.4 Backend verification for touched projects passes: `pwsh ./.scripts/verify-min.ps1 -BuildProject src/Jadlify.API/Jadlify.API.csproj -TestProject tests/Jadlify.API.Tests/Jadlify.API.Tests.csproj`
 
 #### Manual
 
-- [ ] 2.5 Inspect generated migration for expected `recipe_ingredients` snapshot columns and no unrelated schema churn.
-- [ ] 2.6 Confirm unauthenticated requests to `/api/recipes` are still blocked by the global auth policy.
+- [x] 2.5 Inspect generated migration for expected `recipe_ingredients` snapshot columns and no unrelated schema churn.
+- [x] 2.6 Confirm unauthenticated requests to `/api/recipes` are still blocked by the global auth policy.
 
 ### Phase 3: React Recipe Builder UI
 

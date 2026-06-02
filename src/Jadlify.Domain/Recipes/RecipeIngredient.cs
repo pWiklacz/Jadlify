@@ -38,4 +38,15 @@ public sealed class RecipeIngredient
     /// Gram amount of this product used across the whole recipe, not per serving.
     /// </summary>
     public GramAmount WholeRecipeAmount { get; private set; }
+
+    public void ReplaceSnapshot(string productName, MacroNutrients per100Grams, GramAmount wholeRecipeAmount)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(productName);
+        ArgumentNullException.ThrowIfNull(per100Grams);
+        ArgumentNullException.ThrowIfNull(wholeRecipeAmount);
+
+        ProductName = productName;
+        Per100Grams = per100Grams;
+        WholeRecipeAmount = wholeRecipeAmount;
+    }
 }

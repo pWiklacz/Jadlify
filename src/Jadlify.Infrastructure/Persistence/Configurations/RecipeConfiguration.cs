@@ -27,7 +27,17 @@ internal sealed class RecipeConfiguration : IEntityTypeConfiguration<Recipe>
             ingredient.WithOwner().HasForeignKey("RecipeId");
             ingredient.Property<Guid>("RecipeId").HasColumnName("recipe_id");
             ingredient.Property(i => i.ProductId).HasColumnName("product_id");
+            ingredient.Property(i => i.ProductName).HasColumnName("product_name").IsRequired();
             ingredient.HasKey("RecipeId", nameof(RecipeIngredient.ProductId));
+
+            ingredient.OwnsOne(i => i.Per100Grams, macro =>
+            {
+                macro.Property(m => m.Calories).HasColumnName("calories_per_100g").HasPrecision(10, 2);
+                macro.Property(m => m.Protein).HasColumnName("protein_per_100g").HasPrecision(10, 2);
+                macro.Property(m => m.Fat).HasColumnName("fat_per_100g").HasPrecision(10, 2);
+                macro.Property(m => m.Carbohydrates).HasColumnName("carbohydrates_per_100g").HasPrecision(10, 2);
+            });
+            ingredient.Navigation(i => i.Per100Grams).IsRequired();
 
             ingredient.OwnsOne(i => i.WholeRecipeAmount, grams =>
             {

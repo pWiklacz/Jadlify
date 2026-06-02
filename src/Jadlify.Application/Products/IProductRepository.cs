@@ -14,7 +14,11 @@ public interface IProductRepository
 
     Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<Product>> ListAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Product>> ListAsync(
+        string? search = null,
+        int skip = 0,
+        int take = ProductListBounds.DefaultTake,
+        CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<Product>> ListByIdsAsync(
         IReadOnlyCollection<Guid> ids,
@@ -25,8 +29,8 @@ public interface IProductRepository
     Task<Result> UpdateAsync(Product product, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Deletes the product when it is not referenced by any recipe ingredient.
-    /// Returns a failure result instead of cascading dependent user data.
+    /// Deletes the owned product. Recipe ingredients keep historical product snapshots,
+    /// so product deletion is not blocked by recipe references.
     /// </summary>
     Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

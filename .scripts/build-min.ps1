@@ -260,6 +260,9 @@ $argsList.Add($Configuration)
 $argsList.Add("--verbosity")
 $argsList.Add("quiet")
 $argsList.Add("-clp:ErrorsOnly;NoSummary")
+$argsList.Add("--disable-build-servers")
+$argsList.Add("/m:1")
+$argsList.Add("/nr:false")
 
 if (-not [string]::IsNullOrWhiteSpace($Framework)) {
     $argsList.Add("--framework")

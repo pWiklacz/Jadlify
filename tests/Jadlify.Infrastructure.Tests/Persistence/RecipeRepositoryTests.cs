@@ -46,6 +46,8 @@ public class RecipeRepositoryTests
         Assert.NotNull(loaded);
         Assert.Single(loaded.Ingredients);
         Assert.Equal(productId, loaded.Ingredients[0].ProductId);
+        Assert.Equal("Oats", loaded.Ingredients[0].ProductName);
+        Assert.Equal(100m, loaded.Ingredients[0].Per100Grams.Calories);
         Assert.Equal(150m, loaded.Ingredients[0].WholeRecipeAmount.Value);
     }
 
@@ -95,6 +97,120 @@ public class RecipeRepositoryTests
 
         Assert.Equal(2, recipes.Count);
         Assert.All(recipes, recipe => Assert.Contains(recipe.Name, new[] { "Porridge", "Pancakes" }));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ReplacesMetadataAndIngredientComposition()
+    {
+        using SqliteTestDatabase database = new();
+        var recipeId = Guid.NewGuid();
+        var oatsId = Guid.NewGuid();
+        var milkId = Guid.NewGuid();
+        var honeyId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            Recipe recipe = new(recipeId, "Porridge", 2);
+            recipe.AddIngredient(new RecipeIngredient(
+                oatsId,
+                "Oats",
+                new MacroNutrients(100m, 10m, 5m, 20m),
+                new GramAmount(150m)));
+            recipe.AddIngredient(new RecipeIngredient(
+                milkId,
+                "Milk",
+                new MacroNutrients(64m, 3.3m, 3.6m, 4.8m),
+                new GramAmount(200m)));
+
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            await recipes.AddAsync(recipe);
+        }
+
+        Result result;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            Recipe replacement = new(recipeId, "Sweet porridge", 3);
+            replacement.ReplaceDetails(
+                "Sweet porridge",
+                3,
+                [
+                    new RecipeIngredient(
+                        oatsId,
+                        "Oat flakes",
+                        new MacroNutrients(110m, 11m, 6m, 21m),
+                        new GramAmount(175m)),
+                    new RecipeIngredient(
+                        honeyId,
+                        "Honey",
+                        new MacroNutrients(304m, 0m, 0m, 82m),
+                        new GramAmount(25m)),
+                ]);
+
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            result = await recipes.UpdateAsync(replacement);
+        }
+
+        Recipe? loaded;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            loaded = await recipes.GetByIdAsync(recipeId);
+        }
+
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(loaded);
+        Assert.Equal("Sweet porridge", loaded!.Name);
+        Assert.Equal(3, loaded.Portions);
+        Assert.Equal(2, loaded.Ingredients.Count);
+        Assert.DoesNotContain(loaded.Ingredients, ingredient => ingredient.ProductId == milkId);
+
+        RecipeIngredient oats = loaded.Ingredients.Single(ingredient => ingredient.ProductId == oatsId);
+        Assert.Equal("Oat flakes", oats.ProductName);
+        Assert.Equal(110m, oats.Per100Grams.Calories);
+        Assert.Equal(175m, oats.WholeRecipeAmount.Value);
+
+        RecipeIngredient honey = loaded.Ingredients.Single(ingredient => ingredient.ProductId == honeyId);
+        Assert.Equal("Honey", honey.ProductName);
+        Assert.Equal(25m, honey.WholeRecipeAmount.Value);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_DoesNotMutateAnotherUsersRecipe()
+    {
+        using SqliteTestDatabase database = new();
+        var recipeId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            await recipes.AddAsync(new Recipe(recipeId, "Porridge", 2));
+        }
+
+        Result result;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            Recipe replacement = new(recipeId, "Hijacked", 1);
+            replacement.AddIngredient(new RecipeIngredient(
+                Guid.NewGuid(),
+                "Honey",
+                new MacroNutrients(304m, 0m, 0m, 82m),
+                new GramAmount(25m)));
+
+            RecipeRepository recipes = new(context, new TestCurrentUser(OtherId));
+            result = await recipes.UpdateAsync(replacement);
+        }
+
+        Recipe? loaded;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            loaded = await recipes.GetByIdAsync(recipeId);
+        }
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(ErrorType.NotFound, result.Error.Type);
+        Assert.NotNull(loaded);
+        Assert.Equal("Porridge", loaded!.Name);
     }
 
     [Fact]

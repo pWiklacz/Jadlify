@@ -17,7 +17,15 @@ public sealed class ListProductsQueryHandler : IQueryHandler<ListProductsQuery, 
         ListProductsQuery query,
         CancellationToken cancellationToken)
     {
-        IReadOnlyList<Product> products = await _products.ListAsync(cancellationToken);
+        int skip = Math.Max(0, query.Skip ?? 0);
+        int requestedTake = query.Take ?? ProductListBounds.DefaultTake;
+        int take = Math.Clamp(requestedTake, 1, ProductListBounds.MaxTake);
+
+        IReadOnlyList<Product> products = await _products.ListAsync(
+            query.Search,
+            skip,
+            take,
+            cancellationToken);
         IReadOnlyList<ProductDto> dtos = products.Select(ProductDto.FromDomain).ToList();
 
         return Result.Ok(dtos);

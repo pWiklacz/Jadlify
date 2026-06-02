@@ -23,10 +23,15 @@ public static class ProductEndpoints
     {
         RouteGroupBuilder products = app.MapGroup("/api/products");
 
-        products.MapGet("/", async (IMediator mediator, CancellationToken cancellationToken) =>
+        products.MapGet("/", async (
+            string? search,
+            int? skip,
+            int? take,
+            IMediator mediator,
+            CancellationToken cancellationToken) =>
         {
             Result<IReadOnlyList<ProductDto>> result =
-                await mediator.QueryAsync(new ListProductsQuery(), cancellationToken);
+                await mediator.QueryAsync(new ListProductsQuery(search, skip, take), cancellationToken);
 
             return result.IsSuccess
                 ? Results.Ok(result.Value.Select(ProductResponse.FromDto).ToArray())

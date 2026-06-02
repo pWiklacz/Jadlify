@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Jadlify.API.Tests.Authentication;
@@ -12,7 +15,7 @@ public class AnonymousSurfaceTests
     [Fact]
     public async Task Health_ShouldBeReachableAnonymously()
     {
-        using WebApplicationFactory<Program> factory = new();
+        using WebApplicationFactory<Program> factory = CreateFactory();
         using HttpClient client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             BaseAddress = new Uri("https://localhost")
@@ -26,7 +29,7 @@ public class AnonymousSurfaceTests
     [Fact]
     public void RuntimeHttpEndpoints_ShouldNotAllowAnonymousAccessExceptHealth()
     {
-        using WebApplicationFactory<Program> factory = new();
+        using WebApplicationFactory<Program> factory = CreateFactory();
         _ = factory.CreateClient();
 
         RouteEndpoint[] endpoints = factory.Services
@@ -50,7 +53,7 @@ public class AnonymousSurfaceTests
     [Fact]
     public void FallbackAuthorizationPolicy_ShouldRequireAuthenticatedSubjectClaim()
     {
-        using WebApplicationFactory<Program> factory = new();
+        using WebApplicationFactory<Program> factory = CreateFactory();
         _ = factory.CreateClient();
 
         AuthorizationOptions options = factory.Services
@@ -83,4 +86,12 @@ public class AnonymousSurfaceTests
 
         return route.Contains("{*", StringComparison.Ordinal);
     }
+
+    private static WebApplicationFactory<Program> CreateFactory() =>
+        new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+        {
+            builder.UseWebRoot(AppContext.BaseDirectory);
+            builder.ConfigureLogging(logging => logging.ClearProviders());
+            builder.ConfigureServices(services => services.RemoveAll<ILoggerProvider>());
+        });
 }

@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Jadlify.API.Tests.Common;
 
@@ -50,6 +51,9 @@ internal sealed class TestApiFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
+        builder.UseWebRoot(AppContext.BaseDirectory);
+        builder.ConfigureLogging(logging => logging.ClearProviders());
+        builder.ConfigureServices(services => services.RemoveAll<ILoggerProvider>());
         builder.ConfigureTestServices(services =>
         {
             services

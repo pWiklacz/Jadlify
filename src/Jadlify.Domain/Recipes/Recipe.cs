@@ -60,7 +60,25 @@ public sealed class Recipe
 
         Name = name;
         Portions = portions;
-        _ingredients.Clear();
-        _ingredients.AddRange(replacement);
+
+        var replacementByProductId = replacement.ToDictionary(ingredient => ingredient.ProductId);
+        _ingredients.RemoveAll(existing => !replacementByProductId.ContainsKey(existing.ProductId));
+
+        foreach (RecipeIngredient ingredient in replacement)
+        {
+            RecipeIngredient? existing = _ingredients
+                .SingleOrDefault(candidate => candidate.ProductId == ingredient.ProductId);
+
+            if (existing is null)
+            {
+                _ingredients.Add(ingredient);
+                continue;
+            }
+
+            existing.ReplaceSnapshot(
+                ingredient.ProductName,
+                ingredient.Per100Grams,
+                ingredient.WholeRecipeAmount);
+        }
     }
 }
