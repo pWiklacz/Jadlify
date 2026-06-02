@@ -181,6 +181,30 @@ public class RecipeEndpointsTests
     }
 
     [Fact]
+    public async Task Update_ReturnsNotFound_WhenRecipeBelongsToAnotherUser()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient clientA = factory.CreateClientAs(UserA);
+        using HttpClient clientB = factory.CreateClientAs(UserB);
+        Guid userAProduct = await CreateProductAsync(clientA, "Oats", 100m, 10m, 5m, 20m);
+        Guid userBProduct = await CreateProductAsync(clientB, "Rice", 120m, 2m, 1m, 25m);
+        Guid recipeId = await CreateRecipeAsync(
+            clientA,
+            "Private recipe",
+            1,
+            [new RecipeIngredientRequest(userAProduct, 100m)]);
+
+        HttpResponseMessage response = await clientB.PutAsJsonAsync(
+            $"/api/recipes/{recipeId}",
+            new UpdateRecipeRequest(
+                "Still private",
+                1,
+                [new RecipeIngredientRequest(userBProduct, 100m)]));
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
     public async Task CreateRejectsIngredientProductFromAnotherUser()
     {
         using TestApiFactory factory = new();

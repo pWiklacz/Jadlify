@@ -173,6 +173,21 @@ describe('RecipesPage', () => {
     expect(screen.getByRole('button', { name: 'Save recipe' })).toBeDisabled()
   })
 
+  it('prevents selecting the same product twice', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText(/no recipes yet/i)
+    await user.click(screen.getByRole('button', { name: 'Create recipe' }))
+    await user.click(await screen.findByRole('button', { name: /oats/i }))
+    await user.click(screen.getByRole('button', { name: 'Add row' }))
+
+    const oatsButtons = screen.getAllByRole('button', { name: /oats/i })
+    const disabledDuplicateOption = oatsButtons.find((button) => button.textContent?.includes('Used'))
+
+    expect(disabledDuplicateOption).toBeDisabled()
+  })
+
   it('adds a missing product without losing the recipe draft', async () => {
     const user = userEvent.setup()
     renderPage()

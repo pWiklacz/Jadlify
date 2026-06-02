@@ -270,4 +270,35 @@ public class RecipeRepositoryTests
         Assert.True(result.IsSuccess);
         Assert.Null(remaining);
     }
+
+    [Fact]
+    public async Task DeleteAsync_DoesNotDeleteAnotherUsersRecipe()
+    {
+        using SqliteTestDatabase database = new();
+        var recipeId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            await recipes.AddAsync(new Recipe(recipeId, "Porridge", 2));
+        }
+
+        Result result;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OtherId));
+            result = await recipes.DeleteAsync(recipeId);
+        }
+
+        Recipe? remaining;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            remaining = await recipes.GetByIdAsync(recipeId);
+        }
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(ErrorType.NotFound, result.Error.Type);
+        Assert.NotNull(remaining);
+    }
 }

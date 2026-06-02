@@ -465,30 +465,30 @@ This change requires an EF migration for recipe ingredient snapshot columns. Exi
 
 #### Automated
 
-- [x] 3.1 Recipe frontend component tests pass: `cd src/Jadlify.Web; npm test -- src/recipes`
-- [x] 3.2 Existing product frontend tests still pass: `cd src/Jadlify.Web; npm test -- src/products`
-- [x] 3.3 Frontend lint passes: `cd src/Jadlify.Web; npm run lint`
-- [x] 3.4 Frontend build passes: `cd src/Jadlify.Web; npm run build`
+- [x] 3.1 Recipe frontend component tests pass: `cd src/Jadlify.Web; npm test -- src/recipes` - 68d8cbe
+- [x] 3.2 Existing product frontend tests still pass: `cd src/Jadlify.Web; npm test -- src/products` - 68d8cbe
+- [x] 3.3 Frontend lint passes: `cd src/Jadlify.Web; npm run lint` - 68d8cbe
+- [x] 3.4 Frontend build passes: `cd src/Jadlify.Web; npm run build` - 68d8cbe
 
 #### Manual
 
-- [x] 3.5 In the browser, create a recipe with two products and confirm live total and per-serving macros match manual 100g proportional math.
-- [x] 3.6 Add a missing product from inside the recipe builder, return to the recipe draft, select it, and save without losing prior ingredient rows.
-- [x] 3.7 Edit a recipe by changing portions and ingredient grams; confirm the list reflects updated totals.
-- [x] 3.8 Delete an unused recipe and confirm it disappears from the list.
-- [x] 3.9 Verify the layout is usable on desktop and a narrow mobile viewport without text overlap.
+- [x] 3.5 In the browser, create a recipe with two products and confirm live total and per-serving macros match manual 100g proportional math. - 68d8cbe
+- [x] 3.6 Add a missing product from inside the recipe builder, return to the recipe draft, select it, and save without losing prior ingredient rows. - 68d8cbe
+- [x] 3.7 Edit a recipe by changing portions and ingredient grams; confirm the list reflects updated totals. - 68d8cbe
+- [x] 3.8 Delete an unused recipe and confirm it disappears from the list. - 68d8cbe
+- [x] 3.9 Verify the layout is usable on desktop and a narrow mobile viewport without text overlap. - 68d8cbe
 
 ### Phase 4: Vertical Verification And Handoff
 
 #### Automated
 
-- [ ] 4.1 Backend narrow verification passes: `pwsh ./.scripts/verify-min.ps1 -BuildProject src/Jadlify.API/Jadlify.API.csproj -TestProject tests/Jadlify.API.Tests/Jadlify.API.Tests.csproj`
-- [ ] 4.2 Domain/application/infrastructure recipe tests pass: `pwsh ./.scripts/test-min.ps1 -Filter FullyQualifiedName~Recipe`
-- [ ] 4.3 Frontend recipe tests pass: `cd src/Jadlify.Web; npm test -- src/recipes`
-- [ ] 4.4 Frontend lint/build pass: `cd src/Jadlify.Web; npm run lint` and `cd src/Jadlify.Web; npm run build`
+- [x] 4.1 Backend narrow verification passes: `pwsh ./.scripts/verify-min.ps1 -BuildProject src/Jadlify.API/Jadlify.API.csproj -TestProject tests/Jadlify.API.Tests/Jadlify.API.Tests.csproj`
+- [x] 4.2 Domain/application/infrastructure recipe tests pass: `pwsh ./.scripts/test-min.ps1 -Filter FullyQualifiedName~Recipe`
+- [x] 4.3 Frontend recipe tests pass: `cd src/Jadlify.Web; npm test -- src/recipes`
+- [x] 4.4 Frontend lint/build pass: `cd src/Jadlify.Web; npm run lint` and `cd src/Jadlify.Web; npm run build`
 
 #### Manual
 
-- [ ] 4.5 Complete one authenticated recipe CRUD smoke test against the local API and Vite frontend.
-- [ ] 4.6 Confirm recipe totals remain stable after deleting or editing the source product used to create an ingredient.
-- [ ] 4.7 Confirm no committed secrets or generated local environment files were added.
+- [x] 4.5 Complete one authenticated recipe CRUD smoke test against the local API and Vite frontend.
+- [x] 4.6 Confirm recipe totals remain stable after deleting or editing the source product used to create an ingredient.
+- [x] 4.7 Confirm no committed secrets or generated local environment files were added.
