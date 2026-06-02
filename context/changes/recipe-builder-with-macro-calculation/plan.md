@@ -482,13 +482,13 @@ This change requires an EF migration for recipe ingredient snapshot columns. Exi
 
 #### Automated
 
-- [x] 4.1 Backend narrow verification passes: `pwsh ./.scripts/verify-min.ps1 -BuildProject src/Jadlify.API/Jadlify.API.csproj -TestProject tests/Jadlify.API.Tests/Jadlify.API.Tests.csproj`
-- [x] 4.2 Domain/application/infrastructure recipe tests pass: `pwsh ./.scripts/test-min.ps1 -Filter FullyQualifiedName~Recipe`
-- [x] 4.3 Frontend recipe tests pass: `cd src/Jadlify.Web; npm test -- src/recipes`
-- [x] 4.4 Frontend lint/build pass: `cd src/Jadlify.Web; npm run lint` and `cd src/Jadlify.Web; npm run build`
+- [x] 4.1 Backend narrow verification passes: `pwsh ./.scripts/verify-min.ps1 -BuildProject src/Jadlify.API/Jadlify.API.csproj -TestProject tests/Jadlify.API.Tests/Jadlify.API.Tests.csproj` - a4c4bb6
+- [x] 4.2 Domain/application/infrastructure recipe tests pass: `pwsh ./.scripts/test-min.ps1 -Filter FullyQualifiedName~Recipe` - a4c4bb6
+- [x] 4.3 Frontend recipe tests pass: `cd src/Jadlify.Web; npm test -- src/recipes` - a4c4bb6
+- [x] 4.4 Frontend lint/build pass: `cd src/Jadlify.Web; npm run lint` and `cd src/Jadlify.Web; npm run build` - a4c4bb6
 
 #### Manual
 
-- [x] 4.5 Complete one authenticated recipe CRUD smoke test against the local API and Vite frontend.
-- [x] 4.6 Confirm recipe totals remain stable after deleting or editing the source product used to create an ingredient.
-- [x] 4.7 Confirm no committed secrets or generated local environment files were added.
+- [x] 4.5 Complete one authenticated recipe CRUD smoke test against the local API and Vite frontend. - a4c4bb6
+- [x] 4.6 Confirm recipe totals remain stable after deleting or editing the source product used to create an ingredient. - a4c4bb6
+- [x] 4.7 Confirm no committed secrets or generated local environment files were added. - a4c4bb6
