@@ -443,28 +443,28 @@ No migration is expected for the chosen MVP behavior because `daily_macro_goals`
 
 #### Automated
 
-- [x] 1.1 Planning domain and macro-related tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.Domain.Tests -FullyQualifiedNameContains Planning`
-- [x] 1.2 Planning application handler and validator tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.Application.Tests -FullyQualifiedNameContains Planning`
-- [x] 1.3 Narrow application build passes: `pwsh ./.scripts/build-min.ps1 -Project src/Jadlify.Application/Jadlify.Application.csproj`
+- [x] 1.1 Planning domain and macro-related tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.Domain.Tests -FullyQualifiedNameContains Planning` — 84a864d
+- [x] 1.2 Planning application handler and validator tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.Application.Tests -FullyQualifiedNameContains Planning` — 84a864d
+- [x] 1.3 Narrow application build passes: `pwsh ./.scripts/build-min.ps1 -Project src/Jadlify.Application/Jadlify.Application.csproj` — 84a864d
 
 #### Manual
 
-- [x] 1.4 Confirm application contracts do not include daily summary, goal deltas, or shopping-list output.
-- [x] 1.5 Confirm no application code depends on ASP.NET Core, EF Core, Supabase SDKs, or raw claims.
+- [x] 1.4 Confirm application contracts do not include daily summary, goal deltas, or shopping-list output. — 84a864d
+- [x] 1.5 Confirm no application code depends on ASP.NET Core, EF Core, Supabase SDKs, or raw claims. — 84a864d
 
 ### Phase 2: Planning API And Integration Tests
 
 #### Automated
 
-- [ ] 2.1 Infrastructure planning/repository tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.Infrastructure.Tests -FullyQualifiedNameContains Planning`
-- [ ] 2.2 API planning endpoint tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.API.Tests -FullyQualifiedNameContains Planning`
-- [ ] 2.3 Recipe endpoint regressions still pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.API.Tests -FullyQualifiedNameContains Recipe`
-- [ ] 2.4 Backend verification for touched projects passes: `pwsh ./.scripts/verify-min.ps1 -BuildProject src/Jadlify.API/Jadlify.API.csproj -TestProject tests/Jadlify.API.Tests/Jadlify.API.Tests.csproj`
+- [x] 2.1 Infrastructure planning/repository tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.Infrastructure.Tests -FullyQualifiedNameContains Planning`
+- [x] 2.2 API planning endpoint tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.API.Tests -FullyQualifiedNameContains Planning`
+- [x] 2.3 Recipe endpoint regressions still pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.API.Tests -FullyQualifiedNameContains Recipe`
+- [x] 2.4 Backend verification for touched projects passes: `pwsh ./.scripts/verify-min.ps1 -BuildProject src/Jadlify.API/Jadlify.API.csproj -TestProject tests/Jadlify.API.Tests/Jadlify.API.Tests.csproj`
 
 #### Manual
 
-- [ ] 2.5 Confirm unauthenticated requests to `/api/daily-goal` and `/api/meal-plan` are blocked by the global auth policy.
-- [ ] 2.6 Inspect any generated EF changes and confirm no planning schema migration was introduced unless a real schema mismatch was found.
+- [x] 2.5 Confirm unauthenticated requests to `/api/daily-goal` and `/api/meal-plan` are blocked by the global auth policy.
+- [x] 2.6 Inspect any generated EF changes and confirm no planning schema migration was introduced unless a real schema mismatch was found.
 
 ### Phase 3: Goals And Meal Plan React UI
 

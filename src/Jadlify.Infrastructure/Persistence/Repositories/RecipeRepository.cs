@@ -56,6 +56,28 @@ internal sealed class RecipeRepository : IRecipeRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Recipe>> ListByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(ids);
+
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        string owner = _currentUser.UserId.Value;
+
+        // Owner-scoped IN-filter: only the current user's recipes for the requested ids are
+        // returned, so meal-plan listing can never surface another user's recipe. Ingredients
+        // are not included because callers only need current display data (id and name).
+        return await _context.Recipes
+            .Where(recipe => ids.Contains(recipe.Id)
+                && EF.Property<string>(recipe, PersistenceConstants.UserIdProperty) == owner)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<Result> UpdateAsync(Recipe recipe, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(recipe);

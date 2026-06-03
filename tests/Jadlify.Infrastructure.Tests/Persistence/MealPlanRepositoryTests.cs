@@ -104,4 +104,80 @@ public class MealPlanRepositoryTests
 
         Assert.NotNull(remaining);
     }
+
+    [Fact]
+    public async Task UpdateAsync_ChangesMealTypeAndPortions()
+    {
+        using SqliteTestDatabase database = new();
+        DateOnly date = new(2026, 5, 28);
+        var recipeId = Guid.NewGuid();
+        var entryId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            await recipes.AddAsync(new Recipe(recipeId, "Porridge", 2));
+
+            MealPlanRepository plans = new(context, new TestCurrentUser(OwnerId));
+            await plans.AddAsync(new MealPlanEntry(entryId, date, recipeId, MealType.Breakfast, 1));
+        }
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            MealPlanRepository plans = new(context, new TestCurrentUser(OwnerId));
+            MealPlanEntry entry = (await plans.GetByIdAsync(entryId))!;
+            entry.UpdateDetails(MealType.Dinner, 3);
+            await plans.UpdateAsync(entry);
+        }
+
+        MealPlanEntry? reloaded;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            MealPlanRepository plans = new(context, new TestCurrentUser(OwnerId));
+            reloaded = await plans.GetByIdAsync(entryId);
+        }
+
+        Assert.NotNull(reloaded);
+        Assert.Equal(MealType.Dinner, reloaded!.MealType);
+        Assert.Equal(3, reloaded.Portions);
+        // Date and recipe stay put: only meal type and portions are editable.
+        Assert.Equal(date, reloaded.Date);
+        Assert.Equal(recipeId, reloaded.RecipeId);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_DoesNotMutateAnotherUsersEntry()
+    {
+        using SqliteTestDatabase database = new();
+        DateOnly date = new(2026, 5, 28);
+        var recipeId = Guid.NewGuid();
+        var entryId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            await recipes.AddAsync(new Recipe(recipeId, "Porridge", 2));
+
+            MealPlanRepository plans = new(context, new TestCurrentUser(OwnerId));
+            await plans.AddAsync(new MealPlanEntry(entryId, date, recipeId, MealType.Breakfast, 1));
+        }
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            // Another user attempts the update; the owner-scoped repository no-ops.
+            MealPlanRepository plans = new(context, new TestCurrentUser(OtherId));
+            await plans.UpdateAsync(new MealPlanEntry(entryId, date, recipeId, MealType.Dinner, 9));
+        }
+
+        MealPlanEntry? reloaded;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            MealPlanRepository plans = new(context, new TestCurrentUser(OwnerId));
+            reloaded = await plans.GetByIdAsync(entryId);
+        }
+
+        Assert.NotNull(reloaded);
+        Assert.Equal(MealType.Breakfast, reloaded!.MealType);
+        Assert.Equal(1, reloaded.Portions);
+    }
 }
