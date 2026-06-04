@@ -495,6 +495,6 @@ No migration is expected for the chosen MVP behavior because `daily_macro_goals`
 
 #### Manual
 
-- [ ] 4.5 Complete one authenticated S-04 smoke test in the browser: set goal, add entries for a selected date, edit type/portions, delete an entry.
-- [ ] 4.6 Confirm no daily summary, goal delta, shopping-list, weekly plan, or goal-history behavior slipped into the UI.
-- [ ] 4.7 Confirm no committed secrets or generated local environment files were added.
+- [x] 4.5 Complete one authenticated S-04 smoke test in the browser: set goal, add entries for a selected date, edit type/portions, delete an entry.
+- [x] 4.6 Confirm no daily summary, goal delta, shopping-list, weekly plan, or goal-history behavior slipped into the UI.
+- [x] 4.7 Confirm no committed secrets or generated local environment files were added.
