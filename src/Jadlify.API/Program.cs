@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using Jadlify.API.Authentication;
+using Jadlify.API.Planning;
 using Jadlify.API.Products;
 using Jadlify.API.Recipes;
 using Jadlify.API.Session;
@@ -117,6 +118,12 @@ app.MapProductEndpoints();
 // Recipe builder (S-03): list/get/create/update/delete. All routes inherit the global
 // fallback auth policy and keep recipe data behind the API boundary.
 app.MapRecipeEndpoints();
+
+// Daily goals + meal plan (S-04): the singleton daily macro goal and one-day meal-plan
+// entry CRUD. All routes inherit the global fallback auth policy (authenticated + 'sub'),
+// so none opts out with AllowAnonymous, keeping planning data behind the API boundary.
+app.MapDailyGoalEndpoints();
+app.MapMealPlanEndpoints();
 
 // Client-side routing: serve index.html for non-API deep links. Must be
 // AllowAnonymous, otherwise the global fallback policy 401s the SPA entrypoint

@@ -22,4 +22,17 @@ public sealed class MealPlanEntry
     public MealType MealType { get; private set; }
 
     public int Portions { get; private set; }
+
+    /// <summary>
+    /// Updates only the meal type and positive integer portions of the entry.
+    /// The identity, date, and referenced recipe are intentionally immutable here:
+    /// changing the date or recipe means deleting the entry and adding a new one.
+    /// </summary>
+    public void UpdateDetails(MealType mealType, int portions)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(portions);
+
+        MealType = mealType;
+        Portions = portions;
+    }
 }

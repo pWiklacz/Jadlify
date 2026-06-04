@@ -1,5 +1,5 @@
-import { SectionPlaceholder } from './SectionPlaceholder'
+import { DailyGoalsPage as PlanningDailyGoalsPage } from '../../planning/DailyGoalsPage'
 
 export function GoalsPage() {
-  return <SectionPlaceholder title="Daily goals" />
+  return <PlanningDailyGoalsPage />
 }

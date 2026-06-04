@@ -301,4 +301,80 @@ public class RecipeRepositoryTests
         Assert.Equal(ErrorType.NotFound, result.Error.Type);
         Assert.NotNull(remaining);
     }
+
+    [Fact]
+    public async Task ListByIdsAsync_ReturnsOnlyRequestedCurrentUserRecipes()
+    {
+        using SqliteTestDatabase database = new();
+        var firstId = Guid.NewGuid();
+        var secondId = Guid.NewGuid();
+        var thirdId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            await recipes.AddAsync(new Recipe(firstId, "Porridge", 2));
+            await recipes.AddAsync(new Recipe(secondId, "Pancakes", 4));
+            await recipes.AddAsync(new Recipe(thirdId, "Omelette", 1));
+        }
+
+        IReadOnlyList<Recipe> found;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            found = await recipes.ListByIdsAsync(new[] { firstId, thirdId });
+        }
+
+        Assert.Equal(2, found.Count);
+        Assert.Contains(found, recipe => recipe.Id == firstId);
+        Assert.Contains(found, recipe => recipe.Id == thirdId);
+        Assert.DoesNotContain(found, recipe => recipe.Id == secondId);
+    }
+
+    [Fact]
+    public async Task ListByIdsAsync_DoesNotReturnAnotherUsersRecipe()
+    {
+        using SqliteTestDatabase database = new();
+        var ownerRecipeId = Guid.NewGuid();
+        var otherRecipeId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository owner = new(context, new TestCurrentUser(OwnerId));
+            await owner.AddAsync(new Recipe(ownerRecipeId, "Porridge", 2));
+            RecipeRepository other = new(context, new TestCurrentUser(OtherId));
+            await other.AddAsync(new Recipe(otherRecipeId, "Salad", 1));
+        }
+
+        IReadOnlyList<Recipe> found;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            found = await recipes.ListByIdsAsync(new[] { ownerRecipeId, otherRecipeId });
+        }
+
+        Recipe single = Assert.Single(found);
+        Assert.Equal(ownerRecipeId, single.Id);
+    }
+
+    [Fact]
+    public async Task ListByIdsAsync_ReturnsEmpty_WhenNoIdsRequested()
+    {
+        using SqliteTestDatabase database = new();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            await recipes.AddAsync(new Recipe(Guid.NewGuid(), "Porridge", 2));
+        }
+
+        IReadOnlyList<Recipe> found;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            found = await recipes.ListByIdsAsync(Array.Empty<Guid>());
+        }
+
+        Assert.Empty(found);
+    }
 }

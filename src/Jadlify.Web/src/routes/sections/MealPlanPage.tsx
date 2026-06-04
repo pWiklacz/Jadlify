@@ -1,5 +1,5 @@
-import { SectionPlaceholder } from './SectionPlaceholder'
+import { MealPlanPage as PlanningMealPlanPage } from '../../planning/MealPlanPage'
 
 export function MealPlanPage() {
-  return <SectionPlaceholder title="Meal plan" />
+  return <PlanningMealPlanPage />
 }
