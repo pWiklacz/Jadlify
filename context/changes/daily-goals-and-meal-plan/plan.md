@@ -456,33 +456,33 @@ No migration is expected for the chosen MVP behavior because `daily_macro_goals`
 
 #### Automated
 
-- [x] 2.1 Infrastructure planning/repository tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.Infrastructure.Tests -FullyQualifiedNameContains Planning`
-- [x] 2.2 API planning endpoint tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.API.Tests -FullyQualifiedNameContains Planning`
-- [x] 2.3 Recipe endpoint regressions still pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.API.Tests -FullyQualifiedNameContains Recipe`
-- [x] 2.4 Backend verification for touched projects passes: `pwsh ./.scripts/verify-min.ps1 -BuildProject src/Jadlify.API/Jadlify.API.csproj -TestProject tests/Jadlify.API.Tests/Jadlify.API.Tests.csproj`
+- [x] 2.1 Infrastructure planning/repository tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.Infrastructure.Tests -FullyQualifiedNameContains Planning` — db611c8
+- [x] 2.2 API planning endpoint tests pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.API.Tests -FullyQualifiedNameContains Planning` — db611c8
+- [x] 2.3 Recipe endpoint regressions still pass: `pwsh ./.scripts/test-min.ps1 -Project tests/Jadlify.API.Tests -FullyQualifiedNameContains Recipe` — db611c8
+- [x] 2.4 Backend verification for touched projects passes: `pwsh ./.scripts/verify-min.ps1 -BuildProject src/Jadlify.API/Jadlify.API.csproj -TestProject tests/Jadlify.API.Tests/Jadlify.API.Tests.csproj` — db611c8
 
 #### Manual
 
-- [x] 2.5 Confirm unauthenticated requests to `/api/daily-goal` and `/api/meal-plan` are blocked by the global auth policy.
-- [x] 2.6 Inspect any generated EF changes and confirm no planning schema migration was introduced unless a real schema mismatch was found.
+- [x] 2.5 Confirm unauthenticated requests to `/api/daily-goal` and `/api/meal-plan` are blocked by the global auth policy. — db611c8
+- [x] 2.6 Inspect any generated EF changes and confirm no planning schema migration was introduced unless a real schema mismatch was found. — db611c8
 
 ### Phase 3: Goals And Meal Plan React UI
 
 #### Automated
 
-- [ ] 3.1 Planning frontend tests pass: `cd src/Jadlify.Web; npm test -- src/planning`
-- [ ] 3.2 Existing recipe frontend tests still pass: `cd src/Jadlify.Web; npm test -- src/recipes`
-- [ ] 3.3 Frontend lint passes: `cd src/Jadlify.Web; npm run lint`
-- [ ] 3.4 Frontend build passes: `cd src/Jadlify.Web; npm run build`
+- [x] 3.1 Planning frontend tests pass: `cd src/Jadlify.Web; npm test -- src/planning`
+- [x] 3.2 Existing recipe frontend tests still pass: `cd src/Jadlify.Web; npm test -- src/recipes`
+- [x] 3.3 Frontend lint passes: `cd src/Jadlify.Web; npm run lint`
+- [x] 3.4 Frontend build passes: `cd src/Jadlify.Web; npm run build`
 
 #### Manual
 
-- [ ] 3.5 In the browser, set a daily goal, refresh, and confirm the current goal remains visible.
-- [ ] 3.6 Select a date, add two entries including duplicate recipe usage, and confirm both appear.
-- [ ] 3.7 Edit an entry's meal type and portions; confirm date and recipe do not change.
-- [ ] 3.8 Delete an entry and confirm only that entry disappears.
-- [ ] 3.9 Verify `/meal-plan` still works when no goal is configured.
-- [ ] 3.10 Verify desktop and narrow mobile layouts have no text overlap or unusable controls.
+- [x] 3.5 In the browser, set a daily goal, refresh, and confirm the current goal remains visible.
+- [x] 3.6 Select a date, add two entries including duplicate recipe usage, and confirm both appear.
+- [x] 3.7 Edit an entry's meal type and portions; confirm date and recipe do not change.
+- [x] 3.8 Delete an entry and confirm only that entry disappears.
+- [x] 3.9 Verify `/meal-plan` still works when no goal is configured.
+- [x] 3.10 Verify desktop and narrow mobile layouts have no text overlap or unusable controls.
 
 ### Phase 4: Verification And Handoff
 
