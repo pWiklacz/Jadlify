@@ -488,10 +488,10 @@ No migration is expected for the chosen MVP behavior because `daily_macro_goals`
 
 #### Automated
 
-- [ ] 4.1 Backend narrow verification passes: `pwsh ./.scripts/verify-min.ps1 -BuildProject src/Jadlify.API/Jadlify.API.csproj -TestProject tests/Jadlify.API.Tests/Jadlify.API.Tests.csproj`
-- [ ] 4.2 Planning tests across backend layers pass: `pwsh ./.scripts/test-min.ps1 -Filter FullyQualifiedName~Planning`
-- [ ] 4.3 Frontend planning tests pass: `cd src/Jadlify.Web; npm test -- src/planning`
-- [ ] 4.4 Frontend lint/build pass: `cd src/Jadlify.Web; npm run lint` and `cd src/Jadlify.Web; npm run build`
+- [x] 4.1 Backend narrow verification passes: `pwsh ./.scripts/verify-min.ps1 -BuildProject src/Jadlify.API/Jadlify.API.csproj -TestProject tests/Jadlify.API.Tests/Jadlify.API.Tests.csproj`
+- [x] 4.2 Planning tests across backend layers pass: `pwsh ./.scripts/test-min.ps1 -Filter FullyQualifiedName~Planning`
+- [x] 4.3 Frontend planning tests pass: `cd src/Jadlify.Web; npm test -- src/planning`
+- [x] 4.4 Frontend lint/build pass: `cd src/Jadlify.Web; npm run lint` and `cd src/Jadlify.Web; npm run build`
 
 #### Manual
 
