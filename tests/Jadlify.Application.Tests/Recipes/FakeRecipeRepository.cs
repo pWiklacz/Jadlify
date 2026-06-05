@@ -37,6 +37,11 @@ internal sealed class FakeRecipeRepository : IRecipeRepository
         CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<Recipe>>([.. _recipes.Where(recipe => ids.Contains(recipe.Id))]);
 
+    public Task<IReadOnlyList<Recipe>> ListByIdsWithIngredientsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<Recipe>>([.. _recipes.Where(recipe => ids.Contains(recipe.Id))]);
+
     public Task<Result> UpdateAsync(Recipe recipe, CancellationToken cancellationToken = default)
     {
         int index = _recipes.FindIndex(existing => existing.Id == recipe.Id);

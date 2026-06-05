@@ -43,4 +43,18 @@ public static class MacroCalculator
 
         return RecipePerServing(recipe).Scale(entry.Portions);
     }
+
+    public static MacroNutrients DayTotal(IEnumerable<(MealPlanEntry entry, Recipe recipe)> entries)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+
+        MacroNutrients total = MacroNutrients.Zero;
+
+        foreach ((MealPlanEntry entry, Recipe recipe) in entries)
+        {
+            total += ForMealEntry(entry, recipe);
+        }
+
+        return total;
+    }
 }

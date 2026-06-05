@@ -1,24 +1,37 @@
 import { useState } from 'react'
+import { DailyMacroSummaryPanel } from './DailyMacroSummaryPanel'
 import { MealPlanEntryForm } from './MealPlanEntryForm'
+import { useDailyMacroSummary } from './useDailyMacroSummary'
 import { useMealPlan } from './useMealPlan'
+import { formatMacro } from '../recipes/macroMath'
 import { useRecipes } from '../recipes/useRecipes'
 import {
   useAddMealPlanEntry,
   useDeleteMealPlanEntry,
   useUpdateMealPlanEntry,
 } from './useMealPlanMutations'
-import { mealTypes, type AddMealPlanEntryRequest, type MealPlanEntry, type MealType } from './types'
+import {
+  mealTypes,
+  type AddMealPlanEntryRequest,
+  type MacroSummary,
+  type MealPlanEntry,
+  type MealType,
+} from './types'
 
 export function MealPlanPage() {
   const [date, setDate] = useState(todayIsoDate())
   const [editing, setEditing] = useState<MealPlanEntry | null>(null)
   const { data: entries, isLoading, isError } = useMealPlan(date)
+  const summaryQuery = useDailyMacroSummary(date)
   const recipesQuery = useRecipes()
   const addEntry = useAddMealPlanEntry()
   const updateEntry = useUpdateMealPlanEntry()
   const deleteEntry = useDeleteMealPlanEntry()
 
   const orderedEntries = [...(entries ?? [])].sort(compareEntries)
+  const entryMacros = new Map(
+    (summaryQuery.data?.entries ?? []).map((item) => [item.entryId, item.macros]),
+  )
   const mutationFailed = addEntry.isError || updateEntry.isError || deleteEntry.isError
 
   async function addMealPlanEntry(body: AddMealPlanEntryRequest) {
@@ -84,6 +97,12 @@ export function MealPlanPage() {
         </p>
       )}
 
+      <DailyMacroSummaryPanel
+        summary={summaryQuery.data}
+        isLoading={summaryQuery.isLoading}
+        isError={summaryQuery.isError}
+      />
+
       <div className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">Entries for {date}</h2>
 
@@ -113,6 +132,9 @@ export function MealPlanPage() {
                   <h3 className="text-lg font-semibold">{entry.recipeName}</h3>
                   <p className="text-sm text-slate-600">
                     {entry.portions} {entry.portions === 1 ? 'portion' : 'portions'}
+                  </p>
+                  <p className="text-sm font-medium text-slate-700">
+                    {formatEntryMacros(entryMacros.get(entry.id))}
                   </p>
                 </div>
 
@@ -164,4 +186,17 @@ function compareEntries(left: MealPlanEntry, right: MealPlanEntry): number {
   }
 
   return left.recipeName.localeCompare(right.recipeName)
+}
+
+function formatEntryMacros(macros: MacroSummary | undefined): string {
+  if (!macros) {
+    return '- kcal, - g protein, - g fat, - g carbs'
+  }
+
+  return [
+    `${formatMacro(macros.calories)} kcal`,
+    `${formatMacro(macros.protein)} g protein`,
+    `${formatMacro(macros.fat)} g fat`,
+    `${formatMacro(macros.carbohydrates)} g carbs`,
+  ].join(', ')
 }

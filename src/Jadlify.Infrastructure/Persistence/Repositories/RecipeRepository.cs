@@ -78,6 +78,26 @@ internal sealed class RecipeRepository : IRecipeRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Recipe>> ListByIdsWithIngredientsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(ids);
+
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        string owner = _currentUser.UserId.Value;
+
+        return await _context.Recipes
+            .Include(recipe => recipe.Ingredients)
+            .Where(recipe => ids.Contains(recipe.Id)
+                && EF.Property<string>(recipe, PersistenceConstants.UserIdProperty) == owner)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<Result> UpdateAsync(Recipe recipe, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(recipe);

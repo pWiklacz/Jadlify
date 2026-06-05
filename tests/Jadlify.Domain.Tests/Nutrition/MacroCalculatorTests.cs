@@ -60,6 +60,36 @@ public class MacroCalculatorTests
     }
 
     [Fact]
+    public void DayTotal_SumsMultipleMealEntries()
+    {
+        Recipe recipe = BuildRecipe(portions: 4);
+        var breakfast = new MealPlanEntry(
+            Guid.NewGuid(),
+            new DateOnly(2026, 5, 28),
+            recipe.Id,
+            MealType.Breakfast,
+            portions: 1);
+        var lunch = new MealPlanEntry(
+            Guid.NewGuid(),
+            new DateOnly(2026, 5, 28),
+            recipe.Id,
+            MealType.Lunch,
+            portions: 2);
+
+        MacroNutrients result = MacroCalculator.DayTotal([(breakfast, recipe), (lunch, recipe)]);
+
+        Assert.Equal(new MacroNutrients(337.5m, 18m, 8.25m, 34.5m), result);
+    }
+
+    [Fact]
+    public void DayTotal_ReturnsZero_ForEmptyInput()
+    {
+        MacroNutrients result = MacroCalculator.DayTotal([]);
+
+        Assert.Equal(MacroNutrients.Zero, result);
+    }
+
+    [Fact]
     public void RecipeTotal_UsesIngredientSnapshots_NotCurrentProductValues()
     {
         var productId = Guid.NewGuid();
