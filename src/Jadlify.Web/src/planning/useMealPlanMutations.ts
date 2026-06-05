@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../api/apiClient'
+import { dailyMacroSummaryQueryKey } from './useDailyMacroSummary'
 import { mealPlanQueryKey } from './useMealPlan'
 import type {
   AddMealPlanEntryRequest,
@@ -16,6 +17,7 @@ export function useAddMealPlanEntry() {
       apiClient.post<CreatedMealPlanEntryResponse>('/api/meal-plan', body),
     onSuccess: (_result, variables) => {
       void queryClient.invalidateQueries({ queryKey: mealPlanQueryKey(variables.date) })
+      void queryClient.invalidateQueries({ queryKey: dailyMacroSummaryQueryKey(variables.date) })
     },
   })
 }
@@ -32,6 +34,7 @@ export function useUpdateMealPlanEntry() {
     }) => apiClient.put<void>(`/api/meal-plan/${variables.id}`, variables.body),
     onSuccess: (_result, variables) => {
       void queryClient.invalidateQueries({ queryKey: mealPlanQueryKey(variables.date) })
+      void queryClient.invalidateQueries({ queryKey: dailyMacroSummaryQueryKey(variables.date) })
     },
   })
 }
@@ -44,6 +47,7 @@ export function useDeleteMealPlanEntry() {
     mutationFn: ({ id }: { id: string; date: string }) => apiClient.del(`/api/meal-plan/${id}`),
     onSuccess: (_result, variables) => {
       void queryClient.invalidateQueries({ queryKey: mealPlanQueryKey(variables.date) })
+      void queryClient.invalidateQueries({ queryKey: dailyMacroSummaryQueryKey(variables.date) })
     },
   })
 }

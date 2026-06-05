@@ -312,16 +312,16 @@ None. No schema changes — the summary is computed on read from existing tables
 
 #### Automated
 
-- [ ] 3.1 Lint passes: `npm run lint`
-- [ ] 3.2 Frontend tests pass (totals+remaining; over-goal styling; no-goal prompt; per-entry macros)
-- [ ] 3.3 Build passes: `npm run build`
+- [x] 3.1 Lint passes: `npm run lint`
+- [x] 3.2 Frontend tests pass (totals+remaining; over-goal styling; no-goal prompt; per-entry macros)
+- [x] 3.3 Build passes: `npm run build`
 
 #### Manual
 
-- [ ] 3.4 Day with recipes shows correct totals/per-entry/remaining; over-goal is red
-- [ ] 3.5 No goal → totals shown, remaining hidden, set-goal prompt appears
-- [ ] 3.6 Add/edit/delete refreshes the summary automatically
-- [ ] 3.7 Layout reasonable on narrow width
+- [x] 3.4 Day with recipes shows correct totals/per-entry/remaining; over-goal is red
+- [x] 3.5 No goal → totals shown, remaining hidden, set-goal prompt appears
+- [x] 3.6 Add/edit/delete refreshes the summary automatically
+- [x] 3.7 Layout reasonable on narrow width
 
 ### Phase 4: Verification + Contract Handoff
 
