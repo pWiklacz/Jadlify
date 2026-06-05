@@ -313,24 +313,24 @@ None. No schema changes — the summary is computed on read from existing tables
 #### Automated
 
 - [x] 3.1 Lint passes: `npm run lint`
-- [x] 3.2 Frontend tests pass (totals+remaining; over-goal styling; no-goal prompt; per-entry macros)
-- [x] 3.3 Build passes: `npm run build`
+- [x] 3.2 Frontend tests pass (totals+remaining; over-goal styling; no-goal prompt; per-entry macros) — 533db33
+- [x] 3.3 Build passes: `npm run build` — 533db33
 
 #### Manual
 
-- [x] 3.4 Day with recipes shows correct totals/per-entry/remaining; over-goal is red
-- [x] 3.5 No goal → totals shown, remaining hidden, set-goal prompt appears
-- [x] 3.6 Add/edit/delete refreshes the summary automatically
-- [x] 3.7 Layout reasonable on narrow width
+- [x] 3.4 Day with recipes shows correct totals/per-entry/remaining; over-goal is red — 533db33
+- [x] 3.5 No goal → totals shown, remaining hidden, set-goal prompt appears — 533db33
+- [x] 3.6 Add/edit/delete refreshes the summary automatically — 533db33
+- [x] 3.7 Layout reasonable on narrow width — 533db33
 
 ### Phase 4: Verification + Contract Handoff
 
 #### Automated
 
-- [ ] 4.1 Backend verify passes: `pwsh ./.scripts/verify-min.ps1`
-- [ ] 4.2 Frontend lint + test + build pass
+- [x] 4.1 Backend verify passes: `pwsh ./.scripts/verify-min.ps1`
+- [x] 4.2 Frontend lint + test + build pass
 
 #### Manual
 
-- [ ] 4.3 End-to-end hand-calculation check on a fresh local stack
-- [ ] 4.4 `contract-surfaces.md` S-05 section matches the shipped endpoint
+- [x] 4.3 End-to-end hand-calculation check on a fresh local stack
+- [x] 4.4 `contract-surfaces.md` S-05 section matches the shipped endpoint
