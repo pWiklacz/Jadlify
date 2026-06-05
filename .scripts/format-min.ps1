@@ -366,6 +366,22 @@ $rawOutput = & dotnet @argsList 2>&1
 $exitCode = $LASTEXITCODE
 $output = @($rawOutput | ForEach-Object { $_.ToString() })
 
+$hasRestoreFailed = $false
+foreach ($line in $output) {
+    if ($line -match "Restore operation failed") {
+        $hasRestoreFailed = $true
+        break
+    }
+}
+
+if ($exitCode -ne 0 -and $hasRestoreFailed -and -not $NoRestore) {
+    Write-Output "Automatic restore failed (possibly due to sandbox permissions on NuGet.Config). Retrying with --no-restore..."
+    $argsList.Add("--no-restore")
+    $rawOutput = & dotnet @argsList 2>&1
+    $exitCode = $LASTEXITCODE
+    $output = @($rawOutput | ForEach-Object { $_.ToString() })
+}
+
 $output | Out-File -FilePath $logFile -Encoding utf8
 
 if ($exitCode -eq 0) {

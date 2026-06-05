@@ -27,6 +27,15 @@ public interface IRecipeRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Loads the current user's recipes for deterministic macro calculations.
+    /// Includes ingredients and their macro snapshots; must filter by current user,
+    /// return only requested ids, and never expose another user's recipes.
+    /// </summary>
+    Task<IReadOnlyList<Recipe>> ListByIdsWithIngredientsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Persists the complete recipe aggregate for the current user, including
     /// ingredient composition and product macro snapshots.
     /// </summary>
