@@ -1,4 +1,5 @@
 using Jadlify.Application.Planning;
+using Jadlify.Application.Recipes;
 
 namespace Jadlify.API.Planning;
 
@@ -43,4 +44,44 @@ public sealed record MealPlanEntryResponse(
             dto.RecipeName,
             dto.MealType.ToString(),
             dto.Portions);
+}
+
+public sealed record MacroSummaryResponse(
+    decimal Calories,
+    decimal Protein,
+    decimal Fat,
+    decimal Carbohydrates)
+{
+    public static MacroSummaryResponse FromDto(RecipeMacroSummaryDto dto) =>
+        new(dto.Calories, dto.Protein, dto.Fat, dto.Carbohydrates);
+
+    public static MacroSummaryResponse FromDto(PlanningMacroGoalDto dto) =>
+        new(dto.Calories, dto.Protein, dto.Fat, dto.Carbohydrates);
+
+    public static MacroSummaryResponse FromDto(MacroRemainingDto dto) =>
+        new(dto.Calories, dto.Protein, dto.Fat, dto.Carbohydrates);
+}
+
+public sealed record MealEntryMacroResponse(
+    Guid EntryId,
+    MacroSummaryResponse Macros)
+{
+    public static MealEntryMacroResponse FromDto(MealEntryMacroDto dto) =>
+        new(dto.EntryId, MacroSummaryResponse.FromDto(dto.Macros));
+}
+
+public sealed record DailyMacroSummaryResponse(
+    DateOnly Date,
+    IReadOnlyList<MealEntryMacroResponse> Entries,
+    MacroSummaryResponse Total,
+    MacroSummaryResponse? Goal,
+    MacroSummaryResponse? Remaining)
+{
+    public static DailyMacroSummaryResponse FromDto(DailyMacroSummaryDto dto) =>
+        new(
+            dto.Date,
+            dto.Entries.Select(MealEntryMacroResponse.FromDto).ToArray(),
+            MacroSummaryResponse.FromDto(dto.Total),
+            dto.Goal is null ? null : MacroSummaryResponse.FromDto(dto.Goal),
+            dto.Remaining is null ? null : MacroSummaryResponse.FromDto(dto.Remaining));
 }

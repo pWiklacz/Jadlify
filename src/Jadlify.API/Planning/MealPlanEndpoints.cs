@@ -1,6 +1,7 @@
 using Jadlify.API.Common;
 using Jadlify.Application.Common.Mediator;
 using Jadlify.Application.Planning;
+using Jadlify.Application.Planning.DailyMacroSummary;
 using Jadlify.Application.Planning.MealPlans.AddMealPlanEntry;
 using Jadlify.Application.Planning.MealPlans.DeleteMealPlanEntry;
 using Jadlify.Application.Planning.MealPlans.ListMealPlanEntries;
@@ -33,6 +34,19 @@ public static class MealPlanEndpoints
 
             return result.IsSuccess
                 ? Results.Ok(result.Value.Select(MealPlanEntryResponse.FromDto).ToArray())
+                : result.ToProblem();
+        });
+
+        mealPlan.MapGet("/summary", async (
+            DateOnly date,
+            IMediator mediator,
+            CancellationToken cancellationToken) =>
+        {
+            Result<DailyMacroSummaryDto> result =
+                await mediator.QueryAsync(new GetDailyMacroSummaryQuery(date), cancellationToken);
+
+            return result.IsSuccess
+                ? Results.Ok(DailyMacroSummaryResponse.FromDto(result.Value))
                 : result.ToProblem();
         });
 

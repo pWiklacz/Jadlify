@@ -284,26 +284,26 @@ None. No schema changes — the summary is computed on read from existing tables
 
 #### Automated
 
-- [x] 1.1 Build passes: `pwsh ./.scripts/build-min.ps1`
-- [x] 1.2 Domain tests pass (`DayTotal` sum + empty → Zero)
-- [x] 1.3 Application tests pass (per-entry/total vs MacroCalculator; remaining incl. negative; null goal; empty day; missing/cross-user recipe → zero)
-- [x] 1.4 Format passes: `pwsh ./.scripts/format-min.ps1`
+- [x] 1.1 Build passes: `pwsh ./.scripts/build-min.ps1` — 56b8418
+- [x] 1.2 Domain tests pass (`DayTotal` sum + empty → Zero) — 56b8418
+- [x] 1.3 Application tests pass (per-entry/total vs MacroCalculator; remaining incl. negative; null goal; empty day; missing/cross-user recipe → zero) — 56b8418
+- [x] 1.4 Format passes: `pwsh ./.scripts/format-min.ps1` — 56b8418
 
 #### Manual
 
-- [x] 1.5 Handler test numbers match a hand calculation
+- [x] 1.5 Handler test numbers match a hand calculation — 56b8418
 
 ### Phase 2: Summary API Endpoint + Integration Tests
 
 #### Automated
 
-- [ ] 2.1 Build passes: `pwsh ./.scripts/build-min.ps1`
-- [ ] 2.2 API tests pass (totals/per-entry; over-goal negative; null goal/remaining; empty day; 401 anonymous; cross-user isolation)
-- [ ] 2.3 Format/lint passes: `pwsh ./.scripts/format-min.ps1`
+- [x] 2.1 Build passes: `pwsh ./.scripts/build-min.ps1`
+- [x] 2.2 API tests pass (totals/per-entry; over-goal negative; null goal/remaining; empty day; 401 anonymous; cross-user isolation)
+- [x] 2.3 Format/lint passes: `pwsh ./.scripts/format-min.ps1`
 
 #### Manual
 
-- [ ] 2.4 `GET /api/meal-plan/summary?date=` returns expected JSON locally
+- [x] 2.4 `GET /api/meal-plan/summary?date=` returns expected JSON locally
 
 ### Phase 3: React Summary UI On `/meal-plan`
 
