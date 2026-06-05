@@ -3,7 +3,7 @@ project: Jadlify
 version: 1
 status: draft
 created: 2026-05-26
-updated: 2026-05-31
+updated: 2026-06-05
 prd_version: 1
 main_goal: low-complexity
 top_blocker: capacity
@@ -34,7 +34,7 @@ Jadlify ma usunac tarcie z planowania posilkow z wyprzedzeniem: reczne liczenie 
 | S-02 | product-catalog-with-barcode-fallback | user can add, review, edit, and delete their own products, with barcode lookup falling back to manual entry | S-01, F-02 | US-01, US-02, FR-003, FR-004, FR-005, FR-006 | proposed |
 | S-03 | recipe-builder-with-macro-calculation | user can build recipes from their products and see deterministic recipe macro totals | S-02 | US-01, FR-007, FR-008, FR-009, FR-010 | proposed |
 | S-04 | daily-goals-and-meal-plan | user can set daily macro goals and add recipes to a selected day by meal type and portions | S-03 | US-01, FR-011, FR-012, FR-014 | proposed |
-| S-05 | daily-macro-summary | user can see kcal and macro totals for a selected day plus the numeric delta against their goals | S-04 | US-01, FR-013 | proposed |
+| S-05 | daily-macro-summary | user can see kcal and macro totals for a selected day plus the numeric delta against their goals | S-04 | US-01, FR-013 | done |
 | S-06 | shopping-list-from-day-plan | user can generate and view a deduplicated shopping list from the selected day plan | S-05 | US-01, US-03, FR-015, FR-016 | proposed |
 
 ## Baseline
@@ -173,7 +173,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** -
 - **Unknowns:** -
 - **Risk:** To zamyka kalibracyjna czesc reguly biznesowej; jesli liczby nie sa zaufane, lista zakupow tez nie bedzie wiarygodnym wynikiem planu.
-- **Status:** proposed
+- **Status:** done
 
 ### S-06: Shopping List From Day Plan
 
@@ -229,3 +229,5 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Formalna deklaracja WCAG-AA** - Why parked: PRD Non-Goals; uzytecznosc i kontrast bez formalnej deklaracji.
 
 ## Done
+
+- **S-05: user can see kcal and macro totals for a selected day plus the numeric delta against their goals** — Archived 2026-06-05 → `context/archive/2026-06-04-daily-macro-summary/`. Lesson: —.
