@@ -1,7 +1,7 @@
 ---
 change_id: daily-macro-summary
 title: Daily macro summary
-status: implemented
+status: impl_reviewed
 created: 2026-06-04
 updated: 2026-06-05
 archived_at: null
