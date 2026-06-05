@@ -297,13 +297,16 @@ None. No schema changes — the summary is computed on read from existing tables
 
 #### Automated
 
-- [x] 2.1 Build passes: `pwsh ./.scripts/build-min.ps1`
+- [x] 2.1 Build passes:
+  `pwsh ./.scripts/build-min.ps1` — 8016cc1
 - [x] 2.2 API tests pass (totals/per-entry; over-goal negative; null goal/remaining; empty day; 401 anonymous; cross-user isolation)
-- [x] 2.3 Format/lint passes: `pwsh ./.scripts/format-min.ps1`
+- [x] 2.3 Format/lint
+  passes: `pwsh ./.scripts/format-min.ps1` — 8016cc1
 
 #### Manual
 
-- [x] 2.4 `GET /api/meal-plan/summary?date=` returns expected JSON locally
+- [x] 2.4
+  `GET /api/meal-plan/summary?date=` returns expected JSON locally — 8016cc1
 
 ### Phase 3: React Summary UI On `/meal-plan`
 
