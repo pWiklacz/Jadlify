@@ -327,10 +327,10 @@ None. No schema changes — the summary is computed on read from existing tables
 
 #### Automated
 
-- [x] 4.1 Backend verify passes: `pwsh ./.scripts/verify-min.ps1`
-- [x] 4.2 Frontend lint + test + build pass
+- [x] 4.1 Backend verify passes: `pwsh ./.scripts/verify-min.ps1` — 91b5eb8
+- [x] 4.2 Frontend lint + test + build pass — 91b5eb8
 
 #### Manual
 
-- [x] 4.3 End-to-end hand-calculation check on a fresh local stack
-- [x] 4.4 `contract-surfaces.md` S-05 section matches the shipped endpoint
+- [x] 4.3 End-to-end hand-calculation check on a fresh local stack — 91b5eb8
+- [x] 4.4 `contract-surfaces.md` S-05 section matches the shipped endpoint — 91b5eb8
