@@ -322,28 +322,28 @@ No database migration is planned. The list is computed on read from existing mea
 
 #### Automated
 
-- [x] 1.1 Build passes: `pwsh ./.scripts/build-min.ps1`
-- [x] 1.2 Domain shopping calculator tests pass
-- [x] 1.3 Application shopping query handler tests pass
-- [x] 1.4 Format passes: `pwsh ./.scripts/format-min.ps1`
+- [x] 1.1 Build passes: `pwsh ./.scripts/build-min.ps1` — 753be5a
+- [x] 1.2 Domain shopping calculator tests pass — 753be5a
+- [x] 1.3 Application shopping query handler tests pass — 753be5a
+- [x] 1.4 Format passes: `pwsh ./.scripts/format-min.ps1` — 753be5a
 
 #### Manual
 
-- [x] 1.5 Handler test numbers match a hand calculation for multi-portion recipes
+- [x] 1.5 Handler test numbers match a hand calculation for multi-portion recipes — 753be5a
 
 ### Phase 2: Shopping List API Endpoint and Integration Tests
 
 #### Automated
 
-- [ ] 2.1 Build passes: `pwsh ./.scripts/build-min.ps1`
-- [ ] 2.2 Shopping-list API tests pass
-- [ ] 2.3 Existing meal-plan API tests still pass
-- [ ] 2.4 Format passes: `pwsh ./.scripts/format-min.ps1`
+- [x] 2.1 Build passes: `pwsh ./.scripts/build-min.ps1` — d040df0
+- [x] 2.2 Shopping-list API tests pass — d040df0
+- [x] 2.3 Existing meal-plan API tests still pass — d040df0
+- [x] 2.4 Format passes: `pwsh ./.scripts/format-min.ps1` — d040df0
 
 #### Manual
 
-- [ ] 2.5 `GET /api/shopping-list?date=` returns expected JSON locally
-- [ ] 2.6 Anonymous request returns `401`
+- [x] 2.5 `GET /api/shopping-list?date=` returns expected JSON locally — d040df0
+- [x] 2.6 Anonymous request returns `401` — d040df0
 
 ### Phase 3: React Shopping List Page
 

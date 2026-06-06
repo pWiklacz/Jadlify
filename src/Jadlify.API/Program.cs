@@ -4,6 +4,7 @@ using Jadlify.API.Planning;
 using Jadlify.API.Products;
 using Jadlify.API.Recipes;
 using Jadlify.API.Session;
+using Jadlify.API.Shopping;
 using Jadlify.Application;
 using Jadlify.Application.Identity;
 using Jadlify.Infrastructure;
@@ -124,6 +125,10 @@ app.MapRecipeEndpoints();
 // so none opts out with AllowAnonymous, keeping planning data behind the API boundary.
 app.MapDailyGoalEndpoints();
 app.MapMealPlanEndpoints();
+
+// Shopping list (S-06): read-only projection from the selected day's meal plan and
+// recipe ingredient snapshots. Inherits the global authenticated fallback policy.
+app.MapShoppingListEndpoints();
 
 // Client-side routing: serve index.html for non-API deep links. Must be
 // AllowAnonymous, otherwise the global fallback policy 401s the SPA entrypoint
