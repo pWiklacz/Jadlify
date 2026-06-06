@@ -1,5 +1,5 @@
-import { SectionPlaceholder } from './SectionPlaceholder'
+import { ShoppingListPage as ShoppingShoppingListPage } from '../../shopping/ShoppingListPage'
 
 export function ShoppingListPage() {
-  return <SectionPlaceholder title="Shopping list" />
+  return <ShoppingShoppingListPage />
 }

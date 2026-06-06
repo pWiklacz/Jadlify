@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../api/apiClient'
+import { shoppingListQueryKey } from '../shopping/useShoppingList'
 import { dailyMacroSummaryQueryKey } from './useDailyMacroSummary'
 import { mealPlanQueryKey } from './useMealPlan'
 import type {
@@ -18,6 +19,7 @@ export function useAddMealPlanEntry() {
     onSuccess: (_result, variables) => {
       void queryClient.invalidateQueries({ queryKey: mealPlanQueryKey(variables.date) })
       void queryClient.invalidateQueries({ queryKey: dailyMacroSummaryQueryKey(variables.date) })
+      void queryClient.invalidateQueries({ queryKey: shoppingListQueryKey(variables.date) })
     },
   })
 }
@@ -35,6 +37,7 @@ export function useUpdateMealPlanEntry() {
     onSuccess: (_result, variables) => {
       void queryClient.invalidateQueries({ queryKey: mealPlanQueryKey(variables.date) })
       void queryClient.invalidateQueries({ queryKey: dailyMacroSummaryQueryKey(variables.date) })
+      void queryClient.invalidateQueries({ queryKey: shoppingListQueryKey(variables.date) })
     },
   })
 }
@@ -48,6 +51,7 @@ export function useDeleteMealPlanEntry() {
     onSuccess: (_result, variables) => {
       void queryClient.invalidateQueries({ queryKey: mealPlanQueryKey(variables.date) })
       void queryClient.invalidateQueries({ queryKey: dailyMacroSummaryQueryKey(variables.date) })
+      void queryClient.invalidateQueries({ queryKey: shoppingListQueryKey(variables.date) })
     },
   })
 }
