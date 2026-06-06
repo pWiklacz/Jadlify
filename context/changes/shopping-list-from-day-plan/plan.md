@@ -349,16 +349,16 @@ No database migration is planned. The list is computed on read from existing mea
 
 #### Automated
 
-- [ ] 3.1 Frontend lint passes: `npm run lint`
-- [ ] 3.2 Frontend tests pass: `npm test`
-- [ ] 3.3 Frontend build passes: `npm run build`
+- [x] 3.1 Frontend lint passes: `npm run lint` — d88f8f3
+- [x] 3.2 Frontend tests pass: `npm test` — d88f8f3
+- [x] 3.3 Frontend build passes: `npm run build` — d88f8f3
 
 #### Manual
 
-- [ ] 3.4 `/shopping-list` shows generated items for a planned date
-- [ ] 3.5 Duplicate products appear once with summed grams
-- [ ] 3.6 Empty date shows the empty state and `/meal-plan` link
-- [ ] 3.7 Layout is readable on a narrow mobile viewport
+- [x] 3.4 `/shopping-list` shows generated items for a planned date — d88f8f3
+- [x] 3.5 Duplicate products appear once with summed grams — d88f8f3
+- [x] 3.6 Empty date shows the empty state and `/meal-plan` link — d88f8f3
+- [x] 3.7 Layout is readable on a narrow mobile viewport — d88f8f3
 
 ### Phase 4: Contract Registry and Final Verification
 
