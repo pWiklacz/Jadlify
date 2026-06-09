@@ -51,8 +51,6 @@ public sealed class GetShoppingListQueryHandler : IQueryHandler<GetShoppingListQ
 
         IReadOnlyList<ShoppingListItemDto> items = ShoppingListCalculator.ForMealEntries(matchedEntries)
             .Select(item => new ShoppingListItemDto(item.ProductId, item.ProductName, item.Grams))
-            .OrderBy(item => item.ProductName, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(item => item.ProductId)
             .ToList();
 
         return Result.Ok(new ShoppingListDto(query.Date, items, warnings));
