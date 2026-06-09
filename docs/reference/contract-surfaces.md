@@ -58,4 +58,12 @@ This registry records names that future changes must reuse when building user-ow
 - Day totals are computed on read only through `MacroCalculator.DayTotal(...)` and `MacroCalculator.ForMealEntry(MealPlanEntry, Recipe)` against current recipe ingredient snapshots. Do not persist precomputed day totals, per-entry totals, or goal deltas.
 - `remaining` is `goal - consumed` per field and may be negative when the selected day is over goal. It is represented by `MacroRemainingDto`, not `MacroNutrients`, because `MacroNutrients` is non-negative by construction.
 - `IRecipeRepository.ListByIdsWithIngredientsAsync(...)` is the owner-scoped, ingredient-loaded batch read for summary macro math. Keep `IRecipeRepository.ListByIdsAsync(...)` as the display-only batch read for meal-plan entry names.
-- A missing daily goal is normal: `goal` and `remaining` are both `null`, while `total` and per-entry macros still return. A defensively missing recipe contributes zero rather than failing the whole summary; normal recipe deletion is blocked while meal-plan entries reference it.
+- A missing daily goal is normal: goal and remaining are both null, while total and per-entry macros still return. A defensively missing recipe contributes zero rather than failing the whole summary; normal recipe deletion is blocked while meal-plan entries reference it.
+
+## Shopping List Contracts (S-06)
+
+- `GET /api/shopping-list?date=yyyy-MM-dd` is the read-only shopping list endpoint for the selected date. It inherits the authenticated fallback policy and returns `ShoppingListResponse` (`src/Jadlify.API/Shopping/ShoppingListContracts.cs`).
+- Aggregation is computed on read by scaling recipe ingredient snapshots by planned portions: `Grams = WholeRecipeAmount * entry.Portions / recipe.Portions`. Do not persist the computed list or individual quantities.
+- Items are grouped by ingredient snapshot `ProductId`, preserving the snapshot `ProductName`, and sorted A-Z by product name, then by `ProductId` for deterministic tie-breaking.
+- A missing recipe doesn't fail the request; it contributes no items and adds a `ShoppingListWarningResponse` (`src/Jadlify.API/Shopping/ShoppingListContracts.cs`) to the warnings list.
+- The React page `/shopping-list` owns date selection (defaulting to today's ISO date), fetches the authenticated API endpoint using React Query, handles loading/error states, renders warnings, and displays the items sorted A-Z with grams formatted to one decimal place.

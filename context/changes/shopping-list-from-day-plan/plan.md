@@ -364,13 +364,13 @@ No database migration is planned. The list is computed on read from existing mea
 
 #### Automated
 
-- [ ] 4.1 Backend verify passes: `pwsh ./.scripts/verify-min.ps1`
-- [ ] 4.2 Frontend lint passes: `npm run lint`
-- [ ] 4.3 Frontend tests pass: `npm test`
-- [ ] 4.4 Frontend build passes: `npm run build`
+- [x] 4.1 Backend verify passes: `pwsh ./.scripts/verify-min.ps1`
+- [x] 4.2 Frontend lint passes: `npm run lint`
+- [x] 4.3 Frontend tests pass: `npm test`
+- [x] 4.4 Frontend build passes: `npm run build`
 
 #### Manual
 
-- [ ] 4.5 End-to-end local smoke matches a hand calculation
-- [ ] 4.6 Cross-user shopping-list isolation is confirmed
-- [ ] 4.7 Contract registry S-06 section matches the shipped endpoint
+- [x] 4.5 End-to-end local smoke matches a hand calculation
+- [x] 4.6 Cross-user shopping-list isolation is confirmed
+- [x] 4.7 Contract registry S-06 section matches the shipped endpoint

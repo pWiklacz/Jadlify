@@ -3,7 +3,7 @@ change_id: shopping-list-from-day-plan
 title: Shopping list from day plan
 status: implementing
 created: 2026-06-06
-updated: 2026-06-06
+updated: 2026-06-09
 archived_at: null
 ---
 
