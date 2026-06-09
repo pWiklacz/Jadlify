@@ -3,7 +3,7 @@ project: Jadlify
 version: 1
 status: draft
 created: 2026-05-26
-updated: 2026-06-05
+updated: 2026-06-09
 prd_version: 1
 main_goal: low-complexity
 top_blocker: capacity
@@ -185,7 +185,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** -
 - **Unknowns:** -
 - **Risk:** To domyka zakupowa czesc reguly biznesowej; sekwencja celowo czeka na plan i makro, bo lista ma wynikac z planu, nie z osobnego koszyka.
-- **Status:** proposed
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -231,4 +231,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 ## Done
 
 - **S-05: user can see kcal and macro totals for a selected day plus the numeric delta against their goals** — Archived 2026-06-05 → `context/archive/2026-06-04-daily-macro-summary/`. Lesson: —.
-- **S-06: user can generate and view a deduplicated shopping list from the selected day plan** — Implemented 2026-06-09 → `context/changes/shopping-list-from-day-plan/`. Lesson: —.
+- **S-06: user can generate and view a deduplicated shopping list from the selected day plan** — Archived 2026-06-09 → `context/archive/2026-06-06-shopping-list-from-day-plan/`. Lesson: —.
