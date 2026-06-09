@@ -3,7 +3,7 @@ project: Jadlify
 version: 1
 status: draft
 created: 2026-05-26
-updated: 2026-06-05
+updated: 2026-06-09
 prd_version: 1
 main_goal: low-complexity
 top_blocker: capacity
@@ -35,7 +35,7 @@ Jadlify ma usunac tarcie z planowania posilkow z wyprzedzeniem: reczne liczenie 
 | S-03 | recipe-builder-with-macro-calculation | user can build recipes from their products and see deterministic recipe macro totals | S-02 | US-01, FR-007, FR-008, FR-009, FR-010 | proposed |
 | S-04 | daily-goals-and-meal-plan | user can set daily macro goals and add recipes to a selected day by meal type and portions | S-03 | US-01, FR-011, FR-012, FR-014 | proposed |
 | S-05 | daily-macro-summary | user can see kcal and macro totals for a selected day plus the numeric delta against their goals | S-04 | US-01, FR-013 | done |
-| S-06 | shopping-list-from-day-plan | user can generate and view a deduplicated shopping list from the selected day plan | S-05 | US-01, US-03, FR-015, FR-016 | proposed |
+| S-06 | shopping-list-from-day-plan | user can generate and view a deduplicated shopping list from the selected day plan | S-05 | US-01, US-03, FR-015, FR-016 | done |
 
 ## Baseline
 
@@ -185,7 +185,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** -
 - **Unknowns:** -
 - **Risk:** To domyka zakupowa czesc reguly biznesowej; sekwencja celowo czeka na plan i makro, bo lista ma wynikac z planu, nie z osobnego koszyka.
-- **Status:** proposed
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -231,3 +231,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 ## Done
 
 - **S-05: user can see kcal and macro totals for a selected day plus the numeric delta against their goals** — Archived 2026-06-05 → `context/archive/2026-06-04-daily-macro-summary/`. Lesson: —.
+- **S-06: user can generate and view a deduplicated shopping list from the selected day plan** — Archived 2026-06-09 → `context/archive/2026-06-06-shopping-list-from-day-plan/`. Lesson: —.
