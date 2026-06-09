@@ -27,13 +27,13 @@ Jadlify ma usunac tarcie z planowania posilkow z wyprzedzeniem: reczne liczenie 
 
 | ID | Change ID | Outcome (user can ...) | Prerequisites | PRD refs | Status |
 |---|---|---|---|---|---|
-| F-01 | account-data-boundary | (foundation) minimalny mechanizm konta i granica danych uzytkownika sa gotowe do pierwszych zasobow | - | Access Control, NFR Izolacja danych, NFR Prywatnosc operacyjna | ready |
-| F-02 | persistent-user-resources | (foundation) zasoby uzytkownika i deterministyczne obliczenia maja trwala, testowalna sciezke | F-01 | NFR Determinizm kalkulacji, NFR Czas odpowiedzi | proposed |
-| F-03 | responsive-app-shell | (foundation) responsywny shell aplikacji obsluguje logowanie i pierwszy pionowy przeplyw | F-01 | NFR Responsywnosc dla uzytkownika, NFR Wsparcie urzadzen i przegladarek | proposed |
-| S-01 | account-sign-in-flow | user can create an account, sign in, sign out, and reach only the protected app surface | F-01, F-03 | US-01, FR-001, FR-002 | proposed |
-| S-02 | product-catalog-with-barcode-fallback | user can add, review, edit, and delete their own products, with barcode lookup falling back to manual entry | S-01, F-02 | US-01, US-02, FR-003, FR-004, FR-005, FR-006 | proposed |
-| S-03 | recipe-builder-with-macro-calculation | user can build recipes from their products and see deterministic recipe macro totals | S-02 | US-01, FR-007, FR-008, FR-009, FR-010 | proposed |
-| S-04 | daily-goals-and-meal-plan | user can set daily macro goals and add recipes to a selected day by meal type and portions | S-03 | US-01, FR-011, FR-012, FR-014 | proposed |
+| F-01 | account-data-boundary | (foundation) minimalny mechanizm konta i granica danych uzytkownika sa gotowe do pierwszych zasobow | - | Access Control, NFR Izolacja danych, NFR Prywatnosc operacyjna | done |
+| F-02 | persistent-user-resources | (foundation) zasoby uzytkownika i deterministyczne obliczenia maja trwala, testowalna sciezke | F-01 | NFR Determinizm kalkulacji, NFR Czas odpowiedzi | done |
+| F-03 | responsive-app-shell | (foundation) responsywny shell aplikacji obsluguje logowanie i pierwszy pionowy przeplyw | F-01 | NFR Responsywnosc dla uzytkownika, NFR Wsparcie urzadzen i przegladarek | done |
+| S-01 | account-sign-in-flow | user can create an account, sign in, sign out, and reach only the protected app surface | F-01, F-03 | US-01, FR-001, FR-002 | done |
+| S-02 | product-catalog-with-barcode-fallback | user can add, review, edit, and delete their own products, with barcode lookup falling back to manual entry | S-01, F-02 | US-01, US-02, FR-003, FR-004, FR-005, FR-006 | done |
+| S-03 | recipe-builder-with-macro-calculation | user can build recipes from their products and see deterministic recipe macro totals | S-02 | US-01, FR-007, FR-008, FR-009, FR-010 | done |
+| S-04 | daily-goals-and-meal-plan | user can set daily macro goals and add recipes to a selected day by meal type and portions | S-03 | US-01, FR-011, FR-012, FR-014 | done |
 | S-05 | daily-macro-summary | user can see kcal and macro totals for a selected day plus the numeric delta against their goals | S-04 | US-01, FR-013 | done |
 | S-06 | shopping-list-from-day-plan | user can generate and view a deduplicated shopping list from the selected day plan | S-05 | US-01, US-03, FR-015, FR-016 | done |
 
@@ -191,13 +191,13 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 | Roadmap ID | Change ID | Suggested issue title | Ready for `/10x-plan` | Notes |
 |---|---|---|---|---|
-| F-01 | account-data-boundary | Prepare Supabase Auth token boundary and per-user data guard | yes | Run `/10x-plan account-data-boundary`; plan ASP.NET Core JWT validation, current-user abstraction, and user-scope tests. |
-| F-02 | persistent-user-resources | Prepare Supabase Postgres persistence and deterministic calculation path | no | Depends on F-01; plan EF Core + Npgsql, migrations, user-owned tables, and secret handling. |
-| F-03 | responsive-app-shell | Prepare responsive app shell for the first MVP flow | no | Depends on F-01. |
-| S-01 | account-sign-in-flow | Let users register, sign in, sign out, and reach protected app | no | Depends on F-01 and F-03. |
-| S-02 | product-catalog-with-barcode-fallback | Let users manage products with barcode fallback | no | Depends on S-01 and F-02. |
-| S-03 | recipe-builder-with-macro-calculation | Let users build recipes and see macro totals | no | Depends on S-02. |
-| S-04 | daily-goals-and-meal-plan | Let users set goals and plan meals for a day | no | Depends on S-03. |
+| F-01 | account-data-boundary | Prepare Supabase Auth token boundary and per-user data guard | yes | Run `/10x-plan account-data-boundary`; plan ASP.NET Core JWT validation, current-user abstraction, and user-scope tests. | done 
+| F-02 | persistent-user-resources | Prepare Supabase Postgres persistence and deterministic calculation path | no | Depends on F-01; plan EF Core + Npgsql, migrations, user-owned tables, and secret handling. | done 
+| F-03 | responsive-app-shell | Prepare responsive app shell for the first MVP flow | no | Depends on F-01. | done 
+| S-01 | account-sign-in-flow | Let users register, sign in, sign out, and reach protected app | no | Depends on F-01 and F-03. | done 
+| S-02 | product-catalog-with-barcode-fallback | Let users manage products with barcode fallback | no | Depends on S-01 and F-02. | done 
+| S-03 | recipe-builder-with-macro-calculation | Let users build recipes and see macro totals | no | Depends on S-02. | done 
+| S-04 | daily-goals-and-meal-plan | Let users set goals and plan meals for a day | no | Depends on S-03. | done 
 | S-05 | daily-macro-summary | Show daily macro totals and goal deltas | no | Depends on S-04. |
 | S-06 | shopping-list-from-day-plan | Generate a shopping list from the day plan | no | North star; depends on S-05. |
 

@@ -1,10 +1,10 @@
 ---
 change_id: account-data-boundary
 title: Account data boundary
-status: impl_reviewed
+status: archived
 created: 2026-05-27
-updated: 2026-05-28
-archived_at: null
+updated: 2026-06-09
+archived_at: 2026-06-09T15:20:12Z
 ---
 
 ## Notes
