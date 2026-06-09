@@ -1,10 +1,10 @@
 ---
 change_id: recipe-builder-with-macro-calculation
 title: Recipe builder with macro calculation
-status: impl_reviewed
+status: archived
 created: 2026-05-31
-updated: 2026-06-02
-archived_at: null
+updated: 2026-06-09
+archived_at: 2026-06-09T15:20:12Z
 ---
 
 ## Notes
