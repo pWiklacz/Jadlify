@@ -231,9 +231,9 @@ Run the full test suite to confirm no cross-project regressions, update test-pla
 
 #### Automated
 
-- [x] 3.1 Full test suite passes (all backend test projects)
-- [x] 3.2 Full build succeeds
+- [x] 3.1 Full test suite passes (all backend test projects) — c73565a
+- [x] 3.2 Full build succeeds — c73565a
 
 #### Manual
 
-- [x] 3.3 test-plan.md §6.1 and §6.2 cookbook entries are actionable for future contributors
+- [x] 3.3 test-plan.md §6.1 and §6.2 cookbook entries are actionable for future contributors — c73565a
