@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -NonInteractive -File .scripts/hooks/lint-frontend.ps1",
+            "timeout": 15000
+          },
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -NonInteractive -File .scripts/hooks/typecheck-frontend.ps1",
+            "timeout": 30000
+          }
+        ]
+      }
+    ]
+  }
+}
