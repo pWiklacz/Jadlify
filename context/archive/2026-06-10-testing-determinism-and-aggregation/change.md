@@ -1,10 +1,10 @@
 ---
 change_id: testing-determinism-and-aggregation
 title: Test determinism and aggregation of macros and shopping lists
-status: implemented
+status: archived
 created: 2026-06-10
 updated: 2026-06-10
-archived_at: null
+archived_at: 2026-06-10T12:49:41Z
 ---
 
 ## Notes
