@@ -80,7 +80,7 @@ aktualizuje Status, gdy artefakty pojawiają się na dysku.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Determinizm obliczeń i agregacji | Udowodnić #1 i #2 najtańszą warstwą z niezależnym oracle | #1, #2 | unit + integration | researched | context/changes/testing-determinism-and-aggregation/ |
+| 1 | Determinizm obliczeń i agregacji | Udowodnić #1 i #2 najtańszą warstwą z niezależnym oracle | #1, #2 | unit + integration | complete | context/changes/testing-determinism-and-aggregation/ |
 | 2 | Granica izolacji i auth | Pełna macierz IDOR plus granica tokenu na wszystkich zasobach user-owned | #3, #4 | integration | not started | — |
 | 3 | E2E krytycznego przepływu US-01 | Jeden test przez prawdziwy stack (API↔DB↔SPA) spinający promesę PRD | #1, #2, #3 | e2e | not started | — |
 | 4 | Odporność integracji zewnętrznej i higiena sekretów | Fallback OFF na stubie z fault-injection; brak sekretów w logach | #5, #6 | integration | not started | — |
@@ -138,11 +138,20 @@ odpowiednia faza rolloutu wyląduje; wcześniej brzmi "TBD — see §3 Phase <N>
 
 ### 6.1 Adding a unit test
 
-- TBD — see §3 Phase 1 (wzorzec: niezależny oracle dla makro per-100g; gramatury ułamkowe i wiele porcji).
+- **Niezależny Oracle**: Każdy test obliczeń makroskładników lub gramatur musi posiadać oczekiwane wartości obliczone niezależnie od implementacji (ang. *first-principles arithmetic*). Wzór obliczeń powinien być udokumentowany w komentarzu `// Oracle: ...`.
+- **Brak zaokrągleń**: Asercje powinny sprawdzać pełną precyzję typu `decimal` (np. okresowe ułamki dziesiętne z dużą liczbą miejsc po przecinku), aby potwierdzić, że domena nie wprowadza przedwczesnego zaokrąglania.
+- **Przykład**: Zobacz testy w [MacroCalculatorTests.cs](file:///c:/Users/wikla/source/repos/Jadlify/tests/Jadlify.Domain.Tests/Nutrition/MacroCalculatorTests.cs):
+  ```csharp
+  // Oracle: 100g składnika A (10g białka) + 33.3g składnika B (20g białka)
+  // expected = 10 * (100/100) + 20 * (33.3/100) = 16.66m
+  ```
 
 ### 6.2 Adding an integration test
 
-- TBD — see §3 Phase 1 i Phase 2 (wzorzec: agregacja listy zakupów po id produktu; macierz IDOR przez `TestApiFactory`).
+- **Agregacja po ProductId**: Testy listy zakupów muszą udowadniać, że grupowanie produktów odbywa się po identyfikatorze (`ProductId`), a nie po nazwie. Produkty o tej samej nazwie, ale innych ID powinny pozostać osobnymi pozycjami.
+- **Zasada First-Seen Name**: W przypadku wystąpienia tego samego `ProductId` z różnymi historycznymi nazwami (snapshotami), zagregowany wpis na liście zakupów przejmuje nazwę z pierwszego napotkanego składnika.
+- **Niezależny Oracle**: Sumowane gramatury muszą być wyliczane w testach jako suma proporcji (`wholeRecipeAmount * (entryPortions / recipePortions)`), opisana komentarzami `// Oracle:`.
+- **Przykład**: Zobacz testy w [ShoppingListCalculatorTests.cs](file:///c:/Users/wikla/source/repos/Jadlify/tests/Jadlify.Domain.Tests/Shopping/ShoppingListCalculatorTests.cs).
 
 ### 6.3 Adding an e2e test
 
@@ -158,7 +167,7 @@ odpowiednia faza rolloutu wyląduje; wcześniej brzmi "TBD — see §3 Phase <N>
 
 ### 6.6 Per-rollout-phase notes
 
-(Opcjonalne. Po wylądowaniu fazy `/10x-implement` dopisuje tu 2–3 linie o tym, czego faza nauczyła.)
+- **Faza 1 (Determinizm obliczeń i agregacji)**: Wprowadzono testy z niezależnymi wyroczniami (oracle) eliminujące błąd tautologii (testowanie kodu kodem). Potwierdzono poprawne zachowanie domeny przy ułamkowych porcjach i kolizjach nazw produktów.
 
 ## 7. What We Deliberately Don't Test
 

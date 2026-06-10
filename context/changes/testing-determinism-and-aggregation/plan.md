@@ -219,21 +219,21 @@ Run the full test suite to confirm no cross-project regressions, update test-pla
 
 #### Automated
 
-- [x] 2.1 All 3 new aggregation edge-case tests pass
-- [x] 2.2 All 6 existing ShoppingListCalculatorTests pass (no regressions)
-- [x] 2.3 Build succeeds for Jadlify.Domain.Tests
+- [x] 2.1 All 3 new aggregation edge-case tests pass — 3325345
+- [x] 2.2 All 6 existing ShoppingListCalculatorTests pass (no regressions) — 3325345
+- [x] 2.3 Build succeeds for Jadlify.Domain.Tests — 3325345
 
 #### Manual
 
-- [x] 2.4 Each Oracle comment shows first-principles arithmetic, not implementation formula
+- [x] 2.4 Each Oracle comment shows first-principles arithmetic, not implementation formula — 3325345
 
 ### Phase 3: Verification & Cookbook Update
 
 #### Automated
 
-- [ ] 3.1 Full test suite passes (all backend test projects)
-- [ ] 3.2 Full build succeeds
+- [x] 3.1 Full test suite passes (all backend test projects)
+- [x] 3.2 Full build succeeds
 
 #### Manual
 
-- [ ] 3.3 test-plan.md §6.1 and §6.2 cookbook entries are actionable for future contributors
+- [x] 3.3 test-plan.md §6.1 and §6.2 cookbook entries are actionable for future contributors
