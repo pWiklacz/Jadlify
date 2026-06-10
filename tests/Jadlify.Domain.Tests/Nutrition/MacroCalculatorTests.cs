@@ -171,6 +171,124 @@ public class MacroCalculatorTests
                 new GramAmount(50m))));
     }
 
+    [Fact]
+    public void RecipeTotal_WithFractionalGrams_MatchesIndependentOracle()
+    {
+        // Two ingredients with non-round whole-recipe gram amounts in a 3-portion recipe.
+        var flour = new Product(Guid.NewGuid(), "Flour", new MacroNutrients(200m, 10m, 5m, 20m));
+        var oil = new Product(Guid.NewGuid(), "Oil", new MacroNutrients(150m, 6m, 3m, 9m));
+
+        var recipe = new Recipe(Guid.NewGuid(), "Fractional", portions: 3);
+        recipe.AddIngredient(new RecipeIngredient(flour.Id, flour.Name, flour.Per100Grams, new GramAmount(33.3m)));
+        recipe.AddIngredient(new RecipeIngredient(oil.Id, oil.Name, oil.Per100Grams, new GramAmount(66.7m)));
+
+        MacroNutrients total = MacroCalculator.RecipeTotal(recipe);
+
+        // Oracle (computed by hand from first principles: per-100g × grams ÷ 100, then summed):
+        //   Flour: 33.3 g of (200,10,5,20)/100g (×0.333) = (66.60, 3.330, 1.665, 6.660)
+        //   Oil:   66.7 g of (150, 6,3, 9)/100g (×0.667) = (100.05, 4.002, 2.001, 6.003)
+        //   total                                        = (166.65, 7.332, 3.666, 12.663)
+        Assert.Equal(new MacroNutrients(166.65m, 7.332m, 3.666m, 12.663m), total);
+    }
+
+    [Fact]
+    public void RecipePerServing_WithThreePortions_ProducesRepeatingDecimal()
+    {
+        // Single 100 g ingredient at 100 kcal / 100 g → recipe total = exactly 100 kcal.
+        var rice = new Product(Guid.NewGuid(), "Rice", new MacroNutrients(100m, 9m, 1m, 80m));
+        var recipe = new Recipe(Guid.NewGuid(), "Solo", portions: 3);
+        recipe.AddIngredient(new RecipeIngredient(rice.Id, rice.Name, rice.Per100Grams, new GramAmount(100m)));
+
+        MacroNutrients perServing = MacroCalculator.RecipePerServing(recipe);
+
+        // Oracle: 100 kcal ÷ 3 portions = 33.3333… kcal — a non-terminating decimal.
+        // Independently, 100/3 lies strictly between 33.3333333333 and 33.3333333334.
+        // The domain contract is full-precision decimal with NO rounding: a currency-style
+        // 2-dp rounding would collapse the value to 33.33, which is outside that band.
+        Assert.InRange(perServing.Calories, 33.3333333333m, 33.3333333334m);
+        Assert.NotEqual(33.33m, perServing.Calories);
+        // Proven not rounded: the value carries more precision than its own 2-dp rounding.
+        Assert.NotEqual(Math.Round(perServing.Calories, 2), perServing.Calories);
+    }
+
+    [Fact]
+    public void ForMealEntry_WhenEntryPortionsExceedRecipePortions_ScalesUp()
+    {
+        // A 4-portion recipe; the diner plans 10 portions (cooked the recipe 2.5×).
+        var oats = new Product(Guid.NewGuid(), "Oats", new MacroNutrients(200m, 10m, 5m, 20m));
+        var milk = new Product(Guid.NewGuid(), "Milk", new MacroNutrients(100m, 8m, 2m, 12m));
+        var recipe = new Recipe(Guid.NewGuid(), "Porridge", portions: 4);
+        recipe.AddIngredient(new RecipeIngredient(oats.Id, oats.Name, oats.Per100Grams, new GramAmount(200m)));
+        recipe.AddIngredient(new RecipeIngredient(milk.Id, milk.Name, milk.Per100Grams, new GramAmount(100m)));
+
+        var entry = new MealPlanEntry(Guid.NewGuid(), new DateOnly(2026, 5, 28), recipe.Id, MealType.Lunch, portions: 10);
+
+        MacroNutrients result = MacroCalculator.ForMealEntry(entry, recipe);
+
+        // Oracle (per-100g × grams ÷ 100, summed, ÷ recipe portions, × entry portions):
+        //   Oats: 200 g of (200,10,5,20)/100g (×2) = (400,20,10,40)
+        //   Milk: 100 g of (100, 8,2,12)/100g (×1) = (100, 8, 2,12)
+        //   recipe total                           = (500,28,12,52)
+        //   per serving (÷ 4 portions)             = (125, 7, 3,13)
+        //   meal entry  (× 10 portions, factor 2.5)= (1250,70,30,130)
+        Assert.Equal(new MacroNutrients(1250m, 70m, 30m, 130m), result);
+    }
+
+    [Fact]
+    public void DayTotal_WithMultipleDifferentRecipes_MatchesIndependentOracle()
+    {
+        // Recipe A: 4 portions, two ingredients.
+        var oats = new Product(Guid.NewGuid(), "Oats", new MacroNutrients(200m, 10m, 5m, 20m));
+        var milk = new Product(Guid.NewGuid(), "Milk", new MacroNutrients(100m, 8m, 2m, 12m));
+        var recipeA = new Recipe(Guid.NewGuid(), "Porridge", portions: 4);
+        recipeA.AddIngredient(new RecipeIngredient(oats.Id, oats.Name, oats.Per100Grams, new GramAmount(200m)));
+        recipeA.AddIngredient(new RecipeIngredient(milk.Id, milk.Name, milk.Per100Grams, new GramAmount(50m)));
+
+        // Recipe B: 5 portions, one ingredient — deliberately different from A.
+        var chicken = new Product(Guid.NewGuid(), "Chicken", new MacroNutrients(150m, 12m, 4m, 9m));
+        var recipeB = new Recipe(Guid.NewGuid(), "Roast", portions: 5);
+        recipeB.AddIngredient(new RecipeIngredient(chicken.Id, chicken.Name, chicken.Per100Grams, new GramAmount(250m)));
+
+        var entryA = new MealPlanEntry(Guid.NewGuid(), new DateOnly(2026, 5, 28), recipeA.Id, MealType.Breakfast, portions: 2);
+        var entryB = new MealPlanEntry(Guid.NewGuid(), new DateOnly(2026, 5, 28), recipeB.Id, MealType.Dinner, portions: 3);
+
+        MacroNutrients result = MacroCalculator.DayTotal([(entryA, recipeA), (entryB, recipeB)]);
+
+        // Oracle (each entry computed independently, then summed):
+        //   Recipe A total: 200 g×(200,10,5,20)/100g + 50 g×(100,8,2,12)/100g
+        //                 = (400,20,10,40) + (50,4,1,6) = (450,24,11,46)
+        //     per serving (÷4)            = (112.5, 6, 2.75, 11.5)
+        //     entry A (× 2 portions)      = (225, 12, 5.5, 23)
+        //   Recipe B total: 250 g×(150,12,4,9)/100g (×2.5) = (375, 30, 10, 22.5)
+        //     per serving (÷5)            = (75, 6, 2, 4.5)
+        //     entry B (× 3 portions)      = (225, 18, 6, 13.5)
+        //   day total = entry A + entry B = (450, 30, 11.5, 36.5)
+        Assert.Equal(new MacroNutrients(450m, 30m, 11.5m, 36.5m), result);
+    }
+
+    [Fact]
+    public void WholeRecipeConvention_GramsAreForEntireRecipe_NotPerServing()
+    {
+        // RecipeIngredient.WholeRecipeAmount is grams used across the WHOLE recipe, not per serving.
+        // 400 g of a (400,40,10,20)/100g product in a 4-portion recipe.
+        var product = new Product(Guid.NewGuid(), "Beef", new MacroNutrients(400m, 40m, 10m, 20m));
+        var recipe = new Recipe(Guid.NewGuid(), "Stew", portions: 4);
+        recipe.AddIngredient(new RecipeIngredient(product.Id, product.Name, product.Per100Grams, new GramAmount(400m)));
+
+        MacroNutrients total = MacroCalculator.RecipeTotal(recipe);
+        MacroNutrients perServing = MacroCalculator.RecipePerServing(recipe);
+
+        // Oracle: 400 g is for the whole recipe → recipe total = per-100g × (400 ÷ 100) = ×4.
+        //   recipe total = (1600, 160, 40, 80)
+        //   per serving  = total ÷ 4 portions = (400, 40, 10, 20)
+        Assert.Equal(new MacroNutrients(1600m, 160m, 40m, 80m), total);
+        Assert.Equal(new MacroNutrients(400m, 40m, 10m, 20m), perServing);
+
+        // If 400 g were misread as PER SERVING, per serving would be 4× larger.
+        // Asserting it is NOT that value makes the per-whole-recipe convention explicit.
+        Assert.NotEqual(new MacroNutrients(1600m, 160m, 40m, 80m), perServing);
+    }
+
     private static Recipe BuildRecipe(int portions)
     {
         var oats = new Product(Guid.NewGuid(), "Oats", new MacroNutrients(200m, 10m, 5m, 20m));
