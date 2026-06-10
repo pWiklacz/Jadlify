@@ -108,6 +108,90 @@ public class ShoppingListCalculatorTests
         Assert.Equal("Original oats", item.ProductName);
     }
 
+    [Fact]
+    public void ForMealEntries_SameProductNameDifferentIds_RemainSeparateEntries()
+    {
+        var firstOatsId = Guid.NewGuid();
+        var secondOatsId = Guid.NewGuid();
+        Recipe recipe = BuildRecipe(
+            "Two oats",
+            portions: 1,
+            // Same ProductName "Oats" but distinct ProductIds: aggregation keys on
+            // ProductId, so these must stay as two separate shopping-list entries.
+            Ingredient(firstOatsId, "Oats", 100m),
+            Ingredient(secondOatsId, "Oats", 50m));
+        var entry = new MealPlanEntry(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 1);
+
+        IReadOnlyList<ShoppingListItem> result = ShoppingListCalculator.ForMealEntries([(entry, recipe)]);
+
+        Assert.Equal(2, result.Count);
+        ShoppingListItem first = Assert.Single(result, item => item.ProductId == firstOatsId);
+        ShoppingListItem second = Assert.Single(result, item => item.ProductId == secondOatsId);
+        // Oracle: factor = 1/1 = 1, so grams pass through unchanged per ingredient.
+        Assert.Equal(100m, first.Grams);
+        Assert.Equal(50m, second.Grams);
+    }
+
+    [Fact]
+    public void ForMealEntries_SameProductIdDifferentSnapshotNames_UsesFirstSeenName()
+    {
+        var sharedProductId = Guid.NewGuid();
+        Recipe firstRecipe = BuildRecipe(
+            "Older recipe",
+            portions: 1,
+            Ingredient(sharedProductId, "Original oats", 100m));
+        Recipe secondRecipe = BuildRecipe(
+            "Newer recipe",
+            portions: 1,
+            Ingredient(sharedProductId, "Renamed oats", 50m));
+        var firstEntry = new MealPlanEntry(Guid.NewGuid(), Day, firstRecipe.Id, MealType.Breakfast, portions: 1);
+        var secondEntry = new MealPlanEntry(Guid.NewGuid(), Day, secondRecipe.Id, MealType.Lunch, portions: 1);
+
+        ShoppingListItem item = Assert.Single(ShoppingListCalculator.ForMealEntries(
+            [(firstEntry, firstRecipe), (secondEntry, secondRecipe)]));
+
+        Assert.Equal(sharedProductId, item.ProductId);
+        // First-encountered snapshot name wins for an aggregated product.
+        Assert.Equal("Original oats", item.ProductName);
+        // Oracle: 100 × (1/1) + 50 × (1/1) = 150.
+        Assert.Equal(150m, item.Grams);
+    }
+
+    [Fact]
+    public void ForMealEntries_AggregatedGrams_MatchIndependentOracle()
+    {
+        var pastaId = Guid.NewGuid();
+        var tomatoId = Guid.NewGuid();
+        var oilId = Guid.NewGuid();
+        Recipe pastaDish = BuildRecipe(
+            "Pasta dish",
+            portions: 4,
+            Ingredient(pastaId, "Pasta", 500m),
+            Ingredient(tomatoId, "Tomato", 300m));
+        Recipe salad = BuildRecipe(
+            "Salad",
+            portions: 2,
+            Ingredient(tomatoId, "Tomato", 150m),
+            Ingredient(oilId, "Oil", 50m));
+        var pastaEntry = new MealPlanEntry(Guid.NewGuid(), Day, pastaDish.Id, MealType.Dinner, portions: 2);
+        var saladEntry = new MealPlanEntry(Guid.NewGuid(), Day, salad.Id, MealType.Lunch, portions: 3);
+
+        IReadOnlyList<ShoppingListItem> result = ShoppingListCalculator.ForMealEntries(
+            [(pastaEntry, pastaDish), (saladEntry, salad)]);
+
+        // Oracle: scaled_grams = wholeRecipeAmount × (entryPortions / recipePortions),
+        // then sum per ProductId.
+        // Pasta:  500 × (2/4) = 250
+        // Tomato: 300 × (2/4) + 150 × (3/2) = 150 + 225 = 375
+        // Oil:     50 × (3/2) = 75
+        ShoppingListItem pasta = Assert.Single(result, item => item.ProductId == pastaId);
+        ShoppingListItem tomato = Assert.Single(result, item => item.ProductId == tomatoId);
+        ShoppingListItem oil = Assert.Single(result, item => item.ProductId == oilId);
+        Assert.Equal(250m, pasta.Grams);
+        Assert.Equal(375m, tomato.Grams);
+        Assert.Equal(75m, oil.Grams);
+    }
+
     private static Recipe BuildRecipe(string name, int portions, params RecipeIngredient[] ingredients)
     {
         var recipe = new Recipe(Guid.NewGuid(), name, portions);

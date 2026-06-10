@@ -207,25 +207,25 @@ Run the full test suite to confirm no cross-project regressions, update test-pla
 
 #### Automated
 
-- [x] 1.1 All 5 new macro oracle tests pass
-- [x] 1.2 All 12 existing MacroCalculatorTests pass (no regressions)
-- [x] 1.3 Build succeeds for Jadlify.Domain.Tests
+- [x] 1.1 All 5 new macro oracle tests pass — d01eaff
+- [x] 1.2 All 12 existing MacroCalculatorTests pass (no regressions) — d01eaff
+- [x] 1.3 Build succeeds for Jadlify.Domain.Tests — d01eaff
 
 #### Manual
 
-- [x] 1.4 Each Oracle comment shows first-principles arithmetic, not implementation formula
+- [x] 1.4 Each Oracle comment shows first-principles arithmetic, not implementation formula — d01eaff
 
 ### Phase 2: Shopping List Aggregation Tests
 
 #### Automated
 
-- [ ] 2.1 All 3 new aggregation edge-case tests pass
-- [ ] 2.2 All 6 existing ShoppingListCalculatorTests pass (no regressions)
-- [ ] 2.3 Build succeeds for Jadlify.Domain.Tests
+- [x] 2.1 All 3 new aggregation edge-case tests pass
+- [x] 2.2 All 6 existing ShoppingListCalculatorTests pass (no regressions)
+- [x] 2.3 Build succeeds for Jadlify.Domain.Tests
 
 #### Manual
 
-- [ ] 2.4 Each Oracle comment shows first-principles arithmetic, not implementation formula
+- [x] 2.4 Each Oracle comment shows first-principles arithmetic, not implementation formula
 
 ### Phase 3: Verification & Cookbook Update
 
