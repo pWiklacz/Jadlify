@@ -28,6 +28,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
+    exclude: ['**/node_modules/**', '**/dist/**', 'tests/e2e/**'],
     css: true,
     // Placeholder public Supabase config so modules that import the client (which
     // throws on missing env) are safe to load under test. No network is made.
