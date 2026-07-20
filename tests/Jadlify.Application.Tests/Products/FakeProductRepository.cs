@@ -50,6 +50,56 @@ internal sealed class FakeProductRepository : IProductRepository
         return Task.FromResult<IReadOnlyList<Product>>([.. query.Skip(skip).Take(take)]);
     }
 
+    public Task<ProductCatalogResult> GetCatalogAsync(
+        string? search,
+        ProductCategory? category,
+        bool uncategorizedOnly,
+        ProductCatalogSort sort,
+        int skip,
+        int take,
+        CancellationToken cancellationToken = default)
+    {
+        IEnumerable<Product> query = _products;
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(product =>
+                product.Name.Contains(search, StringComparison.OrdinalIgnoreCase)
+                || (product.Barcode?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false));
+        }
+
+        if (uncategorizedOnly)
+        {
+            query = query.Where(product => product.Category is null);
+        }
+        else if (category is { } selected)
+        {
+            query = query.Where(product => product.Category == selected);
+        }
+
+        List<Product> matches = [.. query];
+        int total = matches.Count;
+
+        IEnumerable<Product> ordered = sort switch
+        {
+            ProductCatalogSort.CaloriesAsc => matches
+                .OrderBy(p => p.Per100Grams.Calories)
+                .ThenBy(p => p.Name, StringComparer.Ordinal)
+                .ThenBy(p => p.Id),
+            ProductCatalogSort.Category => matches
+                .OrderBy(p => p.Category is null)
+                .ThenBy(p => p.Category)
+                .ThenBy(p => p.Name, StringComparer.Ordinal)
+                .ThenBy(p => p.Id),
+            _ => matches
+                .OrderBy(p => p.Name, StringComparer.Ordinal)
+                .ThenBy(p => p.Id),
+        };
+
+        IReadOnlyList<Product> items = [.. ordered.Skip(skip).Take(take)];
+        return Task.FromResult(new ProductCatalogResult(items, total));
+    }
+
     public Task<IReadOnlyList<Product>> ListByIdsAsync(
         IReadOnlyCollection<Guid> ids,
         CancellationToken cancellationToken = default) =>

@@ -24,6 +24,22 @@ public interface IProductRepository
         IReadOnlyCollection<Guid> ids,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Owner-scoped paginated catalog page. Filters by free-text <paramref name="search"/>
+    /// (name or barcode) and, mutually exclusively, either a specific
+    /// <paramref name="category"/> or — when <paramref name="uncategorizedOnly"/> is true —
+    /// products with no category. Orders by <paramref name="sort"/> and returns the window
+    /// plus the total match count.
+    /// </summary>
+    Task<ProductCatalogResult> GetCatalogAsync(
+        string? search,
+        ProductCategory? category,
+        bool uncategorizedOnly,
+        ProductCatalogSort sort,
+        int skip,
+        int take,
+        CancellationToken cancellationToken = default);
+
     Task<Product?> GetByBarcodeAsync(string barcode, CancellationToken cancellationToken = default);
 
     Task<Result> UpdateAsync(Product product, CancellationToken cancellationToken = default);

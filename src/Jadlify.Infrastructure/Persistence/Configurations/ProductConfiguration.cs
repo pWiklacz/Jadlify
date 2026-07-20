@@ -15,11 +15,25 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.Name).HasColumnName("name").IsRequired();
         builder.Property(p => p.Barcode).HasColumnName("barcode");
 
+        // Optional brand (free text) and taxonomy category. Category is stored by its stable
+        // enum name (never the ordinal), matching the wire and avoiding reorder fragility.
+        builder.Property(p => p.Brand).HasColumnName("brand").HasMaxLength(200);
+        builder.Property(p => p.Category)
+            .HasColumnName("category")
+            .HasConversion<string>()
+            .HasMaxLength(40);
+
         builder.Property<string>(PersistenceConstants.UserIdProperty)
             .HasColumnName(PersistenceConstants.UserIdColumn)
             .IsRequired();
         builder.HasIndex(PersistenceConstants.UserIdProperty);
         builder.HasIndex(PersistenceConstants.UserIdProperty, nameof(Product.Barcode));
+
+        // Supports the owner-scoped catalog: category filter narrows first, then name orders.
+        builder.HasIndex(
+            PersistenceConstants.UserIdProperty,
+            nameof(Product.Category),
+            nameof(Product.Name));
 
         builder.OwnsOne(p => p.Per100Grams, macro =>
         {

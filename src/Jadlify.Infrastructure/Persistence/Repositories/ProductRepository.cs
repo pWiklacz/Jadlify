@@ -68,6 +68,67 @@ internal sealed class ProductRepository : IProductRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<ProductCatalogResult> GetCatalogAsync(
+        string? search,
+        ProductCategory? category,
+        bool uncategorizedOnly,
+        ProductCatalogSort sort,
+        int skip,
+        int take,
+        CancellationToken cancellationToken = default)
+    {
+        string owner = _currentUser.UserId.Value;
+
+        IQueryable<Product> query = _context.Products
+            .Where(product => EF.Property<string>(product, PersistenceConstants.UserIdProperty) == owner);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            string normalizedSearch = search.Trim().ToLowerInvariant();
+            query = query.Where(product =>
+                product.Name.ToLower().Contains(normalizedSearch)
+                || product.Barcode != null && product.Barcode.ToLower().Contains(normalizedSearch));
+        }
+
+        // Category filter: uncategorized-only and a specific category are mutually exclusive.
+        if (uncategorizedOnly)
+        {
+            query = query.Where(product => product.Category == null);
+        }
+        else if (category is { } selected)
+        {
+            query = query.Where(product => product.Category == selected);
+        }
+
+        // Count all matches before paging so the caller can render totals / page controls.
+        int total = await query.CountAsync(cancellationToken);
+
+        query = sort switch
+        {
+            ProductCatalogSort.CaloriesAsc => query
+                .OrderBy(product => product.Per100Grams.Calories)
+                .ThenBy(product => product.Name)
+                .ThenBy(product => product.Id),
+            // Group by category name; the leading null-check forces uncategorized last across
+            // providers (Postgres orders NULLs last, SQLite first) for deterministic paging.
+            ProductCatalogSort.Category => query
+                .OrderBy(product => product.Category == null)
+                .ThenBy(product => product.Category)
+                .ThenBy(product => product.Name)
+                .ThenBy(product => product.Id),
+            _ => query
+                .OrderBy(product => product.Name)
+                .ThenBy(product => product.Id),
+        };
+
+        List<Product> items = await query
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+
+        return new ProductCatalogResult(items, total);
+    }
+
     public async Task<IReadOnlyList<Product>> ListByIdsAsync(
         IReadOnlyCollection<Guid> ids,
         CancellationToken cancellationToken = default)

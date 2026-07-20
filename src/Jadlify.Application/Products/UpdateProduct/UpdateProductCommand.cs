@@ -1,4 +1,5 @@
 using Jadlify.Application.Common.Mediator;
+using Jadlify.Domain.Products;
 
 namespace Jadlify.Application.Products.UpdateProduct;
 
@@ -24,4 +25,6 @@ public sealed record UpdateProductCommand(
     decimal? Iron = null,
     decimal? VitaminA = null,
     decimal? VitaminC = null,
-    decimal? VitaminD = null) : ICommand, IExtendedNutritionFields;
+    decimal? VitaminD = null,
+    string? Brand = null,
+    ProductCategory? Category = null) : ICommand, IExtendedNutritionFields;

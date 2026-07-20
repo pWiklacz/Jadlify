@@ -24,8 +24,10 @@ public sealed class CreateProductCommandHandler : ICommandHandler<CreateProductC
             command.Carbohydrates);
         var details = command.ToNutritionFacts();
         string? barcode = string.IsNullOrWhiteSpace(command.Barcode) ? null : command.Barcode;
+        string? brand = string.IsNullOrWhiteSpace(command.Brand) ? null : command.Brand.Trim();
 
-        var product = new Product(id, command.Name, macros, barcode, command.PackageSizeGrams, details);
+        var product = new Product(
+            id, command.Name, macros, barcode, command.PackageSizeGrams, details, brand, command.Category);
         await _products.AddAsync(product, cancellationToken);
 
         return Result.Ok(id);

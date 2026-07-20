@@ -613,27 +613,27 @@ Migrujemy shopping UI na trwałe kontrakty, budujemy dashboard na współdzielon
 
 #### Automated
 
-- [x] 1.1 Testy prymitywów, layoutu, tras i auth przechodzą
-- [x] 1.2 Frontend lint przechodzi
-- [x] 1.3 Produkcyjny frontend build przechodzi
+- [x] 1.1 Testy prymitywów, layoutu, tras i auth przechodzą — 3dca4f7
+- [x] 1.2 Frontend lint przechodzi — 3dca4f7
+- [x] 1.3 Produkcyjny frontend build przechodzi — 3dca4f7
 
 #### Manual
 
-- [x] 1.4 Shell i auth są zgodne wizualnie na desktop, 940 px i mobile
-- [x] 1.5 Klawiatura, focus lifecycle i touch targets są poprawne
+- [x] 1.4 Shell i auth są zgodne wizualnie na desktop, 940 px i mobile — 3dca4f7
+- [x] 1.5 Klawiatura, focus lifecycle i touch targets są poprawne — 3dca4f7
 
 ### Phase 2: Metadane produktu i kontrakty katalogu
 
 #### Automated
 
-- [ ] 2.1 Testy produktu przechodzą we wszystkich warstwach
-- [ ] 2.2 Build rozwiązania przechodzi
-- [ ] 2.3 Migracja i owner-scoped catalog contracts są zweryfikowane
+- [x] 2.1 Testy produktu przechodzą we wszystkich warstwach
+- [x] 2.2 Build rozwiązania przechodzi
+- [x] 2.3 Migracja i owner-scoped catalog contracts są zweryfikowane
 
 #### Manual
 
-- [ ] 2.4 Migracja zachowuje istniejące produkty
-- [ ] 2.5 Brand/category round-trip i barcode fallback działają
+- [x] 2.4 Migracja zachowuje istniejące produkty
+- [x] 2.5 Brand/category round-trip i barcode fallback działają
 
 ### Phase 3: Nowy katalog produktów
 
