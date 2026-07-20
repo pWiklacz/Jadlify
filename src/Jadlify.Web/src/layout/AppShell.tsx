@@ -1,93 +1,65 @@
-import { useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet } from 'react-router-dom'
 import { navItems } from './navItems'
 import { AccountMenu } from './AccountMenu'
+import { BrandMark } from './BrandMark'
 
 /**
- * Persistent responsive shell for the protected area: a top app bar with a
- * brand, inline navigation on desktop that collapses to a hamburger-toggled
- * drawer on mobile, and an account menu (e-mail + sign-out). Renders the routed
- * content in the main outlet.
+ * Persistent shell for the protected area, per the redesign: a warm dark header
+ * with a left status-pill slot, a centered brand, and an account control on the
+ * right, above a row of six Polish nav pills. The pill row wraps and centers on
+ * desktop and scrolls horizontally on mobile.
  *
- * Tailwind breakpoints (`md:`) drive desktop vs. mobile presentation. The
- * mobile drawer is conditionally mounted from `open` state so its toggle is
- * observable in tests (jsdom does not evaluate CSS media queries).
+ * Responsiveness is CSS-only (the `design:` breakpoint) so there is a single DOM
+ * tree — no `window.innerWidth`-driven duplication. The active route gets
+ * `aria-current="page"` automatically from `NavLink`.
  */
 export function AppShell() {
-  const [open, setOpen] = useState(false)
-
-  const linkClass = ({ isActive }: { isActive: boolean }) =>
+  const pillClass = ({ isActive }: { isActive: boolean }) =>
     [
-      'rounded-md px-3 py-2 text-sm font-medium transition-colors',
+      'flex-none rounded-pill px-3.5 py-2 text-[13.5px] transition-colors',
       isActive
-        ? 'bg-slate-900 text-white'
-        : 'text-slate-700 hover:bg-slate-200',
+        ? 'bg-parchment/10 font-semibold text-parchment'
+        : 'font-medium text-parchment/60 hover:bg-parchment/[0.06] hover:text-parchment',
     ].join(' ')
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex h-14 max-w-5xl items-center gap-3 px-4">
-          <button
-            type="button"
-            aria-label="Toggle navigation"
-            aria-expanded={open}
-            aria-controls="mobile-nav"
-            onClick={() => setOpen((value) => !value)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-700 hover:bg-slate-200 md:hidden"
+    <div className="flex min-h-screen flex-col text-parchment">
+      <header className="sticky top-0 z-30 border-b border-parchment/10 bg-ink/95 px-4 pt-3 backdrop-blur design:static design:bg-transparent design:px-[clamp(20px,4vw,52px)] design:pt-5 design:backdrop-blur-0">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 design:gap-4">
+          {/* Left: contextual status pill (populated by pages in later phases). */}
+          <div className="flex justify-start" />
+
+          <Link
+            to="/"
+            aria-label="Jadlify — strona główna"
+            className="flex justify-center rounded-field focus-visible:outline-none"
           >
-            <span aria-hidden="true" className="text-xl leading-none">
-              ☰
-            </span>
-          </button>
+            <BrandMark size={30} stacked withTagline />
+          </Link>
 
-          <span className="text-lg font-bold tracking-tight">Jadlify</span>
-
-          <nav
-            aria-label="Main"
-            className="ml-4 hidden items-center gap-1 md:flex"
-          >
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === '/'}
-                className={linkClass}
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-
-          {/* Account menu: signed-in user's e-mail + Wyloguj (sign-out). */}
-          <AccountMenu />
+          <div className="flex justify-end">
+            <AccountMenu />
+          </div>
         </div>
 
-        {open && (
-          <nav
-            id="mobile-nav"
-            aria-label="Mobile"
-            className="border-t border-slate-200 px-4 pb-3 md:hidden"
-          >
-            <ul className="flex flex-col gap-1 pt-2">
-              {navItems.map((item) => (
-                <li key={item.to}>
-                  <NavLink
-                    to={item.to}
-                    end={item.to === '/'}
-                    className={linkClass}
-                    onClick={() => setOpen(false)}
-                  >
-                    {item.label}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
+        <nav
+          aria-label="Główna nawigacja"
+          className="flex gap-1.5 overflow-x-auto px-1 pb-2 pt-2.5 design:flex-wrap design:justify-center design:gap-1 design:overflow-visible design:px-0 design:pb-4 design:pt-3.5"
+        >
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === '/'}
+              className={pillClass}
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
+      <main className="mx-auto w-full max-w-[1180px] flex-1 px-4 pb-24 pt-6 design:px-[clamp(16px,3.4vw,44px)] design:pt-8">
         <Outlet />
       </main>
     </div>

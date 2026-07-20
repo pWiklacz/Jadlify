@@ -1,5 +1,4 @@
 import { render, screen, within } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import type { Session } from '@supabase/supabase-js'
@@ -17,17 +16,21 @@ const fakeSession = {
   user: { email: 'user@example.com' },
 } as unknown as Session
 
-function renderShell() {
+function renderShell(initialPath = '/') {
   return render(
     <SessionContext.Provider value={{ session: fakeSession, isLoading: false }}>
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={[initialPath]}>
         <Routes>
           <Route element={<AppShell />}>
             <Route path="/" element={<div>Home content</div>} />
             {navItems
               .filter((item) => item.to !== '/')
               .map((item) => (
-                <Route key={item.to} path={item.to} element={<div>{item.label} content</div>} />
+                <Route
+                  key={item.to}
+                  path={item.to}
+                  element={<div>{item.label} content</div>}
+                />
               ))}
           </Route>
         </Routes>
@@ -37,50 +40,36 @@ function renderShell() {
 }
 
 describe('AppShell', () => {
-  it('renders the brand, the routed outlet, and inline desktop nav', () => {
+  it('renders the brand, the routed outlet, and the six Polish nav pills', () => {
     renderShell()
 
     expect(screen.getByText('Jadlify')).toBeInTheDocument()
     expect(screen.getByText('Home content')).toBeInTheDocument()
 
-    const mainNav = screen.getByRole('navigation', { name: 'Main' })
+    const nav = screen.getByRole('navigation', { name: 'Główna nawigacja' })
     for (const item of navItems) {
-      expect(within(mainNav).getByRole('link', { name: item.label })).toBeInTheDocument()
+      expect(within(nav).getByRole('link', { name: item.label })).toBeInTheDocument()
     }
   })
 
-  it('opens and closes the mobile drawer via the hamburger toggle', async () => {
-    const user = userEvent.setup()
-    renderShell()
+  it('marks the active route with aria-current="page"', () => {
+    renderShell('/products')
 
-    // Drawer starts closed (not mounted).
-    expect(screen.queryByRole('navigation', { name: 'Mobile' })).not.toBeInTheDocument()
-
-    const toggle = screen.getByRole('button', { name: /toggle navigation/i })
-    expect(toggle).toHaveAttribute('aria-expanded', 'false')
-
-    await user.click(toggle)
-
-    const drawer = screen.getByRole('navigation', { name: 'Mobile' })
-    expect(drawer).toBeInTheDocument()
-    expect(toggle).toHaveAttribute('aria-expanded', 'true')
-    expect(within(drawer).getByRole('link', { name: 'Products' })).toBeInTheDocument()
-
-    await user.click(toggle)
-
-    expect(screen.queryByRole('navigation', { name: 'Mobile' })).not.toBeInTheDocument()
-    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    const nav = screen.getByRole('navigation', { name: 'Główna nawigacja' })
+    expect(within(nav).getByRole('link', { name: 'Produkty' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(within(nav).getByRole('link', { name: 'Strona główna' })).not.toHaveAttribute(
+      'aria-current',
+    )
   })
 
-  it('closes the drawer when a navigation link is selected', async () => {
-    const user = userEvent.setup()
+  it('mounts the account control from the session', () => {
     renderShell()
 
-    await user.click(screen.getByRole('button', { name: /toggle navigation/i }))
-
-    const drawer = screen.getByRole('navigation', { name: 'Mobile' })
-    await user.click(within(drawer).getByRole('link', { name: 'Recipes' }))
-
-    expect(screen.queryByRole('navigation', { name: 'Mobile' })).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'user@example.com' }),
+    ).toBeInTheDocument()
   })
 })

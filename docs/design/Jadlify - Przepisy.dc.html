@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Archivo:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: #1F1712; }
+  button, select, input { font: inherit; }
+  a { color: #D97E57; }
+  a:hover { color: #C75B38; }
+  @keyframes jd-pulse { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+  @keyframes jd-spin { to { transform: rotate(360deg); } }
+  @keyframes jd-toast { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  @keyframes jd-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</helmet>
+<div data-screen-label="Przepisy Jadlify" style="min-height:100vh;background:radial-gradient(1100px 500px at 50% -120px,#2C2015 0%,#1F1712 70%);font-family:'Archivo',system-ui,sans-serif;color:#F2E9D8;display:flex;flex-direction:column">
+
+  <!-- ── Nagłówek: desktop ───────────────────────────── -->
+  <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+    <header style="border-bottom:1px solid rgba(242,233,216,0.08);padding:20px clamp(20px,4vw,52px) 0">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px">
+        <div style="display:flex;justify-content:flex-start">
+          <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;border:1px solid rgba(242,233,216,0.16);font-size:11px;font-weight:700;letter-spacing:0.12em;color:{{ statusFg }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ statusDot }}"></span>{{ statusLabel }}</span>
+        </div>
+        <a href="Jadlify - Strona główna v5.dc.html" onClick="{{ goHome }}" style="display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;color:#F2E9D8">
+          <svg width="34" height="34" viewBox="0 0 32 32" fill="none" stroke="#D97E57" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="16" cy="16" r="8.2"></circle>
+            <circle cx="16" cy="16" r="3.4"></circle>
+            <path d="M4.4 10.5v4a1.6 1.6 0 0 0 3.2 0v-4"></path>
+            <path d="M6 10.5V25"></path>
+            <path d="M26.6 10.5c-1.7 1.9-1.7 5 0 6.6V25"></path>
+          </svg>
+          <span style="font-family:'Instrument Serif',serif;font-size:26px;line-height:1;letter-spacing:0.01em">Jadlify</span>
+          <span style="font-size:9px;font-weight:700;letter-spacing:0.26em;color:rgba(242,233,216,0.45)">PLANER POSIŁKÓW I MAKRO</span>
+        </a>
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px">
+          <a href="#" onClick="{{ goKonto }}" aria-label="Moje konto" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid rgba(242,233,216,0.16);color:rgba(242,233,216,0.75);text-decoration:none" style-hover="background:rgba(242,233,216,0.08);color:#F2E9D8">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"></circle><path d="M4.5 17c0-3 2.5-4.6 5.5-4.6s5.5 1.6 5.5 4.6"></path></svg></a>
+          <a href="#" onClick="{{ goWyloguj }}" style="font-size:13px;font-weight:600;color:rgba(242,233,216,0.55);text-decoration:none;padding:8px 4px" style-hover="color:#F2E9D8">Wyloguj</a>
+        </div>
+      </div>
+      <nav style="display:flex;justify-content:center;align-items:center;gap:4px;padding:14px 0 16px;flex-wrap:wrap">
+        <a href="Jadlify - Strona główna v5.dc.html" onClick="{{ goHome }}" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Strona główna</a>
+        <a href="Jadlify - Produkty.dc.html" onClick="{{ goProdukty }}" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Produkty</a>
+        <a href="#" onClick="{{ goPrzepisy }}" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:600;color:#F2E9D8;background:rgba(242,233,216,0.1);text-decoration:none">Przepisy</a>
+        <a href="#" onClick="{{ goPlan }}" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Plan posiłków</a>
+        <a href="#" onClick="{{ goCele }}" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Dzienne cele</a>
+        <a href="Jadlify - Lista zakupów.dc.html" onClick="{{ goLista }}" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Lista zakupów</a>
+      </nav>
+    </header>
+  </sc-if>
+
+  <!-- ── Nagłówek: mobile ────────────────────────────── -->
+  <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+    <header style="background:#1F1712;border-bottom:1px solid rgba(242,233,216,0.08)">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:12px 16px 6px">
+        <div></div>
+        <a href="Jadlify - Strona główna v5.dc.html" onClick="{{ goHome }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;color:#F2E9D8">
+          <svg width="26" height="26" viewBox="0 0 32 32" fill="none" stroke="#D97E57" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="16" cy="16" r="8.2"></circle>
+            <circle cx="16" cy="16" r="3.4"></circle>
+            <path d="M4.4 10.5v4a1.6 1.6 0 0 0 3.2 0v-4"></path>
+            <path d="M6 10.5V25"></path>
+            <path d="M26.6 10.5c-1.7 1.9-1.7 5 0 6.6V25"></path>
+          </svg>
+          <span style="font-family:'Instrument Serif',serif;font-size:20px;line-height:1">Jadlify</span>
+        </a>
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:6px">
+          <a href="#" onClick="{{ goKonto }}" aria-label="Moje konto" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid rgba(242,233,216,0.16);color:rgba(242,233,216,0.75);text-decoration:none">
+            <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"></circle><path d="M4.5 17c0-3 2.5-4.6 5.5-4.6s5.5 1.6 5.5 4.6"></path></svg></a>
+          <a href="#" onClick="{{ goWyloguj }}" style="font-size:12.5px;font-weight:600;color:rgba(242,233,216,0.55);text-decoration:none;padding:8px 2px">Wyloguj</a>
+        </div>
+      </div>
+      <nav style="display:flex;gap:6px;overflow-x:auto;padding:6px 16px 12px;justify-content:safe center">
+        <a href="Jadlify - Strona główna v5.dc.html" onClick="{{ goHome }}" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Strona główna</a>
+        <a href="Jadlify - Produkty.dc.html" onClick="{{ goProdukty }}" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Produkty</a>
+        <a href="#" onClick="{{ goPrzepisy }}" style="flex:none;padding:7px 13px;border-radius:999px;background:rgba(242,233,216,0.12);color:#F2E9D8;text-decoration:none;font-size:13px;font-weight:600">Przepisy</a>
+        <a href="#" onClick="{{ goPlan }}" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Plan posiłków</a>
+        <a href="#" onClick="{{ goCele }}" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Dzienne cele</a>
+        <a href="Jadlify - Lista zakupów.dc.html" onClick="{{ goLista }}" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Lista zakupów</a>
+      </nav>
+    </header>
+  </sc-if>
+
+  <main style="width:100%;max-width:1140px;margin:0 auto;padding:clamp(18px,3vw,32px) clamp(16px,3.4vw,44px) 130px">
+
+    <!-- ── Ładowanie ──────────────────────────────────── -->
+    <sc-if value="{{ showLoading }}" hint-placeholder-val="{{ false }}">
+      <div aria-label="Ładowanie przepisów">
+        <div style="height:44px;width:min(300px,60%);border-radius:12px;background:rgba(242,233,216,0.07);animation:jd-pulse 1.4s ease-in-out infinite"></div>
+        <div style="height:46px;width:min(520px,100%);border-radius:999px;background:rgba(242,233,216,0.06);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.1s;margin-top:20px"></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;margin-top:18px">
+          <div style="height:190px;border-radius:18px;background:rgba(242,233,216,0.07);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.15s"></div>
+          <div style="height:190px;border-radius:18px;background:rgba(242,233,216,0.06);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.3s"></div>
+          <div style="height:190px;border-radius:18px;background:rgba(242,233,216,0.06);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.45s"></div>
+        </div>
+        <div style="margin-top:18px;font-size:13.5px;color:rgba(242,233,216,0.5);display:flex;align-items:center;gap:9px">
+          <span style="width:14px;height:14px;border:2px solid rgba(242,233,216,0.25);border-top-color:#D97E57;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span>
+          Wczytujemy Twoje przepisy…
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ── Błąd pobierania ────────────────────────────── -->
+    <sc-if value="{{ showError }}" hint-placeholder-val="{{ false }}">
+      <div style="max-width:520px;margin:40px auto;background:#F8F1E3;border-radius:20px;padding:32px;text-align:center;color:#2A2018;animation:jd-rise 0.4s ease-out">
+        <div style="width:46px;height:46px;margin:0 auto 14px;border-radius:50%;background:rgba(179,64,46,0.1);display:flex;align-items:center;justify-content:center;color:#B3402E">
+          <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 18 17H2z"></path><path d="M10 8.5v3.5"></path><circle cx="10" cy="14.4" r="0.5" fill="currentColor"></circle></svg>
+        </div>
+        <h2 style="margin:0 0 6px;font-family:'Instrument Serif',serif;font-weight:400;font-size:24px">Nie udało się pobrać przepisów</h2>
+        <p style="margin:0 0 20px;font-size:14.5px;line-height:1.55;color:#8C7F6C">Wystąpił problem z połączeniem. Twoje przepisy i produkty są bezpieczne — spróbuj ponownie.</p>
+        <button onClick="{{ retryLoad }}" style="border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:14.5px;padding:12px 24px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">Wczytaj ponownie</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showContent }}" hint-placeholder-val="{{ true }}">
+
+      <!-- ════════ EKRAN: INDEKS PRZEPISÓW ════════ -->
+      <sc-if value="{{ scrIndex }}" hint-placeholder-val="{{ true }}">
+        <section data-screen-label="Indeks przepisów">
+          <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 20px;margin:0 0 20px">
+            <div style="min-width:230px">
+              <h1 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(30px,3.4vw,40px);line-height:1.05">Przepisy</h1>
+              <div style="margin-top:5px;font-size:14px;color:rgba(242,233,216,0.55);max-width:560px;line-height:1.5">Przepisy budujesz z własnych produktów — kalorie i makro liczymy automatycznie z gramatur i liczby porcji.</div>
+            </div>
+            <div style="flex:1"></div>
+            <sc-if value="{{ idxCtaShow }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ startCreate }}" style="display:flex;align-items:center;gap:8px;border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:14px;padding:12px 22px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 4v12M4 10h12"></path></svg>
+                Utwórz przepis</button>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ toolbarShow }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 18px">
+              <div style="flex:1 1 260px;min-width:220px;position:relative">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="rgba(242,233,216,0.45)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="position:absolute;left:15px;top:50%;transform:translateY(-50%);pointer-events:none"><circle cx="9" cy="9" r="5.5"></circle><path d="m13.5 13.5 3.5 3.5"></path></svg>
+                <input type="text" value="{{ searchVal }}" onChange="{{ onSearch }}" placeholder="Szukaj przepisu po nazwie…" aria-label="Szukaj przepisu po nazwie" style="width:100%;min-height:46px;border:1px solid rgba(242,233,216,0.16);background:rgba(242,233,216,0.06);border-radius:999px;padding:10px 48px 10px 40px;font-size:14px;color:#F2E9D8;outline:none" style-focus="border:1.5px solid #D97E57">
+                <sc-if value="{{ searchHasText }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ clearSearch }}" aria-label="Wyczyść wyszukiwanie" title="Wyczyść wyszukiwanie" style="position:absolute;right:5px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:none;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(242,233,216,0.6)" style-hover="background:rgba(242,233,216,0.1);color:#F2E9D8">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"></path></svg></button>
+                </sc-if>
+              </div>
+              <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:rgba(242,233,216,0.55)">Sortuj:
+                <select value="{{ sortVal }}" onChange="{{ onSort }}" style="min-height:44px;border:1px solid rgba(242,233,216,0.16);background:rgba(242,233,216,0.06);color:#F2E9D8;border-radius:999px;padding:8px 14px;font-size:13.5px;cursor:pointer;outline:none">
+                  <option value="updated" style="color:#2A2018">Ostatnio aktualizowane</option>
+                  <option value="alpha" style="color:#2A2018">Alfabetycznie (A–Z)</option>
+                  <option value="kcal" style="color:#2A2018">Kalorie na porcję (rosnąco)</option>
+                </select>
+              </label>
+              <span style="font-size:13px;color:rgba(242,233,216,0.55);font-variant-numeric:tabular-nums">{{ countLabel }}</span>
+            </div>
+          </sc-if>
+
+          <!-- Pusty stan: brak produktów -->
+          <sc-if value="{{ idxEmptyProducts }}" hint-placeholder-val="{{ false }}">
+            <div data-screen-label="Pusty stan: brak produktów" style="max-width:560px;margin:28px auto 0;background:#F8F1E3;border-radius:22px;padding:clamp(26px,4vw,40px);text-align:center;color:#2A2018;animation:jd-rise 0.4s ease-out">
+              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#C75B38" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 0 12px" aria-hidden="true"><path d="M4 10c0 4.4 3.6 8 8 8s8-3.6 8-8"></path><path d="M3 10h18"></path><path d="M9 10c0-3 1.3-5 3-5s3 2 3 5"></path><path d="M8 21h8"></path></svg>
+              <h2 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:26px">Zacznij od dodania produktów</h2>
+              <p style="margin:0 auto 22px;max-width:430px;font-size:14.5px;line-height:1.6;color:#8C7F6C">Przepisy powstają z Twoich produktów i ich wartości na 100 g. Nie masz jeszcze żadnych produktów — dodaj pierwszy, a potem złożysz z nich przepis.</p>
+              <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px">
+                <button onClick="{{ startAddProduct }}" style="border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:15px;min-height:48px;padding:13px 26px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">Dodaj pierwszy produkt</button>
+                <button disabled="{{ true }}" aria-disabled="true" title="Najpierw dodaj produkt" style="border:1px solid #E5DAC3;background:transparent;color:#B0A48C;font-weight:600;font-size:15px;min-height:48px;padding:13px 24px;border-radius:999px;cursor:not-allowed">Utwórz pierwszy przepis</button>
+              </div>
+              <div style="margin-top:14px;font-size:12.5px;color:#8C7F6C">Tworzenie przepisu będzie dostępne, gdy dodasz przynajmniej jeden produkt.</div>
+            </div>
+          </sc-if>
+
+          <!-- Pusty stan: brak przepisów -->
+          <sc-if value="{{ idxEmptyRecipes }}" hint-placeholder-val="{{ false }}">
+            <div data-screen-label="Pusty stan: brak przepisów" style="max-width:560px;margin:28px auto 0;background:#F8F1E3;border-radius:22px;padding:clamp(26px,4vw,40px);text-align:center;color:#2A2018;animation:jd-rise 0.4s ease-out">
+              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#C75B38" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 0 12px" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"></path><path d="M5 4v13a3 3 0 0 0 3 3"></path><path d="M9 8h6M9 12h4"></path></svg>
+              <h2 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:26px">Nie masz jeszcze przepisów</h2>
+              <p style="margin:0 auto 22px;max-width:430px;font-size:14.5px;line-height:1.6;color:#8C7F6C">Przepis to zestaw Twoich produktów z gramaturami i liczbą porcji. Kalorie, białko, tłuszcz i węglowodany policzymy automatycznie — nic nie wpisujesz ręcznie.</p>
+              <button onClick="{{ startCreate }}" style="border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:15px;min-height:48px;padding:13px 26px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">Utwórz pierwszy przepis</button>
+            </div>
+          </sc-if>
+
+          <!-- Brak wyników wyszukiwania -->
+          <sc-if value="{{ idxNoMatch }}" hint-placeholder-val="{{ false }}">
+            <div data-screen-label="Brak wyników wyszukiwania" style="max-width:520px;margin:24px auto 0;background:#F8F1E3;border:1.5px dashed #DCCFB2;border-radius:18px;padding:28px 24px;text-align:center;color:#2A2018">
+              <svg width="26" height="26" viewBox="0 0 20 20" fill="none" stroke="#A79A83" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" style="margin:0 0 8px"><circle cx="9" cy="9" r="5.5"></circle><path d="m13.5 13.5 3.5 3.5"></path><path d="M7 9h4"></path></svg>
+              <div style="font-weight:700;font-size:15px">{{ noMatchLabel }}</div>
+              <p style="margin:4px auto 14px;max-width:360px;font-size:13.5px;line-height:1.5;color:#6E6250">Sprawdź pisownię albo wyczyść wyszukiwanie, aby zobaczyć wszystkie przepisy.</p>
+              <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px">
+                <button onClick="{{ clearSearch }}" style="border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:13.5px;min-height:44px;padding:10px 18px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Wyczyść wyszukiwanie</button>
+                <button onClick="{{ startCreate }}" style="border:none;background:#2A2018;color:#F8F1E3;font-weight:600;font-size:13.5px;min-height:44px;padding:10px 20px;border-radius:999px;cursor:pointer" style-hover="background:#1F1712">Utwórz nowy przepis</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- Siatka przepisów -->
+          <sc-if value="{{ idxGridShow }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px">
+              <sc-for list="{{ recipeCards }}" as="rc" hint-placeholder-count="6">
+                <div onClick="{{ rc.open }}" style="background:#F8F1E3;border-radius:18px;padding:18px 18px 12px;color:#2A2018;display:flex;flex-direction:column;gap:9px;cursor:pointer;border:1px solid rgba(0,0,0,0.05);animation:jd-rise 0.35s ease-out" style-hover="box-shadow:0 16px 36px rgba(0,0,0,0.32)">
+                  <div style="display:flex;align-items:flex-start;gap:8px">
+                    <button onClick="{{ rc.open }}" style="border:none;background:transparent;padding:0;text-align:left;cursor:pointer;flex:1 1 auto;min-width:0">
+                      <span style="display:block;font-family:'Instrument Serif',serif;font-size:21px;line-height:1.18;color:#2A2018;overflow-wrap:anywhere">{{ rc.name }}</span>
+                    </button>
+                    <sc-if value="{{ rc.usedShow }}" hint-placeholder-val="{{ false }}">
+                      <span title="Używany w zaplanowanych posiłkach" style="flex:none;font-size:9.5px;font-weight:700;letter-spacing:0.12em;padding:4px 9px;border-radius:999px;background:rgba(95,124,78,0.12);color:#4C6340;border:1px solid rgba(95,124,78,0.3)">W PLANIE</span>
+                    </sc-if>
+                  </div>
+                  <div style="font-size:12.5px;color:#8C7F6C">{{ rc.metaLine }}</div>
+                  <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:2px">
+                    <span style="font-family:'Instrument Serif',serif;font-size:30px;line-height:1;font-variant-numeric:tabular-nums">{{ rc.kcal }}</span>
+                    <span style="font-size:11px;font-weight:700;letter-spacing:0.1em;color:#8C7F6C">KCAL / PORCJĘ</span>
+                  </div>
+                  <div style="font-size:13px;color:#5C5140;font-variant-numeric:tabular-nums">{{ rc.macroLine }}</div>
+                  <div style="display:flex;align-items:center;gap:2px;border-top:1px dotted #DCCFB2;padding-top:6px;margin-top:2px">
+                    <span style="font-size:12.5px;color:#8C7F6C">{{ rc.updated }}</span>
+                    <span style="flex:1"></span>
+                    <button onClick="{{ rc.edit }}" aria-label="Edytuj przepis {{ rc.name }}" title="Edytuj" style="width:40px;height:40px;border:none;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C7F6C" style-hover="background:#EFE5D2;color:#2A2018">
+                      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13.7 13 4.7l2.3 2.3-9 9L3 17z"></path><path d="M11.5 6.2l2.3 2.3"></path></svg></button>
+                    <button onClick="{{ rc.del }}" aria-label="Usuń przepis {{ rc.name }}" title="Usuń" style="width:40px;height:40px;border:none;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C7F6C" style-hover="background:rgba(179,64,46,0.1);color:#B3402E">
+                      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12"></path><path d="M8 6V4.5h4V6"></path><path d="M6 6l1 10.5h6L14 6"></path><path d="M9 9v4.5M11 9v4.5"></path></svg></button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </section>
+      </sc-if>
+
+      <!-- ════════ EKRAN: SZCZEGÓŁY PRZEPISU ════════ -->
+      <sc-if value="{{ scrDetails }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Szczegóły przepisu">
+          <button onClick="{{ backToIndex }}" style="display:inline-flex;align-items:center;gap:7px;border:none;background:transparent;color:rgba(242,233,216,0.6);font-size:13px;font-weight:600;padding:8px 4px;cursor:pointer;margin:0 0 8px" style-hover="color:#F2E9D8">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 4 6.5 10l6 6"></path></svg>
+            Wszystkie przepisy</button>
+
+          <section aria-label="Nagłówek przepisu" style="background:#F8F1E3;border-radius:22px;padding:clamp(20px,3vw,28px);color:#2A2018;animation:jd-rise 0.35s ease-out">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px">
+              <span style="font-size:10.5px;font-weight:700;letter-spacing:0.16em;padding:5px 12px;border-radius:999px;background:rgba(217,126,87,0.14);color:#C75B38;border:1px solid rgba(199,91,56,0.35)">PRZEPIS</span>
+              <div style="flex:1"></div>
+              <span style="font-size:12.5px;color:#8C7F6C">{{ detUpdated }}</span>
+            </div>
+            <h1 style="margin:12px 0 4px;font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(26px,3.2vw,36px);line-height:1.1;overflow-wrap:anywhere">{{ detName }}</h1>
+            <div style="font-size:13.5px;color:#8C7F6C">{{ detMetaLine }}</div>
+
+            <sc-if value="{{ detUsedShow }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;gap:9px;align-items:flex-start;background:rgba(95,124,78,0.1);border:1px solid rgba(95,124,78,0.35);border-radius:12px;padding:10px 13px;margin:14px 0 0;font-size:13px;line-height:1.5;color:#4C6340">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><circle cx="10" cy="10" r="7"></circle><path d="M10 6.5v4"></path><circle cx="10" cy="13.6" r="0.5" fill="currentColor"></circle></svg>
+                <span><b>Ten przepis jest używany w zaplanowanych posiłkach.</b> {{ detUsedLabel }} Zmiany w przepisie wpłyną na przyszłe wyliczenia planu.</span>
+              </div>
+            </sc-if>
+
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:18px">
+              <button onClick="{{ detAddToPlan }}" style="display:flex;align-items:center;gap:8px;border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:14px;min-height:48px;padding:12px 22px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 4v12M4 10h12"></path></svg>
+                Dodaj do planu</button>
+              <button onClick="{{ detEdit }}" style="border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 20px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2;color:#2A2018">Edytuj</button>
+              <div style="flex:1"></div>
+              <button onClick="{{ detDelete }}" style="border:1px solid rgba(179,64,46,0.35);background:transparent;color:#B3402E;font-weight:600;font-size:13.5px;min-height:48px;padding:12px 18px;border-radius:999px;cursor:pointer" style-hover="background:rgba(179,64,46,0.08)">Usuń przepis</button>
+            </div>
+          </section>
+
+          <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:16px;align-items:flex-start">
+            <!-- Wartości odżywcze -->
+            <section aria-label="Wartości odżywcze" style="flex:1 1 300px;min-width:280px;background:#F8F1E3;border-radius:20px;padding:20px;color:#2A2018">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 12px">WARTOŚCI ODŻYWCZE</div>
+              <div style="border:1.5px solid rgba(199,91,56,0.45);background:rgba(199,91,56,0.06);border-radius:16px;padding:16px">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#C75B38">NA 1 PORCJĘ</div>
+                <div style="display:flex;align-items:baseline;gap:7px;margin-top:8px">
+                  <span style="font-family:'Instrument Serif',serif;font-size:40px;line-height:1;font-variant-numeric:tabular-nums">{{ detPerKcal }}</span>
+                  <span style="font-size:13px;font-weight:700;color:#8C7F6C">kcal</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px">
+                  <div><div style="font-size:10px;font-weight:700;letter-spacing:0.12em;color:#8C7F6C">BIAŁKO</div><div style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px">{{ detPerB }}</div></div>
+                  <div><div style="font-size:10px;font-weight:700;letter-spacing:0.12em;color:#8C7F6C">TŁUSZCZ</div><div style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px">{{ detPerT }}</div></div>
+                  <div><div style="font-size:10px;font-weight:700;letter-spacing:0.12em;color:#8C7F6C">WĘGLOW.</div><div style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px">{{ detPerW }}</div></div>
+                </div>
+              </div>
+              <div style="border:1px solid #EADFC8;background:#FCF7EC;border-radius:16px;padding:14px 16px;margin-top:10px">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250">{{ detTotLabel }}</div>
+                <div style="margin-top:7px;font-size:14px;font-variant-numeric:tabular-nums;color:#2A2018"><b>{{ detTotKcal }} kcal</b> <span style="color:#5C5140">· {{ detTotLine }}</span></div>
+              </div>
+              <div style="margin-top:12px;font-size:12.5px;line-height:1.55;color:#8C7F6C">Wartości liczymy automatycznie z gramatur składników i danych produktów (na 100 g).</div>
+            </section>
+
+            <!-- Składniki -->
+            <section aria-label="Składniki" style="flex:1.5 1 360px;min-width:280px;background:#F8F1E3;border-radius:20px;padding:20px;color:#2A2018">
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 4px">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250">SKŁADNIKI</div>
+                <span style="font-size:10px;font-weight:700;letter-spacing:0.12em;padding:3px 9px;border-radius:999px;background:rgba(199,91,56,0.1);color:#C75B38;border:1px solid rgba(199,91,56,0.3)">CAŁY PRZEPIS</span>
+              </div>
+              <p style="margin:0 0 10px;font-size:13px;line-height:1.5;color:#8C7F6C">Podane ilości dotyczą całego przygotowywanego przepisu ({{ detPortionsLabel }}) — nie jednej porcji.</p>
+              <div>
+                <sc-for list="{{ detIngRows }}" as="ig" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:baseline;gap:8px;padding:10px 0;border-bottom:1px dotted #DCCFB2">
+                    <span style="font-size:14px;font-weight:600;min-width:0;overflow-wrap:anywhere">{{ ig.name }}</span>
+                    <div style="flex:1;border-bottom:2px dotted #DCCFB2;align-self:center;min-width:16px"></div>
+                    <span style="font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap">{{ ig.gramsLabel }}</span>
+                    <span style="font-size:12.5px;color:#8C7F6C;font-variant-numeric:tabular-nums;min-width:118px;text-align:right;white-space:nowrap">{{ ig.kcalLabel }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </section>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- ════════ EKRAN: FORMULARZ PRZEPISU ════════ -->
+      <sc-if value="{{ scrForm }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ formIsRecipe }}" hint-placeholder-val="{{ true }}">
+          <section data-screen-label="Formularz przepisu">
+            <button onClick="{{ formBack }}" style="display:inline-flex;align-items:center;gap:7px;border:none;background:transparent;color:rgba(242,233,216,0.6);font-size:13px;font-weight:600;padding:8px 4px;cursor:pointer;margin:0 0 8px" style-hover="color:#F2E9D8">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 4 6.5 10l6 6"></path></svg>
+              {{ formBackLabel }}</button>
+            <h1 style="margin:0 0 14px;font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(28px,3.2vw,36px);line-height:1.05">{{ formTitle }}</h1>
+
+            <sc-if value="{{ formCtxShow }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;gap:10px;align-items:flex-start;background:rgba(242,233,216,0.06);border:1px solid rgba(242,233,216,0.14);border-radius:14px;padding:12px 15px;margin:0 0 14px;font-size:13px;line-height:1.55;color:rgba(242,233,216,0.75)">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#D97E57" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><circle cx="10" cy="10" r="7"></circle><path d="M10 6.5v4"></path><circle cx="10" cy="13.6" r="0.5" fill="currentColor"></circle></svg>
+                <span>Tworzenie rozpoczęte z okna <b>„Dodaj posiłek”</b> — data ({{ formCtxDate }}), typ posiłku i liczba porcji zostały zapamiętane. Po zapisaniu wrócisz do dodawania posiłku z tym przepisem.</span>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ formEditUsedShow }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;gap:10px;align-items:flex-start;background:rgba(199,145,42,0.1);border:1px solid rgba(199,145,42,0.4);border-radius:14px;padding:12px 15px;margin:0 0 14px;font-size:13px;line-height:1.55;color:#D9B25E">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><path d="M10 3 18 17H2z"></path><path d="M10 8.5v3.5"></path><circle cx="10" cy="14.4" r="0.5" fill="currentColor"></circle></svg>
+                <span><b>Ten przepis jest używany w zaplanowanych posiłkach.</b> {{ formEditUsedLabel }} Zmiany wpłyną na przyszłe plany i przyszłe listy zakupów. Wygenerowane wcześniej listy zakupów pozostaną bez zmian.</span>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ prodOkShow }}" hint-placeholder-val="{{ false }}">
+              <div role="status" style="display:flex;gap:10px;align-items:center;background:rgba(95,124,78,0.14);border:1px solid rgba(143,191,106,0.4);border-radius:14px;padding:12px 15px;margin:0 0 14px;font-size:13px;line-height:1.5;color:#AFCB90">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M4 10.5l4 4L16 5.5"></path></svg>
+                <span>{{ prodOkLabel }}</span>
+              </div>
+            </sc-if>
+
+            <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">
+              <!-- Formularz -->
+              <div style="flex:1.6 1 480px;min-width:0;background:#F8F1E3;border-radius:22px;padding:clamp(18px,3vw,26px);color:#2A2018">
+                <div style="display:flex;flex-wrap:wrap;gap:16px 28px">
+                  <div style="flex:1 1 280px;min-width:240px">
+                    <label for="jd-recipe-name" style="display:block;font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">NAZWA PRZEPISU</label>
+                    <input id="jd-recipe-name" type="text" value="{{ nameVal }}" onChange="{{ onName }}" placeholder="Np. Kurczak z ryżem i warzywami" style="width:100%;min-height:46px;border:{{ nameBorder }};background:#FCF7EC;border-radius:12px;padding:10px 14px;font-size:14.5px;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+                    <sc-if value="{{ nameErrShow }}" hint-placeholder-val="{{ false }}">
+                      <div role="alert" style="margin-top:6px;font-size:12.5px;font-weight:600;color:#B3402E">▲ Podaj nazwę przepisu.</div>
+                    </sc-if>
+                  </div>
+                  <div style="flex:none">
+                    <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px" id="jd-por-label">LICZBA PORCJI</div>
+                    <div style="display:flex;align-items:center;gap:2px;border:{{ porBorder }};background:#FCF7EC;border-radius:999px;padding:3px 5px;width:max-content">
+                      <button onClick="{{ decPor }}" aria-label="Mniej porcji" style="width:44px;height:44px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:17px;font-weight:700;color:#C75B38" style-hover="background:#EFE5D2">−</button>
+                      <input type="text" inputmode="numeric" value="{{ porText }}" onChange="{{ onPor }}" aria-labelledby="jd-por-label" style="width:52px;text-align:center;border:none;background:transparent;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:#2A2018;outline:none">
+                      <button onClick="{{ incPor }}" aria-label="Więcej porcji" style="width:44px;height:44px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:17px;font-weight:700;color:#C75B38" style-hover="background:#EFE5D2">+</button>
+                    </div>
+                    <div style="margin-top:6px;font-size:12px;color:#8C7F6C;max-width:220px;line-height:1.45">Na tyle porcji podzielimy wartości całego przepisu.</div>
+                    <sc-if value="{{ porErrShow }}" hint-placeholder-val="{{ false }}">
+                      <div role="alert" style="margin-top:6px;font-size:12.5px;font-weight:600;color:#B3402E;max-width:230px;line-height:1.45">▲ Liczba porcji musi być dodatnią liczbą całkowitą, np. 4.</div>
+                    </sc-if>
+                  </div>
+                </div>
+
+                <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:22px 0 6px">
+                  <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250">SKŁADNIKI</div>
+                  <span style="font-size:12.5px;color:#8C7F6C;font-variant-numeric:tabular-nums">{{ ingCountLabel }}</span>
+                </div>
+                <div style="display:flex;gap:9px;align-items:flex-start;background:rgba(199,91,56,0.06);border:1px solid rgba(199,91,56,0.25);border-radius:12px;padding:10px 13px;margin:0 0 12px;font-size:13px;line-height:1.5;color:#8F4A2E">
+                  <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><circle cx="10" cy="10" r="7"></circle><path d="M10 6.5v4"></path><circle cx="10" cy="13.6" r="0.5" fill="currentColor"></circle></svg>
+                  <span>Składniki i ich gramatury dotyczą <b>całego przygotowywanego przepisu</b> — nie jednej porcji.</span>
+                </div>
+
+                <sc-if value="{{ ingErrShow }}" hint-placeholder-val="{{ false }}">
+                  <div role="alert" style="margin:0 0 10px;font-size:12.5px;font-weight:600;color:#B3402E">▲ Dodaj co najmniej jeden składnik z produktem i gramaturą.</div>
+                </sc-if>
+
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <sc-for list="{{ ingRows }}" as="row" hint-placeholder-count="2">
+                    <div style="border:1px solid #EADFC8;border-radius:14px;padding:10px;background:#FCF7EC">
+                      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+                        <div style="flex:1 1 230px;min-width:0;position:relative">
+                          <button onClick="{{ row.openPick }}" aria-haspopup="listbox" aria-expanded="{{ row.pickOpenAria }}" style="display:flex;align-items:center;gap:8px;width:100%;min-height:46px;text-align:left;border:{{ row.prodBorder }};background:#F8F1E3;border-radius:12px;padding:8px 12px;cursor:pointer" style-hover="border-color:#C75B38">
+                            <span style="flex:1 1 auto;min-width:0">
+                              <sc-if value="{{ row.prodHas }}" hint-placeholder-val="{{ true }}">
+                                <span style="display:block;font-size:13.5px;font-weight:600;color:#2A2018;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ row.prodLabel }}</span>
+                                <span style="display:block;font-size:11.5px;color:#8C7F6C;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ row.prodSub }}</span>
+                              </sc-if>
+                              <sc-if value="{{ row.prodNone }}" hint-placeholder-val="{{ false }}">
+                                <span style="display:block;font-size:13.5px;color:#A79A83">Wybierz produkt…</span>
+                              </sc-if>
+                            </span>
+                            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#8C7F6C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M5 8l5 5 5-5"></path></svg>
+                          </button>
+
+                          <sc-if value="{{ row.pickOpen }}" hint-placeholder-val="{{ false }}">
+                            <button onClick="{{ row.closePick }}" aria-label="Zamknij listę produktów" tabindex="-1" style="position:fixed;inset:0;z-index:35;border:none;background:transparent;cursor:default"></button>
+                            <div data-screen-label="Wybór produktu do składnika" role="listbox" aria-label="Wybierz produkt" style="position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:40;background:#FCF7EC;border:1px solid #E5DAC3;border-radius:14px;box-shadow:0 18px 44px rgba(0,0,0,0.28);padding:8px">
+                              <div style="position:relative;margin:0 0 6px">
+                                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#8C7F6C" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none"><circle cx="9" cy="9" r="5.5"></circle><path d="m13.5 13.5 3.5 3.5"></path></svg>
+                                <input type="text" value="{{ row.pickSearchVal }}" onChange="{{ row.onPickSearch }}" placeholder="Szukaj produktu…" aria-label="Szukaj produktu" style="width:100%;min-height:42px;border:1px solid #E5DAC3;background:#F8F1E3;border-radius:10px;padding:8px 10px 8px 34px;font-size:13.5px;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+                              </div>
+                              <div style="max-height:250px;overflow:auto;display:flex;flex-direction:column;gap:2px;overscroll-behavior:contain">
+                                <sc-for list="{{ row.pickRows }}" as="p" hint-placeholder-count="4">
+                                  <button onClick="{{ p.on }}" disabled="{{ p.dis }}" role="option" aria-selected="{{ p.sel }}" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:none;background:{{ p.bg }};border-radius:10px;padding:9px 10px;min-height:52px;cursor:{{ p.cursor }};opacity:{{ p.op }}" style-hover="background:#F1E7D2">
+                                    <span style="flex:1 1 auto;min-width:0">
+                                      <span style="display:block;font-size:13.5px;font-weight:600;color:#2A2018;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</span>
+                                      <span style="display:block;margin-top:2px;font-size:11.5px;color:#6E6250;font-variant-numeric:tabular-nums">{{ p.sub }}</span>
+                                    </span>
+                                    <sc-if value="{{ p.dis }}" hint-placeholder-val="{{ false }}">
+                                      <span style="flex:none;font-size:10px;font-weight:700;letter-spacing:0.08em;padding:3px 8px;border-radius:999px;background:#EFE5D2;color:#8C7F6C">JUŻ W PRZEPISIE</span>
+                                    </sc-if>
+                                  </button>
+                                </sc-for>
+                                <sc-if value="{{ row.pickEmptyShow }}" hint-placeholder-val="{{ false }}">
+                                  <div style="padding:16px 10px;text-align:center;font-size:13px;color:#8C7F6C">{{ row.pickEmptyLabel }}</div>
+                                </sc-if>
+                              </div>
+                              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;border-top:1px dotted #DCCFB2;margin-top:6px;padding:8px 4px 2px;font-size:12.5px;color:#6E6250">
+                                Nie widzisz produktu?
+                                <button onClick="{{ row.addNewProd }}" style="border:none;background:transparent;padding:8px 4px;margin:-6px 0;font-size:12.5px;font-weight:700;color:#C75B38;cursor:pointer;text-decoration:underline;text-underline-offset:3px" style-hover="color:#B04E2E">Dodaj nowy produkt</button>
+                              </div>
+                            </div>
+                          </sc-if>
+                        </div>
+
+                        <div style="flex:none;display:flex;align-items:center;gap:6px">
+                          <input type="text" inputmode="decimal" value="{{ row.gramsVal }}" onChange="{{ row.onGrams }}" aria-label="Gramatura składnika w gramach (dla całego przepisu)" placeholder="0" style="width:84px;min-height:46px;text-align:right;border:{{ row.gramsBorder }};background:#F8F1E3;border-radius:12px;padding:8px 10px;font-size:14px;font-variant-numeric:tabular-nums;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+                          <span style="font-size:13px;color:#6E6250">g</span>
+                        </div>
+
+                        <div style="flex:none;display:flex;align-items:center;gap:2px">
+                          <button onClick="{{ row.up }}" disabled="{{ row.upDis }}" aria-label="Przesuń składnik wyżej" title="Wyżej" style="width:38px;height:44px;border:none;background:transparent;border-radius:10px;cursor:{{ row.upCursor }};display:flex;align-items:center;justify-content:center;color:{{ row.upFg }}" style-hover="background:#EFE5D2">
+                            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 10 6.5l6 6"></path></svg></button>
+                          <button onClick="{{ row.dn }}" disabled="{{ row.dnDis }}" aria-label="Przesuń składnik niżej" title="Niżej" style="width:38px;height:44px;border:none;background:transparent;border-radius:10px;cursor:{{ row.dnCursor }};display:flex;align-items:center;justify-content:center;color:{{ row.dnFg }}" style-hover="background:#EFE5D2">
+                            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5l6 6 6-6"></path></svg></button>
+                          <button onClick="{{ row.rm }}" aria-label="Usuń składnik {{ row.rmName }}" title="Usuń składnik" style="width:44px;height:44px;border:none;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#B0A48C" style-hover="background:rgba(179,64,46,0.1);color:#B3402E">
+                            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"></path></svg></button>
+                        </div>
+                      </div>
+
+                      <sc-if value="{{ row.shareShow }}" hint-placeholder-val="{{ false }}">
+                        <div style="margin-top:7px;font-size:12px;color:#8C7F6C;font-variant-numeric:tabular-nums">{{ row.shareLabel }}</div>
+                      </sc-if>
+                      <sc-if value="{{ row.prodErrShow }}" hint-placeholder-val="{{ false }}">
+                        <div role="alert" style="margin-top:7px;font-size:12.5px;font-weight:600;color:#B3402E">▲ Wybierz produkt dla tego składnika.</div>
+                      </sc-if>
+                      <sc-if value="{{ row.gramsErrShow }}" hint-placeholder-val="{{ false }}">
+                        <div role="alert" style="margin-top:7px;font-size:12.5px;font-weight:600;color:#B3402E">▲ Podaj gramaturę większą od zera, np. 250.</div>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <button onClick="{{ addIng }}" style="margin-top:10px;width:100%;border:1.5px dashed #DCCFB2;background:transparent;border-radius:12px;min-height:46px;padding:10px 16px;text-align:center;font-size:13.5px;font-weight:600;color:#A79A83;cursor:pointer" style-hover="border-color:#C75B38;color:#C75B38;background:rgba(199,91,56,0.05)">+ Dodaj składnik</button>
+
+                <!-- Stopka formularza -->
+                <div style="margin-top:20px;border-top:1px dotted #DCCFB2;padding-top:16px">
+                  <sc-if value="{{ saveErrShow }}" hint-placeholder-val="{{ false }}">
+                    <div role="alert" style="display:flex;gap:9px;align-items:flex-start;background:rgba(179,64,46,0.08);border:1px solid rgba(179,64,46,0.4);border-radius:12px;padding:10px 13px;margin:0 0 12px;font-size:13px;line-height:1.5;color:#8F3222">
+                      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><path d="M10 3 18 17H2z"></path><path d="M10 8.5v3.5"></path><circle cx="10" cy="14.4" r="0.5" fill="currentColor"></circle></svg>
+                      <span><b>Nie udało się zapisać przepisu.</b> Wszystkie wpisane dane zostały zachowane — sprawdź połączenie i spróbuj ponownie.</span>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ validHintShow }}" hint-placeholder-val="{{ false }}">
+                    <div role="alert" style="margin:0 0 10px;font-size:12.5px;font-weight:600;color:#B3402E">Popraw zaznaczone pola, aby zapisać przepis.</div>
+                  </sc-if>
+                  <div style="display:flex;flex-wrap:wrap;gap:10px">
+                    <button onClick="{{ cancelForm }}" disabled="{{ formSavingDis }}" style="flex:1 1 140px;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Anuluj</button>
+                    <button onClick="{{ saveRecipe }}" disabled="{{ saveDisabled }}" aria-disabled="{{ saveAria }}" style="flex:2 1 200px;display:flex;align-items:center;justify-content:center;gap:9px;border:none;background:{{ saveBg }};color:{{ saveFg }};font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:{{ saveCursor }}">
+                      <sc-if value="{{ formSaving }}" hint-placeholder-val="{{ false }}">
+                        <span aria-hidden="true" style="flex:none;width:14px;height:14px;border:2px solid rgba(255,248,236,0.35);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span>
+                        <span>Zapisywanie…</span>
+                      </sc-if>
+                      <sc-if value="{{ formNotSaving }}" hint-placeholder-val="{{ true }}"><span>{{ saveLabel }}</span></sc-if>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Podsumowanie na żywo -->
+              <aside aria-label="Podsumowanie wartości odżywczych" style="flex:1 1 290px;min-width:270px;position:sticky;top:20px;background:#F8F1E3;border-radius:20px;padding:20px;color:#2A2018">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 12px">PODSUMOWANIE NA ŻYWO</div>
+                <div style="border:1.5px solid rgba(199,91,56,0.45);background:rgba(199,91,56,0.06);border-radius:16px;padding:14px 16px">
+                  <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+                    <span style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#C75B38">NA 1 PORCJĘ</span>
+                    <span style="font-size:11.5px;color:#8C7F6C">{{ sumPerNote }}</span>
+                  </div>
+                  <sc-if value="{{ sumPerValid }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;align-items:baseline;gap:6px;margin-top:8px">
+                      <span style="font-family:'Instrument Serif',serif;font-size:34px;line-height:1;font-variant-numeric:tabular-nums">{{ sumPerKcal }}</span>
+                      <span style="font-size:12.5px;font-weight:700;color:#8C7F6C">kcal</span>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px">
+                      <div><div style="font-size:10px;font-weight:700;letter-spacing:0.12em;color:#8C7F6C">BIAŁKO</div><div style="font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px">{{ sumPerB }}</div></div>
+                      <div><div style="font-size:10px;font-weight:700;letter-spacing:0.12em;color:#8C7F6C">TŁUSZCZ</div><div style="font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px">{{ sumPerT }}</div></div>
+                      <div><div style="font-size:10px;font-weight:700;letter-spacing:0.12em;color:#8C7F6C">WĘGLOW.</div><div style="font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px">{{ sumPerW }}</div></div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ sumPerInvalid }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:8px;font-size:13px;line-height:1.5;color:#8C7F6C">Podaj poprawną liczbę porcji, aby zobaczyć wartości na porcję.</div>
+                  </sc-if>
+                </div>
+                <div style="border:1px solid #EADFC8;background:#FCF7EC;border-radius:16px;padding:12px 15px;margin-top:10px">
+                  <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250">CAŁY PRZEPIS</div>
+                  <div style="margin-top:6px;font-size:13.5px;font-variant-numeric:tabular-nums;color:#2A2018"><b>{{ sumTotKcal }} kcal</b> <span style="color:#5C5140">· {{ sumTotLine }}</span></div>
+                </div>
+                <sc-if value="{{ sumIncompleteShow }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:10px;font-size:12.5px;line-height:1.5;color:#8A6414">Wiersze bez wybranego produktu lub poprawnej gramatury nie są jeszcze wliczone do sumy.</div>
+                </sc-if>
+                <div style="margin-top:10px;font-size:12px;line-height:1.55;color:#8C7F6C">Suma przelicza się natychmiast po każdej zmianie składników, gramatur i liczby porcji.</div>
+              </aside>
+            </div>
+          </section>
+        </sc-if>
+
+        <!-- ── Formularz nowego produktu (pełny widok, bez piętrzenia modali) ── -->
+        <sc-if value="{{ formIsProduct }}" hint-placeholder-val="{{ false }}">
+          <section data-screen-label="Formularz nowego produktu" style="max-width:620px;margin:0 auto">
+            <button onClick="{{ prodCancel }}" style="display:inline-flex;align-items:center;gap:7px;border:none;background:transparent;color:rgba(242,233,216,0.6);font-size:13px;font-weight:600;padding:8px 4px;cursor:pointer;margin:0 0 8px" style-hover="color:#F2E9D8">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 4 6.5 10l6 6"></path></svg>
+              {{ prodBackLabel }}</button>
+            <h1 style="margin:0 0 10px;font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(28px,3.2vw,36px);line-height:1.05">Nowy produkt</h1>
+            <div style="display:flex;gap:10px;align-items:flex-start;background:rgba(242,233,216,0.06);border:1px solid rgba(242,233,216,0.14);border-radius:14px;padding:12px 15px;margin:0 0 14px;font-size:13px;line-height:1.55;color:rgba(242,233,216,0.75)">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#D97E57" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><circle cx="10" cy="10" r="7"></circle><path d="M10 6.5v4"></path><circle cx="10" cy="13.6" r="0.5" fill="currentColor"></circle></svg>
+              <span>{{ prodCtxLabel }}</span>
+            </div>
+
+            <div style="background:#F8F1E3;border-radius:22px;padding:clamp(18px,3vw,26px);color:#2A2018">
+              <label for="jd-prod-name" style="display:block;font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">NAZWA PRODUKTU</label>
+              <input id="jd-prod-name" type="text" value="{{ pNameVal }}" onChange="{{ onPName }}" placeholder="Np. Kasza gryczana (sucha)" style="width:100%;min-height:46px;border:{{ pNameBorder }};background:#FCF7EC;border-radius:12px;padding:10px 14px;font-size:14.5px;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+              <sc-if value="{{ pNameErrShow }}" hint-placeholder-val="{{ false }}">
+                <div role="alert" style="margin-top:6px;font-size:12.5px;font-weight:600;color:#B3402E">▲ Podaj nazwę produktu.</div>
+              </sc-if>
+
+              <label for="jd-prod-brand" style="display:block;font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:18px 0 8px">MARKA <span style="color:#A79A83;letter-spacing:0.06em">(OPCJONALNIE)</span></label>
+              <input id="jd-prod-brand" type="text" value="{{ pBrandVal }}" onChange="{{ onPBrand }}" placeholder="Np. Melvit" style="width:100%;min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:12px;padding:10px 14px;font-size:14.5px;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:20px 0 8px">WARTOŚCI ODŻYWCZE NA 100 G</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
+                <div>
+                  <label for="jd-p-kcal" style="display:block;font-size:12px;font-weight:600;color:#5C5140;margin:0 0 5px">Kalorie (kcal)</label>
+                  <input id="jd-p-kcal" type="text" inputmode="decimal" value="{{ pKcalVal }}" onChange="{{ onPKcal }}" placeholder="0" style="width:100%;min-height:46px;text-align:right;border:{{ pKcalBorder }};background:#FCF7EC;border-radius:12px;padding:8px 12px;font-size:14px;font-variant-numeric:tabular-nums;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+                </div>
+                <div>
+                  <label for="jd-p-b" style="display:block;font-size:12px;font-weight:600;color:#5C5140;margin:0 0 5px">Białko (g)</label>
+                  <input id="jd-p-b" type="text" inputmode="decimal" value="{{ pBVal }}" onChange="{{ onPB }}" placeholder="0" style="width:100%;min-height:46px;text-align:right;border:{{ pBBorder }};background:#FCF7EC;border-radius:12px;padding:8px 12px;font-size:14px;font-variant-numeric:tabular-nums;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+                </div>
+                <div>
+                  <label for="jd-p-t" style="display:block;font-size:12px;font-weight:600;color:#5C5140;margin:0 0 5px">Tłuszcz (g)</label>
+                  <input id="jd-p-t" type="text" inputmode="decimal" value="{{ pTVal }}" onChange="{{ onPT }}" placeholder="0" style="width:100%;min-height:46px;text-align:right;border:{{ pTBorder }};background:#FCF7EC;border-radius:12px;padding:8px 12px;font-size:14px;font-variant-numeric:tabular-nums;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+                </div>
+                <div>
+                  <label for="jd-p-w" style="display:block;font-size:12px;font-weight:600;color:#5C5140;margin:0 0 5px">Węglowodany (g)</label>
+                  <input id="jd-p-w" type="text" inputmode="decimal" value="{{ pWVal }}" onChange="{{ onPW }}" placeholder="0" style="width:100%;min-height:46px;text-align:right;border:{{ pWBorder }};background:#FCF7EC;border-radius:12px;padding:8px 12px;font-size:14px;font-variant-numeric:tabular-nums;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+                </div>
+              </div>
+              <sc-if value="{{ pValsErrShow }}" hint-placeholder-val="{{ false }}">
+                <div role="alert" style="margin-top:8px;font-size:12.5px;font-weight:600;color:#B3402E">▲ Uzupełnij wartości liczbowe (0 lub więcej) dla wszystkich pól.</div>
+              </sc-if>
+
+              <div style="margin-top:20px;border-top:1px dotted #DCCFB2;padding-top:16px;display:flex;flex-wrap:wrap;gap:10px">
+                <button onClick="{{ prodCancel }}" disabled="{{ prodSavingDis }}" style="flex:1 1 160px;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Anuluj i wróć</button>
+                <button onClick="{{ prodSave }}" disabled="{{ prodSaveDisabled }}" aria-disabled="{{ prodSaveAria }}" style="flex:1 1 200px;display:flex;align-items:center;justify-content:center;gap:9px;border:none;background:{{ prodSaveBg }};color:#FFF8EC;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:{{ prodSaveCursor }}">
+                  <sc-if value="{{ prodSaving }}" hint-placeholder-val="{{ false }}">
+                    <span aria-hidden="true" style="flex:none;width:14px;height:14px;border:2px solid rgba(255,248,236,0.35);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span>
+                    <span>Zapisywanie…</span>
+                  </sc-if>
+                  <sc-if value="{{ prodNotSaving }}" hint-placeholder-val="{{ true }}"><span>Zapisz produkt</span></sc-if>
+                </button>
+              </div>
+            </div>
+          </section>
+        </sc-if>
+      </sc-if>
+    </sc-if>
+  </main>
+
+  <!-- ── Pasek podsumowania: mobile, formularz przepisu ── -->
+  <sc-if value="{{ barShow }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:0;right:0;bottom:0;z-index:40;background:#1F1712;border-top:1px solid rgba(242,233,216,0.14);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px">
+      <div style="flex:1 1 auto;min-width:0">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.14em;color:rgba(242,233,216,0.5)">NA 1 PORCJĘ</div>
+        <div style="font-size:13.5px;font-weight:700;color:#F2E9D8;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ barLine }}</div>
+      </div>
+      <button onClick="{{ saveRecipe }}" disabled="{{ saveDisabled }}" aria-disabled="{{ saveAria }}" style="flex:none;display:flex;align-items:center;gap:8px;border:none;background:{{ saveBg }};color:{{ saveFg }};font-weight:600;font-size:14px;min-height:46px;padding:11px 20px;border-radius:999px;cursor:{{ saveCursor }}">
+        <sc-if value="{{ formSaving }}" hint-placeholder-val="{{ false }}">
+          <span aria-hidden="true" style="flex:none;width:13px;height:13px;border:2px solid rgba(255,248,236,0.35);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span>
+        </sc-if>
+        <span>{{ barSaveLabel }}</span>
+      </button>
+    </div>
+  </sc-if>
+
+  <!-- ── Modal: dodaj posiłek ────────────────────────── -->
+  <sc-if value="{{ amOpen }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Modal dodawania posiłku" style="{{ ovlStyle }}" onClick="{{ closeAmBg }}">
+      <div role="dialog" aria-modal="true" aria-label="Dodaj posiłek" style="{{ panelStyle }}" onClick="{{ stopClick }}">
+        <div style="flex:none;padding:18px 24px 14px;border-bottom:1px solid #EADFC8">
+          <div style="display:flex;align-items:center;gap:10px">
+            <h2 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:26px">Dodaj posiłek</h2>
+            <div style="flex:1"></div>
+            <button onClick="{{ closeAm }}" aria-label="Zamknij" title="Zamknij" style="flex:none;width:44px;height:44px;border:none;background:#EFE5D2;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#2A2018" style-hover="background:#E5DAC3">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"></path></svg></button>
+          </div>
+          <div style="font-size:13.5px;color:#6E6250;margin-top:2px">Do planu: <span style="color:#C75B38;font-weight:700">{{ amDateLabel }}</span></div>
+        </div>
+
+        <div style="flex:1 1 auto;min-height:0;overflow:auto;padding:16px 24px 20px">
+          <sc-if value="{{ amOkShow }}" hint-placeholder-val="{{ false }}">
+            <div role="status" style="display:flex;gap:9px;align-items:center;background:rgba(95,124,78,0.1);border:1px solid rgba(95,124,78,0.35);border-radius:12px;padding:10px 13px;margin:0 0 12px;font-size:13px;line-height:1.5;color:#4C6340">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M4 10.5l4 4L16 5.5"></path></svg>
+              <span>{{ amOkLabel }}</span>
+            </div>
+          </sc-if>
+
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">PRZEPIS</div>
+          <div style="position:relative;margin:0 0 10px">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#8C7F6C" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="position:absolute;left:15px;top:50%;transform:translateY(-50%);pointer-events:none"><circle cx="9" cy="9" r="5.5"></circle><path d="m13.5 13.5 3.5 3.5"></path></svg>
+            <input type="text" value="{{ amSearchVal }}" onChange="{{ onAmSearch }}" placeholder="Szukaj przepisu po nazwie…" aria-label="Szukaj przepisu po nazwie" style="width:100%;min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:999px;padding:10px 48px 10px 40px;font-size:14px;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+            <sc-if value="{{ amSearchHasText }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ clearAmSearch }}" aria-label="Wyczyść wyszukiwanie" style="position:absolute;right:5px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:none;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#6E6250" style-hover="background:#EFE5D2;color:#2A2018">
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"></path></svg></button>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ amListShow }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:7px;max-height:min(280px,36vh);overflow:auto;padding:2px;overscroll-behavior:contain">
+              <sc-for list="{{ amRows }}" as="r" hint-placeholder-count="4">
+                <button onClick="{{ r.pick }}" aria-pressed="{{ r.pressed }}" style="flex:none;display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:{{ r.border }};background:{{ r.bg }};border-radius:13px;padding:11px 14px;min-height:58px;cursor:pointer">
+                  <span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;line-height:1;background:{{ r.markBg }};border:{{ r.markBorder }};color:#FFF8EC">{{ r.mark }}</span>
+                  <span style="flex:1 1 auto;min-width:0">
+                    <span style="display:block;font-size:14px;font-weight:600;color:#2A2018;line-height:1.35">{{ r.name }}</span>
+                    <span style="display:block;margin-top:3px;font-size:12.5px;color:#5C5140;font-variant-numeric:tabular-nums"><b style="color:#2A2018">{{ r.kcalLabel }}</b> · {{ r.macroLabel }} <span style="color:#8C7F6C">/ porcja</span></span>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+            <div style="margin-top:10px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;font-size:13px;color:#6E6250">
+              Nie widzisz odpowiedniego przepisu?
+              <button onClick="{{ amGoCreate }}" style="border:none;background:transparent;padding:10px 4px;margin:-8px 0;font-size:13px;font-weight:700;color:#C75B38;cursor:pointer;text-decoration:underline;text-underline-offset:3px" style-hover="color:#B04E2E">Utwórz nowy przepis</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ amNoResShow }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#FCF7EC;border:1.5px dashed #DCCFB2;border-radius:14px;padding:22px 18px;text-align:center">
+              <div style="font-weight:700;font-size:14.5px">{{ amNoResLabel }}</div>
+              <p style="margin:4px auto 14px;max-width:360px;font-size:13px;line-height:1.5;color:#6E6250">Sprawdź pisownię, wyczyść wyszukiwanie albo utwórz nowy przepis — wrócisz tu z gotowym wyborem.</p>
+              <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px">
+                <button onClick="{{ clearAmSearch }}" style="border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:13.5px;min-height:44px;padding:10px 18px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Wyczyść wyszukiwanie</button>
+                <button onClick="{{ amGoCreate }}" style="border:none;background:#2A2018;color:#F8F1E3;font-weight:600;font-size:13.5px;min-height:44px;padding:10px 20px;border-radius:999px;cursor:pointer" style-hover="background:#1F1712">Utwórz nowy przepis</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-wrap:wrap;gap:16px 24px;margin-top:20px">
+            <div style="flex:1 1 250px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">TYP POSIŁKU</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ amTypes }}" as="t" hint-placeholder-count="4">
+                  <button onClick="{{ t.on }}" aria-pressed="{{ t.pressed }}" style="border:{{ t.border }};background:{{ t.bg }};color:{{ t.fg }};font-weight:{{ t.weight }};font-size:13px;min-height:44px;padding:9px 16px;border-radius:999px;cursor:pointer">{{ t.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="flex:none">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px" id="jd-am-por-label">PORCJE</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="display:flex;align-items:center;gap:2px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:999px;padding:3px 5px">
+                  <button onClick="{{ decAm }}" aria-label="Mniej porcji" style="width:44px;height:44px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:17px;font-weight:700;color:#C75B38" style-hover="background:#EFE5D2">−</button>
+                  <input type="text" inputmode="decimal" value="{{ amPorText }}" onChange="{{ onAmPor }}" aria-labelledby="jd-am-por-label" style="width:56px;text-align:center;border:none;background:transparent;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:#2A2018;outline:none">
+                  <button onClick="{{ incAm }}" aria-label="Więcej porcji" style="width:44px;height:44px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:17px;font-weight:700;color:#C75B38" style-hover="background:#EFE5D2">+</button>
+                </div>
+              </div>
+              <sc-if value="{{ amPorErrShow }}" hint-placeholder-val="{{ false }}">
+                <div role="alert" style="margin-top:7px;font-size:12.5px;font-weight:600;color:#B3402E;max-width:230px;line-height:1.45">▲ Liczba porcji musi być większa od zera — np. 0,5 lub 1,5.</div>
+              </sc-if>
+            </div>
+          </div>
+
+          <sc-if value="{{ amPrevShow }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:20px;background:#FCF7EC;border:1px solid #EADFC8;border-radius:14px;padding:14px 16px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">TEN POSIŁEK DODA</div>
+              <div style="font-size:13.5px;color:#2A2018;font-weight:700;font-variant-numeric:tabular-nums">{{ amPrevLine }}</div>
+              <div style="margin-top:6px;font-size:12.5px;line-height:1.5;color:#6E6250">Wartości policzone z przepisu i wybranej liczby porcji.</div>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="flex:none;padding:14px 24px 18px;border-top:1px solid #EADFC8;background:#F8F1E3">
+          <div style="display:flex;gap:10px">
+            <button onClick="{{ closeAm }}" style="flex:1;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Anuluj</button>
+            <button onClick="{{ amConfirm }}" disabled="{{ amConfirmDisabled }}" aria-disabled="{{ amConfirmAria }}" style="flex:2;border:none;background:{{ amBg }};color:{{ amFg }};font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:{{ amCursor }}">Dodaj do planu</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ── Dialog: usuwanie przepisu ───────────────────── -->
+  <sc-if value="{{ delOpen }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Potwierdzenie usunięcia przepisu" style="position:fixed;inset:0;z-index:50;background:rgba(18,12,8,0.6);display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeDelBg }}">
+      <div role="dialog" aria-modal="true" aria-label="{{ delTitle }}" style="width:min(480px,100%);background:#F8F1E3;border-radius:20px;padding:26px;color:#2A2018;animation:jd-rise 0.25s ease-out" onClick="{{ stopClick }}">
+        <sc-if value="{{ delBlockedShow }}" hint-placeholder-val="{{ false }}">
+          <div style="width:44px;height:44px;margin:0 0 12px;border-radius:50%;background:rgba(199,145,42,0.14);display:flex;align-items:center;justify-content:center;color:#8A6414">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 18 17H2z"></path><path d="M10 8.5v3.5"></path><circle cx="10" cy="14.4" r="0.5" fill="currentColor"></circle></svg>
+          </div>
+          <h2 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:24px">Nie można jeszcze usunąć przepisu</h2>
+          <p style="margin:0 0 6px;font-size:14px;line-height:1.6;color:#5C5140"><b>„{{ delName }}”</b> jest używany w {{ delUsedLabel }}.</p>
+          <p style="margin:0 0 18px;font-size:13.5px;line-height:1.6;color:#8C7F6C">Usuń go najpierw z zaplanowanych posiłków, aby móc usunąć przepis. Wygenerowane wcześniej listy zakupów są zapisem z chwili utworzenia i pozostaną bez zmian.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <button onClick="{{ closeDel }}" style="flex:1 1 120px;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Zamknij</button>
+            <button onClick="{{ delGoPlan }}" style="flex:1 1 180px;border:none;background:#2A2018;color:#F8F1E3;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#1F1712">Przejdź do planu posiłków</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ delFreeShow }}" hint-placeholder-val="{{ true }}">
+          <div style="width:44px;height:44px;margin:0 0 12px;border-radius:50%;background:rgba(179,64,46,0.1);display:flex;align-items:center;justify-content:center;color:#B3402E">
+            <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12"></path><path d="M8 6V4.5h4V6"></path><path d="M6 6l1 10.5h6L14 6"></path><path d="M9 9v4.5M11 9v4.5"></path></svg>
+          </div>
+          <h2 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:24px">Usunąć przepis?</h2>
+          <p style="margin:0 0 6px;font-size:14px;line-height:1.6;color:#5C5140"><b>„{{ delName }}”</b> zostanie trwale usunięty. Nie jest używany w żadnych zaplanowanych posiłkach.</p>
+          <p style="margin:0 0 18px;font-size:13.5px;line-height:1.6;color:#8C7F6C">Wygenerowane wcześniej listy zakupów są zapisem z chwili utworzenia i pozostaną bez zmian.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <button onClick="{{ closeDel }}" disabled="{{ delDeletingDis }}" style="flex:1 1 120px;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Anuluj</button>
+            <button onClick="{{ delConfirm }}" disabled="{{ delDeletingDis }}" style="flex:1 1 160px;display:flex;align-items:center;justify-content:center;gap:9px;border:none;background:#B3402E;color:#FFF8EC;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#9C3626">
+              <sc-if value="{{ delDeleting }}" hint-placeholder-val="{{ false }}">
+                <span aria-hidden="true" style="flex:none;width:14px;height:14px;border:2px solid rgba(255,248,236,0.35);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span>
+                <span>Usuwanie…</span>
+              </sc-if>
+              <sc-if value="{{ delNotDeleting }}" hint-placeholder-val="{{ true }}"><span>Usuń przepis</span></sc-if>
+            </button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ── Dialog: niezapisane zmiany ──────────────────── -->
+  <sc-if value="{{ leaveOpen }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Ostrzeżenie o niezapisanych zmianach" style="position:fixed;inset:0;z-index:55;background:rgba(18,12,8,0.6);display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ leaveStayBg }}">
+      <div role="dialog" aria-modal="true" aria-label="Niezapisane zmiany" style="width:min(440px,100%);background:#F8F1E3;border-radius:20px;padding:26px;color:#2A2018;animation:jd-rise 0.25s ease-out" onClick="{{ stopClick }}">
+        <h2 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:24px">Masz niezapisane zmiany</h2>
+        <p style="margin:0 0 18px;font-size:14px;line-height:1.6;color:#5C5140">Jeśli opuścisz ten formularz, zmiany w przepisie zostaną utracone. Możesz zostać i dokończyć edycję albo odrzucić zmiany.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px">
+          <button onClick="{{ leaveDiscard }}" style="flex:1 1 150px;border:1px solid rgba(179,64,46,0.35);background:transparent;color:#B3402E;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:rgba(179,64,46,0.08)">Odrzuć zmiany</button>
+          <button onClick="{{ leaveStay }}" style="flex:1 1 150px;border:none;background:#2A2018;color:#F8F1E3;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#1F1712">Zostań w formularzu</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ── Toast ───────────────────────────────────────── -->
+  <sc-if value="{{ toastShow }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;background:{{ toastBg }};color:#FFF8EC;border-radius:999px;padding:11px 18px;font-size:13.5px;font-weight:500;box-shadow:0 12px 32px rgba(0,0,0,0.4);animation:jd-toast 0.22s ease-out;max-width:calc(100vw - 32px)">
+      <sc-if value="{{ toastIsOk }}" hint-placeholder-val="{{ true }}">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M4 10.5l4 4L16 5.5"></path></svg>
+      </sc-if>
+      <span>{{ toastMsg }}</span>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;scenariusz&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Kilka przepisów&quot;,&quot;Brak przepisów&quot;,&quot;Brak produktów&quot;],&quot;default&quot;:&quot;Kilka przepisów&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Scenariusz demo&quot;},&quot;stanSystemu&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Normalny&quot;,&quot;Ładowanie&quot;,&quot;Błąd pobierania&quot;],&quot;default&quot;:&quot;Normalny&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Scenariusz demo&quot;},&quot;bladZapisu&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Scenariusz demo&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+
+    this.PRODUCTS = [
+      { id: 'p1', name: 'Pierś z kurczaka', brand: '', kcal: 110, b: 22, t: 2, w: 0 },
+      { id: 'p2', name: 'Ryż basmati (suchy)', brand: '', kcal: 350, b: 8, t: 1, w: 78 },
+      { id: 'p3', name: 'Cukinia', brand: '', kcal: 17, b: 1.2, t: 0.3, w: 3.1 },
+      { id: 'p4', name: 'Papryka czerwona', brand: '', kcal: 31, b: 1, t: 0.3, w: 6 },
+      { id: 'p5', name: 'Jajko kurze (całe)', brand: '', kcal: 140, b: 12.5, t: 9.7, w: 0.7 },
+      { id: 'p6', name: 'Pomidor', brand: '', kcal: 18, b: 0.9, t: 0.2, w: 3.9 },
+      { id: 'p7', name: 'Płatki owsiane górskie', brand: 'Melvit', kcal: 366, b: 11.9, t: 7.2, w: 69.3 },
+      { id: 'p8', name: 'Mleko 2%', brand: 'Łaciate', kcal: 50, b: 3.4, t: 2, w: 4.9 },
+      { id: 'p9', name: 'Banan', brand: '', kcal: 89, b: 1.1, t: 0.3, w: 22.8 },
+      { id: 'p10', name: 'Twaróg półtłusty', brand: 'Piątnica', kcal: 120, b: 18.7, t: 4.7, w: 3.5 },
+      { id: 'p11', name: 'Makaron pełnoziarnisty (suchy)', brand: 'Lubella', kcal: 350, b: 13, t: 2.5, w: 66 },
+      { id: 'p12', name: 'Mozzarella light', brand: '', kcal: 224, b: 22, t: 15, w: 2 },
+      { id: 'p13', name: 'Oliwa z oliwek', brand: '', kcal: 884, b: 0, t: 100, w: 0 },
+      { id: 'p14', name: 'Śmietana 18%', brand: 'Piątnica', kcal: 184, b: 2.5, t: 18, w: 3.4 },
+      { id: 'p15', name: 'Filet z łososia', brand: '', kcal: 208, b: 20, t: 13, w: 0 },
+      { id: 'p16', name: 'Ziemniaki', brand: '', kcal: 77, b: 2, t: 0.1, w: 17 },
+      { id: 'p17', name: 'Brokuł', brand: '', kcal: 34, b: 2.8, t: 0.4, w: 7 },
+      { id: 'p18', name: 'Masło orzechowe 100%', brand: 'Sante', kcal: 588, b: 25, t: 50, w: 20 },
+      { id: 'p19', name: 'Jogurt naturalny', brand: 'Zott', kcal: 61, b: 3.6, t: 3.3, w: 4.7 },
+      { id: 'p20', name: 'Cebula', brand: '', kcal: 40, b: 1.1, t: 0.1, w: 9.3 }
+    ];
+
+    this.RECIPES = [
+      { id: 'r1', name: 'Kurczak z ryżem i warzywami', por: 4, upd: 1, updLabel: 'wczoraj', ing: [['p1', 600], ['p2', 300], ['p3', 250], ['p4', 150], ['p13', 30]] },
+      { id: 'r2', name: 'Owsianka z bananem i masłem orzechowym', por: 1, upd: 0, updLabel: 'dzisiaj', ing: [['p7', 80], ['p8', 250], ['p9', 120], ['p18', 20]] },
+      { id: 'r3', name: 'Omlet z warzywami', por: 1, upd: 4, updLabel: '4 dni temu', ing: [['p5', 165], ['p6', 120], ['p4', 80], ['p13', 10]] },
+      { id: 'r4', name: 'Makaron z łososiem i śmietaną', por: 4, upd: 2, updLabel: '2 dni temu', ing: [['p11', 320], ['p15', 400], ['p14', 150], ['p20', 80]] },
+      { id: 'r5', name: 'Twaróg z jogurtem i bananem', por: 2, upd: 7, updLabel: 'tydzień temu', ing: [['p10', 200], ['p19', 150], ['p9', 100]] },
+      { id: 'r6', name: 'Pieczony łosoś z ziemniakami i brokułem', por: 3, upd: 12, updLabel: '12 dni temu', ing: [['p15', 500], ['p16', 600], ['p17', 400], ['p13', 25]] }
+    ];
+
+    this.USAGE = {
+      r1: { count: 3, range: '12–15 lipca' },
+      r4: { count: 1, range: '13 lipca' }
+    };
+
+    this.AM_TYPES = [
+      { key: 'sniadanie', label: 'Śniadanie' },
+      { key: 'obiad', label: 'Obiad' },
+      { key: 'kolacja', label: 'Kolacja' },
+      { key: 'przekaska', label: 'Przekąska' }
+    ];
+
+    this.state = {
+      isMobile: typeof window !== 'undefined' && window.innerWidth <= 940,
+      screen: 'index',
+      search: '', sort: 'updated',
+      extraProducts: [], extraRecipes: [], overrides: {}, deleted: {},
+      detailId: null,
+      form: null, formView: 'recipe',
+      prod: null,
+      pickerFor: null, pickerSearch: '',
+      del: null,
+      am: null, amCtx: null,
+      leave: null,
+      toast: null,
+      reloading: false, loadFixed: false,
+      keySeq: 1
+    };
+  }
+
+  componentDidMount() {
+    this._onResize = () => {
+      const m = window.innerWidth <= 940;
+      if (m !== this.state.isMobile) this.setState({ isMobile: m });
+    };
+    window.addEventListener('resize', this._onResize);
+    try {
+      const q = new URLSearchParams(window.location.search);
+      if (q.get('utworz') === 'przepis') { this._planReturn = q.get('powrot') === 'plan'; this.openCreate('index'); }
+    } catch (e) {}
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this._onResize);
+    clearTimeout(this._t1); clearTimeout(this._t2); clearTimeout(this._t3);
+  }
+
+  // ── dane ──
+  productsAll() {
+    const scen = this.props.scenariusz || 'Kilka przepisów';
+    const base = scen === 'Brak produktów' ? [] : this.PRODUCTS;
+    return base.concat(this.state.extraProducts);
+  }
+  productsMap() {
+    const m = {};
+    this.productsAll().forEach((p) => { m[p.id] = p; });
+    return m;
+  }
+  recipesAll() {
+    const scen = this.props.scenariusz || 'Kilka przepisów';
+    const base = scen === 'Kilka przepisów' ? this.RECIPES : [];
+    const all = base.concat(this.state.extraRecipes);
+    const out = [];
+    all.forEach((r) => {
+      if (this.state.deleted[r.id]) return;
+      out.push(this.state.overrides[r.id] || r);
+    });
+    return out;
+  }
+  recipeById(id) {
+    let found = null;
+    this.recipesAll().forEach((r) => { if (r.id === id) found = r; });
+    return found;
+  }
+  usageOf(id) { return this.USAGE[id] || null; }
+
+  // ── liczenie ──
+  totalsOf(ing) {
+    const P = this.productsMap();
+    const t = { kcal: 0, b: 0, t: 0, w: 0 };
+    ing.forEach((pair) => {
+      const p = P[pair[0]];
+      if (!p) return;
+      const f = pair[1] / 100;
+      t.kcal += p.kcal * f; t.b += p.b * f; t.t += p.t * f; t.w += p.w * f;
+    });
+    return t;
+  }
+  fmtInt(x) { return Math.round(x).toLocaleString('pl-PL'); }
+  fmtG(x) { return Math.round(x).toLocaleString('pl-PL') + ' g'; }
+  fmtDec(x) { return (Math.round(x * 10) / 10).toLocaleString('pl-PL'); }
+  pol(n, a, b, c) {
+    if (n === 1) return a;
+    const m10 = n % 10, m100 = n % 100;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return b;
+    return c;
+  }
+  norm(s) {
+    return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l');
+  }
+  parseNum(s) {
+    const t = String(s == null ? '' : s).trim().replace(',', '.');
+    if (!/^\d+(\.\d+)?$/.test(t)) return NaN;
+    return parseFloat(t);
+  }
+  porValid(s) {
+    const t = String(s == null ? '' : s).trim();
+    return /^\d+$/.test(t) && parseInt(t, 10) >= 1;
+  }
+  macroLineOf(t, div) {
+    const d = div || 1;
+    return 'B ' + Math.round(t.b / d) + ' g · T ' + Math.round(t.t / d) + ' g · W ' + Math.round(t.w / d) + ' g';
+  }
+
+  // ── toast / stub ──
+  toastMsg(msg, kind) {
+    clearTimeout(this._t2);
+    this.setState({ toast: { msg: msg, kind: kind || 'ok' } });
+    this._t2 = setTimeout(() => this.setState({ toast: null }), 3500);
+  }
+  stub(name) { this.toastMsg('Ekran „' + name + '” nie jest częścią tej makiety.', 'info'); }
+
+  // ── nawigacja z ochroną szkicu ──
+  formDirty() {
+    const f = this.state.form;
+    if (!f) return false;
+    return this.formSnapshot(f) !== f.snapshot;
+  }
+  formSnapshot(f) {
+    return JSON.stringify({ n: f.name, p: f.portions, i: f.ings.map((r) => [r.pid, r.grams]) });
+  }
+  guard(desc, fn) {
+    if (this.state.screen === 'form' && this.state.formView === 'recipe' && this.formDirty() && !(this.state.form && this.state.form.saving)) {
+      this.setState({ leave: desc });
+    } else { fn(); }
+  }
+  execLeave(desc) {
+    if (desc.kind === 'href') { window.location.href = desc.href; return; }
+    if (desc.kind === 'index') { this.setState({ screen: 'index', form: null, formView: 'recipe', pickerFor: null, leave: null }); return; }
+    if (desc.kind === 'back') { this.leaveFormToOrigin(); return; }
+  }
+  leaveFormToOrigin() {
+    if (this._planReturn) { window.location.href = 'Jadlify - Plan posiłków.dc.html'; return; }
+    const f = this.state.form;
+    const origin = f ? f.origin : 'index';
+    if (origin === 'addmeal' && this.state.amCtx) {
+      const ctx = this.state.amCtx;
+      this.setState({ screen: ctx.from === 'details' ? 'details' : 'index', detailId: ctx.detailId || this.state.detailId, am: Object.assign({}, ctx, { ok: null }), amCtx: null, form: null, formView: 'recipe', pickerFor: null, leave: null });
+    } else if (origin === 'details' && f && f.editId) {
+      this.setState({ screen: 'details', detailId: f.editId, form: null, formView: 'recipe', pickerFor: null, leave: null });
+    } else {
+      this.setState({ screen: 'index', form: null, formView: 'recipe', pickerFor: null, leave: null });
+    }
+  }
+
+  // ── formularz przepisu ──
+  blankForm(mode, origin, recipe) {
+    let k = this.state.keySeq;
+    const ings = recipe
+      ? recipe.ing.map((pair) => ({ key: 'k' + (k++), pid: pair[0], grams: String(pair[1]) }))
+      : [{ key: 'k' + (k++), pid: '', grams: '' }];
+    const f = {
+      mode: mode, origin: origin,
+      editId: recipe ? recipe.id : null,
+      name: recipe ? recipe.name : '',
+      portions: recipe ? String(recipe.por) : '1',
+      ings: ings,
+      submitAttempted: false, saving: false, saveError: false, prodOk: null,
+      snapshot: ''
+    };
+    f.snapshot = this.formSnapshot(f);
+    this.setState({ keySeq: k });
+    return f;
+  }
+  openCreate(origin) {
+    const f = this.blankForm('create', origin, null);
+    this.setState({ screen: 'form', formView: 'recipe', form: f, pickerFor: null, pickerSearch: '' });
+  }
+  openEdit(id, origin) {
+    const r = this.recipeById(id);
+    if (!r) return;
+    const f = this.blankForm('edit', origin, r);
+    this.setState({ screen: 'form', formView: 'recipe', form: f, pickerFor: null, pickerSearch: '' });
+  }
+  patchForm(patch) {
+    this.setState((s) => ({ form: Object.assign({}, s.form, patch) }));
+  }
+  patchIng(key, patch) {
+    this.setState((s) => ({
+      form: Object.assign({}, s.form, {
+        ings: s.form.ings.map((r) => (r.key === key ? Object.assign({}, r, patch) : r))
+      })
+    }));
+  }
+  validateForm(f) {
+    const errs = { name: false, por: false, ing: false, rows: {} };
+    if (!f.name.trim()) errs.name = true;
+    if (!this.porValid(f.portions)) errs.por = true;
+    if (f.ings.length === 0) errs.ing = true;
+    f.ings.forEach((r) => {
+      const re = { prod: !r.pid, grams: !(this.parseNum(r.grams) > 0) };
+      if (re.prod || re.grams) errs.rows[r.key] = re;
+    });
+    errs.any = errs.name || errs.por || errs.ing || Object.keys(errs.rows).length > 0;
+    return errs;
+  }
+  saveRecipe() {
+    const self = this;
+    const f = this.state.form;
+    if (!f || f.saving) return;
+    const errs = this.validateForm(f);
+    if (errs.any) { this.patchForm({ submitAttempted: true }); return; }
+    this.patchForm({ saving: true, saveError: false });
+    clearTimeout(this._t1);
+    this._t1 = setTimeout(() => {
+      if (self.props.bladZapisu) {
+        self.patchForm({ saving: false, saveError: true });
+        return;
+      }
+      const st = self.state;
+      const fNow = st.form;
+      const rec = {
+        id: fNow.mode === 'edit' ? fNow.editId : 'rx' + Date.now(),
+        name: fNow.name.trim(),
+        por: parseInt(fNow.portions, 10),
+        upd: -1, updLabel: 'przed chwilą',
+        ing: fNow.ings.map((r) => [r.pid, self.parseNum(r.grams)])
+      };
+      if (self._planReturn && fNow.mode !== 'edit') {
+        const pm = self.productsMap();
+        const tot = { kcal: 0, b: 0, t: 0, w: 0 };
+        rec.ing.forEach((pair) => { const p = pm[pair[0]]; const g = pair[1]; if (p && g > 0) { tot.kcal += p.kcal * g / 100; tot.b += p.b * g / 100; tot.t += p.t * g / 100; tot.w += p.w * g / 100; } });
+        const por = rec.por || 1;
+        window.location.href = 'Jadlify - Plan posiłków.dc.html?nowyPrzepis=' + encodeURIComponent(rec.name) + '&kcal=' + (tot.kcal / por).toFixed(1) + '&b=' + (tot.b / por).toFixed(1) + '&t=' + (tot.t / por).toFixed(1) + '&w=' + (tot.w / por).toFixed(1);
+        return;
+      }
+      const next = { form: null, formView: 'recipe', pickerFor: null };
+      if (fNow.mode === 'edit') {
+        next.overrides = Object.assign({}, st.overrides); next.overrides[rec.id] = rec;
+      } else {
+        next.extraRecipes = st.extraRecipes.concat([rec]);
+      }
+      if (fNow.origin === 'addmeal' && st.amCtx) {
+        const ctx = st.amCtx;
+        next.screen = ctx.from === 'details' ? 'details' : 'index';
+        next.detailId = ctx.detailId || st.detailId;
+        next.am = Object.assign({}, ctx, { sel: rec.id, ok: 'Przepis „' + rec.name + '” został zapisany i wybrany poniżej.' });
+        next.amCtx = null;
+      } else {
+        next.screen = 'details';
+        next.detailId = rec.id;
+      }
+      self.setState(next);
+      self.toastMsg('Przepis „' + rec.name + '” został zapisany.', 'ok');
+    }, 900);
+  }
+
+  // ── produkt ──
+  openProductForm(origin, forKey) {
+    this.setState({
+      formView: 'product', pickerFor: null, screen: 'form',
+      prod: { name: '', brand: '', kcal: '', b: '', t: '', w: '', forKey: forKey || null, origin: origin, submitAttempted: false, saving: false }
+    });
+  }
+  patchProd(patch) {
+    this.setState((s) => ({ prod: Object.assign({}, s.prod, patch) }));
+  }
+  prodErrs(p) {
+    const numOk = (v) => { const n = this.parseNum(v); return !isNaN(n) && n >= 0; };
+    return {
+      name: !p.name.trim(),
+      vals: !(numOk(p.kcal) && numOk(p.b) && numOk(p.t) && numOk(p.w))
+    };
+  }
+  saveProduct() {
+    const self = this;
+    const p = this.state.prod;
+    if (!p || p.saving) return;
+    const errs = this.prodErrs(p);
+    if (errs.name || errs.vals) { this.patchProd({ submitAttempted: true }); return; }
+    this.patchProd({ saving: true });
+    clearTimeout(this._t3);
+    this._t3 = setTimeout(() => {
+      const st = self.state;
+      const pNow = st.prod;
+      const np = {
+        id: 'px' + Date.now(),
+        name: pNow.name.trim(), brand: pNow.brand.trim(),
+        kcal: self.parseNum(pNow.kcal), b: self.parseNum(pNow.b), t: self.parseNum(pNow.t), w: self.parseNum(pNow.w)
+      };
+      const next = { extraProducts: st.extraProducts.concat([np]), prod: null };
+      if (pNow.origin === 'form' && st.form) {
+        let ings = st.form.ings;
+        let done = false;
+        if (pNow.forKey) {
+          ings = ings.map((r) => { if (r.key === pNow.forKey) { done = true; return Object.assign({}, r, { pid: np.id }); } return r; });
+        }
+        if (!done) {
+          ings = ings.concat([{ key: 'k' + st.keySeq, pid: np.id, grams: '' }]);
+          next.keySeq = st.keySeq + 1;
+        }
+        next.form = Object.assign({}, st.form, { ings: ings, prodOk: 'Produkt „' + np.name + '” został dodany i wybrany jako składnik.' });
+        next.formView = 'recipe';
+      } else {
+        next.formView = 'recipe';
+        next.screen = 'index';
+      }
+      self.setState(next);
+      self.toastMsg('Produkt „' + np.name + '” został zapisany.', 'ok');
+    }, 700);
+  }
+  cancelProduct() {
+    const p = this.state.prod;
+    if (p && p.origin === 'form') {
+      this.setState({ prod: null, formView: 'recipe' });
+    } else {
+      this.setState({ prod: null, formView: 'recipe', screen: 'index', form: null });
+    }
+  }
+
+  // ── modal „Dodaj posiłek” ──
+  openAddMeal(rid, from) {
+    this.setState({ am: { sel: rid || null, type: 'obiad', por: '1', search: '', ok: null, from: from, detailId: this.state.detailId } });
+  }
+
+  renderVals() {
+    const self = this;
+    const st = this.state;
+    const scen = this.props.scenariusz || 'Kilka przepisów';
+
+    const eff = st.reloading ? 'Ładowanie' : (st.loadFixed ? 'Normalny' : (this.props.stanSystemu || 'Normalny'));
+    const showLoading = eff === 'Ładowanie';
+    const showError = eff === 'Błąd pobierania';
+    const showContent = !showLoading && !showError;
+
+    const products = this.productsAll();
+    const hasProducts = products.length > 0;
+    const P = this.productsMap();
+    const recipes = this.recipesAll();
+
+    // nawigacja
+    const goStub = (name) => (e) => { e.preventDefault(); self.stub(name); };
+    const goHref = (href) => (e) => { e.preventDefault(); self.guard({ kind: 'href', href: href }, () => { window.location.href = href; }); };
+
+    // ── indeks ──
+    const q = st.search.trim();
+    const qn = this.norm(q);
+    const withCalc = recipes.map((r) => {
+      const tot = self.totalsOf(r.ing);
+      return { r: r, tot: tot, perKcal: tot.kcal / r.por };
+    });
+    let filtered = withCalc;
+    if (qn) filtered = withCalc.filter((x) => self.norm(x.r.name).indexOf(qn) !== -1);
+    const sorted = filtered.slice().sort((a, b) => {
+      if (st.sort === 'alpha') return a.r.name.localeCompare(b.r.name, 'pl');
+      if (st.sort === 'kcal') return a.perKcal - b.perKcal;
+      return a.r.upd - b.r.upd;
+    });
+
+    const recipeCards = sorted.map((x) => {
+      const r = x.r;
+      const usage = self.usageOf(r.id);
+      return {
+        name: r.name,
+        usedShow: !!usage,
+        metaLine: r.por + ' ' + self.pol(r.por, 'porcja', 'porcje', 'porcji') + ' · ' + r.ing.length + ' ' + self.pol(r.ing.length, 'składnik', 'składniki', 'składników'),
+        kcal: self.fmtInt(x.perKcal),
+        macroLine: self.macroLineOf(x.tot, r.por),
+        updated: 'Zaktualizowano ' + r.updLabel,
+        open: (e) => { e.stopPropagation(); self.setState({ screen: 'details', detailId: r.id }); },
+        edit: (e) => { e.stopPropagation(); self.openEdit(r.id, 'index'); },
+        del: (e) => { e.stopPropagation(); self.setState({ del: { rid: r.id, deleting: false } }); }
+      };
+    });
+
+    const idxEmptyProducts = showContent && !hasProducts && recipes.length === 0 && !qn;
+    const idxEmptyRecipes = showContent && hasProducts && recipes.length === 0 && !qn;
+    const idxNoMatch = showContent && recipes.length > 0 && !!qn && sorted.length === 0;
+    const idxGridShow = sorted.length > 0;
+    const countLabel = qn
+      ? 'Wyniki: ' + sorted.length + ' z ' + recipes.length
+      : recipes.length + ' ' + this.pol(recipes.length, 'przepis', 'przepisy', 'przepisów');
+
+    // ── szczegóły ──
+    const det = st.detailId ? this.recipeById(st.detailId) : null;
+    let detVals = {};
+    if (det) {
+      const tot = this.totalsOf(det.ing);
+      const usage = this.usageOf(det.id);
+      const detIngRows = det.ing.map((pair) => {
+        const p = P[pair[0]];
+        const kcal = p ? (p.kcal * pair[1]) / 100 : 0;
+        const pct = tot.kcal > 0 ? Math.round((kcal / tot.kcal) * 100) : 0;
+        return {
+          name: p ? (p.brand ? p.name + ' · ' + p.brand : p.name) : 'Produkt usunięty',
+          gramsLabel: self.fmtG(pair[1]),
+          kcalLabel: 'ok. ' + self.fmtInt(kcal) + ' kcal · ' + pct + '%'
+        };
+      });
+      detVals = {
+        detName: det.name,
+        detUpdated: 'Zaktualizowano ' + det.updLabel,
+        detMetaLine: det.por + ' ' + this.pol(det.por, 'porcja', 'porcje', 'porcji') + ' · ' + det.ing.length + ' ' + this.pol(det.ing.length, 'składnik', 'składniki', 'składników'),
+        detUsedShow: !!usage,
+        detUsedLabel: usage ? (usage.count + ' ' + this.pol(usage.count, 'zaplanowany posiłek', 'zaplanowane posiłki', 'zaplanowanych posiłków') + ' (' + usage.range + ').') : '',
+        detPerKcal: this.fmtInt(tot.kcal / det.por),
+        detPerB: Math.round(tot.b / det.por) + ' g',
+        detPerT: Math.round(tot.t / det.por) + ' g',
+        detPerW: Math.round(tot.w / det.por) + ' g',
+        detTotLabel: 'CAŁY PRZEPIS · ' + det.por + ' ' + this.pol(det.por, 'PORCJA', 'PORCJE', 'PORCJI'),
+        detTotKcal: this.fmtInt(tot.kcal),
+        detTotLine: this.macroLineOf(tot, 1),
+        detPortionsLabel: det.por + ' ' + this.pol(det.por, 'porcja', 'porcje', 'porcji'),
+        detIngRows: detIngRows,
+        detAddToPlan: () => self.openAddMeal(det.id, 'details'),
+        detEdit: () => self.openEdit(det.id, 'details'),
+        detDelete: () => self.setState({ del: { rid: det.id, deleting: false } })
+      };
+    } else {
+      detVals = { detName: '', detUpdated: '', detMetaLine: '', detUsedShow: false, detUsedLabel: '', detPerKcal: '0', detPerB: '', detPerT: '', detPerW: '', detTotLabel: 'CAŁY PRZEPIS', detTotKcal: '0', detTotLine: '', detPortionsLabel: '', detIngRows: [], detAddToPlan: () => {}, detEdit: () => {}, detDelete: () => {} };
+    }
+
+    // ── formularz przepisu ──
+    const f = st.form;
+    let formVals = {};
+    if (f) {
+      const errs = this.validateForm(f);
+      const showErrs = f.submitAttempted;
+      const usage = f.editId ? this.usageOf(f.editId) : null;
+      const usedPids = {};
+      f.ings.forEach((r) => { if (r.pid) usedPids[r.pid] = r.key; });
+
+      const validIng = [];
+      let incomplete = false;
+      f.ings.forEach((r) => {
+        const g = self.parseNum(r.grams);
+        if (r.pid && P[r.pid] && g > 0) validIng.push([r.pid, g]);
+        else incomplete = true;
+      });
+      const tot = this.totalsOf(validIng);
+      const porOk = this.porValid(f.portions);
+      const porN = porOk ? parseInt(f.portions, 10) : 1;
+
+      const pickQn = this.norm(st.pickerSearch);
+      const ingRows = f.ings.map((row, i) => {
+        const p = row.pid ? P[row.pid] : null;
+        const rowErr = errs.rows[row.key] || {};
+        const g = self.parseNum(row.grams);
+        const share = p && g > 0 ? (p.kcal * g) / 100 : null;
+        const isOpen = st.pickerFor === row.key;
+        let pickList = products;
+        if (pickQn) pickList = products.filter((pp) => self.norm(pp.name + ' ' + pp.brand).indexOf(pickQn) !== -1);
+        const pickRows = pickList.map((pp) => {
+          const takenBy = usedPids[pp.id];
+          const dis = !!takenBy && takenBy !== row.key;
+          const isSel = row.pid === pp.id;
+          return {
+            name: pp.brand ? pp.name + ' · ' + pp.brand : pp.name,
+            sub: pp.kcal.toLocaleString('pl-PL') + ' kcal · B ' + self.fmtDec(pp.b) + ' · T ' + self.fmtDec(pp.t) + ' · W ' + self.fmtDec(pp.w) + ' / 100 g',
+            dis: dis,
+            sel: isSel ? 'true' : 'false',
+            bg: isSel ? 'rgba(199,91,56,0.08)' : 'transparent',
+            cursor: dis ? 'not-allowed' : 'pointer',
+            op: dis ? 0.5 : 1,
+            on: () => {
+              if (dis) return;
+              self.patchIng(row.key, { pid: pp.id });
+              self.setState({ pickerFor: null, pickerSearch: '' });
+            }
+          };
+        });
+        return {
+          key: row.key,
+          prodHas: !!p,
+          prodNone: !p,
+          prodLabel: p ? (p.brand ? p.name + ' · ' + p.brand : p.name) : '',
+          prodSub: p ? (p.kcal.toLocaleString('pl-PL') + ' kcal · B ' + self.fmtDec(p.b) + ' · T ' + self.fmtDec(p.t) + ' · W ' + self.fmtDec(p.w) + ' / 100 g') : '',
+          prodBorder: showErrs && rowErr.prod ? '1.5px solid #B3402E' : '1px solid #E5DAC3',
+          pickOpen: isOpen,
+          pickOpenAria: isOpen ? 'true' : 'false',
+          openPick: () => self.setState({ pickerFor: isOpen ? null : row.key, pickerSearch: '' }),
+          closePick: () => self.setState({ pickerFor: null, pickerSearch: '' }),
+          pickSearchVal: st.pickerSearch,
+          onPickSearch: (e) => self.setState({ pickerSearch: e.target.value }),
+          pickRows: pickRows,
+          pickEmptyShow: pickRows.length === 0,
+          pickEmptyLabel: 'Brak produktów pasujących do „' + st.pickerSearch + '”.',
+          addNewProd: () => self.openProductForm('form', row.key),
+          gramsVal: row.grams,
+          onGrams: (e) => self.patchIng(row.key, { grams: e.target.value }),
+          gramsBorder: showErrs && rowErr.grams ? '1.5px solid #B3402E' : '1px solid #E5DAC3',
+          shareShow: share !== null,
+          shareLabel: share !== null ? ('W całym przepisie: ok. ' + self.fmtInt(share) + ' kcal' + (tot.kcal > 0 ? ' · ' + Math.round((share / tot.kcal) * 100) + '%' : '')) : '',
+          prodErrShow: showErrs && !!rowErr.prod,
+          gramsErrShow: showErrs && !!rowErr.grams,
+          rmName: p ? p.name : (i + 1),
+          rm: () => self.setState((s) => ({ form: Object.assign({}, s.form, { ings: s.form.ings.filter((r2) => r2.key !== row.key) }), pickerFor: null })),
+          up: () => self.setState((s) => {
+            const arr = s.form.ings.slice();
+            const idx = arr.findIndex((r2) => r2.key === row.key);
+            if (idx > 0) { const tmp = arr[idx - 1]; arr[idx - 1] = arr[idx]; arr[idx] = tmp; }
+            return { form: Object.assign({}, s.form, { ings: arr }) };
+          }),
+          dn: () => self.setState((s) => {
+            const arr = s.form.ings.slice();
+            const idx = arr.findIndex((r2) => r2.key === row.key);
+            if (idx !== -1 && idx < arr.length - 1) { const tmp = arr[idx + 1]; arr[idx + 1] = arr[idx]; arr[idx] = tmp; }
+            return { form: Object.assign({}, s.form, { ings: arr }) };
+          }),
+          upDis: i === 0,
+          dnDis: i === f.ings.length - 1,
+          upCursor: i === 0 ? 'default' : 'pointer',
+          dnCursor: i === f.ings.length - 1 ? 'default' : 'pointer',
+          upFg: i === 0 ? '#D8CCB4' : '#8C7F6C',
+          dnFg: i === f.ings.length - 1 ? '#D8CCB4' : '#8C7F6C'
+        };
+      });
+
+      const saving = f.saving;
+      const perKcal = tot.kcal / porN;
+      const barLineTxt = validIng.length > 0 && porOk
+        ? this.fmtInt(perKcal) + ' kcal · B ' + Math.round(tot.b / porN) + ' · T ' + Math.round(tot.t / porN) + ' · W ' + Math.round(tot.w / porN)
+        : 'Uzupełnij składniki i porcje';
+
+      formVals = {
+        formTitle: f.mode === 'edit' ? 'Edytuj przepis' : 'Nowy przepis',
+        saveLabel: f.mode === 'edit' ? 'Zapisz zmiany' : 'Zapisz przepis',
+        barSaveLabel: saving ? 'Zapisywanie…' : 'Zapisz',
+        formBackLabel: f.origin === 'addmeal' ? 'Wróć do dodawania posiłku' : (f.origin === 'details' ? 'Wróć do przepisu' : 'Wróć do przepisów'),
+        formBack: () => self.guard({ kind: 'back' }, () => self.leaveFormToOrigin()),
+        cancelForm: () => self.guard({ kind: 'back' }, () => self.leaveFormToOrigin()),
+        formCtxShow: f.origin === 'addmeal',
+        formCtxDate: 'jutro, 12 lipca',
+        formEditUsedShow: f.mode === 'edit' && !!usage,
+        formEditUsedLabel: usage ? ('Dotyczy to ' + usage.count + ' ' + this.pol(usage.count, 'zaplanowanego posiłku', 'zaplanowanych posiłków', 'zaplanowanych posiłków') + ' (' + usage.range + ').') : '',
+        prodOkShow: !!f.prodOk,
+        prodOkLabel: f.prodOk || '',
+        nameVal: f.name,
+        onName: (e) => self.patchForm({ name: e.target.value, prodOk: null }),
+        nameBorder: showErrs && errs.name ? '1.5px solid #B3402E' : '1px solid #E5DAC3',
+        nameErrShow: showErrs && errs.name,
+        porText: f.portions,
+        onPor: (e) => self.patchForm({ portions: e.target.value }),
+        decPor: () => self.patchForm({ portions: String(Math.max(1, (parseInt(f.portions, 10) || 2) - 1)) }),
+        incPor: () => self.patchForm({ portions: String((parseInt(f.portions, 10) || 0) + 1) }),
+        porBorder: showErrs && errs.por ? '1.5px solid #B3402E' : '1px solid #E5DAC3',
+        porErrShow: showErrs && errs.por,
+        ingCountLabel: f.ings.length + ' ' + this.pol(f.ings.length, 'pozycja', 'pozycje', 'pozycji'),
+        ingErrShow: showErrs && errs.ing,
+        ingRows: ingRows,
+        addIng: () => self.setState((s) => ({
+          form: Object.assign({}, s.form, { ings: s.form.ings.concat([{ key: 'k' + s.keySeq, pid: '', grams: '' }]) }),
+          keySeq: s.keySeq + 1
+        })),
+        sumPerNote: porOk ? ('przy ' + porN + ' ' + this.pol(porN, 'porcji', 'porcjach', 'porcjach')) : '',
+        sumPerValid: porOk,
+        sumPerInvalid: !porOk,
+        sumPerKcal: this.fmtInt(perKcal),
+        sumPerB: Math.round(tot.b / porN) + ' g',
+        sumPerT: Math.round(tot.t / porN) + ' g',
+        sumPerW: Math.round(tot.w / porN) + ' g',
+        sumTotKcal: this.fmtInt(tot.kcal),
+        sumTotLine: this.macroLineOf(tot, 1),
+        sumIncompleteShow: incomplete,
+        saveErrShow: !!f.saveError,
+        validHintShow: showErrs && errs.any,
+        saveRecipe: () => self.saveRecipe(),
+        formSaving: saving,
+        formNotSaving: !saving,
+        formSavingDis: saving,
+        saveDisabled: saving,
+        saveAria: saving ? 'true' : 'false',
+        saveBg: saving ? '#D89B7F' : '#C75B38',
+        saveFg: '#FFF8EC',
+        saveCursor: saving ? 'wait' : 'pointer',
+        barLine: barLineTxt
+      };
+    } else {
+      formVals = {
+        formTitle: '', saveLabel: 'Zapisz przepis', barSaveLabel: 'Zapisz', formBackLabel: 'Wróć do przepisów', formBack: () => {}, cancelForm: () => {},
+        formCtxShow: false, formCtxDate: '', formEditUsedShow: false, formEditUsedLabel: '', prodOkShow: false, prodOkLabel: '',
+        nameVal: '', onName: () => {}, nameBorder: '1px solid #E5DAC3', nameErrShow: false,
+        porText: '1', onPor: () => {}, decPor: () => {}, incPor: () => {}, porBorder: '1px solid #E5DAC3', porErrShow: false,
+        ingCountLabel: '', ingErrShow: false, ingRows: [], addIng: () => {},
+        sumPerNote: '', sumPerValid: true, sumPerInvalid: false, sumPerKcal: '0', sumPerB: '0 g', sumPerT: '0 g', sumPerW: '0 g',
+        sumTotKcal: '0', sumTotLine: '', sumIncompleteShow: false,
+        saveErrShow: false, validHintShow: false, saveRecipe: () => {},
+        formSaving: false, formNotSaving: true, formSavingDis: false,
+        saveDisabled: false, saveAria: 'false', saveBg: '#C75B38', saveFg: '#FFF8EC', saveCursor: 'pointer', barLine: ''
+      };
+    }
+
+    // ── formularz produktu ──
+    const pr = st.prod;
+    let prodVals = {};
+    if (pr) {
+      const perrs = this.prodErrs(pr);
+      const showP = pr.submitAttempted;
+      prodVals = {
+        prodBackLabel: pr.origin === 'form' ? 'Wróć do przepisu' : 'Wróć do przepisów',
+        prodCtxLabel: pr.origin === 'form'
+          ? 'Szkic przepisu został zachowany w całości. Po zapisaniu produktu wrócisz do formularza, a nowy produkt zostanie automatycznie wybrany jako składnik.'
+          : 'Podaj wartości odżywcze na 100 g — z takich produktów zbudujesz swoje przepisy.',
+        pNameVal: pr.name, onPName: (e) => self.patchProd({ name: e.target.value }),
+        pNameBorder: showP && perrs.name ? '1.5px solid #B3402E' : '1px solid #E5DAC3',
+        pNameErrShow: showP && perrs.name,
+        pBrandVal: pr.brand, onPBrand: (e) => self.patchProd({ brand: e.target.value }),
+        pKcalVal: pr.kcal, onPKcal: (e) => self.patchProd({ kcal: e.target.value }),
+        pBVal: pr.b, onPB: (e) => self.patchProd({ b: e.target.value }),
+        pTVal: pr.t, onPT: (e) => self.patchProd({ t: e.target.value }),
+        pWVal: pr.w, onPW: (e) => self.patchProd({ w: e.target.value }),
+        pKcalBorder: showP && perrs.vals && !(this.parseNum(pr.kcal) >= 0) ? '1.5px solid #B3402E' : '1px solid #E5DAC3',
+        pBBorder: showP && perrs.vals && !(this.parseNum(pr.b) >= 0) ? '1.5px solid #B3402E' : '1px solid #E5DAC3',
+        pTBorder: showP && perrs.vals && !(this.parseNum(pr.t) >= 0) ? '1.5px solid #B3402E' : '1px solid #E5DAC3',
+        pWBorder: showP && perrs.vals && !(this.parseNum(pr.w) >= 0) ? '1.5px solid #B3402E' : '1px solid #E5DAC3',
+        pValsErrShow: showP && perrs.vals,
+        prodCancel: () => self.cancelProduct(),
+        prodSave: () => self.saveProduct(),
+        prodSaving: pr.saving,
+        prodNotSaving: !pr.saving,
+        prodSavingDis: pr.saving,
+        prodSaveDisabled: pr.saving,
+        prodSaveAria: pr.saving ? 'true' : 'false',
+        prodSaveBg: pr.saving ? '#D89B7F' : '#C75B38',
+        prodSaveCursor: pr.saving ? 'wait' : 'pointer'
+      };
+    } else {
+      prodVals = {
+        prodBackLabel: 'Wróć', prodCtxLabel: '', pNameVal: '', onPName: () => {}, pNameBorder: '1px solid #E5DAC3', pNameErrShow: false,
+        pBrandVal: '', onPBrand: () => {}, pKcalVal: '', onPKcal: () => {}, pBVal: '', onPB: () => {}, pTVal: '', onPT: () => {}, pWVal: '', onPW: () => {},
+        pKcalBorder: '1px solid #E5DAC3', pBBorder: '1px solid #E5DAC3', pTBorder: '1px solid #E5DAC3', pWBorder: '1px solid #E5DAC3',
+        pValsErrShow: false, prodCancel: () => {}, prodSave: () => {},
+        prodSaving: false, prodNotSaving: true, prodSavingDis: false, prodSaveDisabled: false, prodSaveAria: 'false', prodSaveBg: '#C75B38', prodSaveCursor: 'pointer'
+      };
+    }
+
+    // ── modal „Dodaj posiłek” ──
+    const am = st.am;
+    let amVals = {};
+    if (am) {
+      const amQn = this.norm(am.search);
+      let amList = withCalc;
+      if (amQn) amList = withCalc.filter((x) => self.norm(x.r.name).indexOf(amQn) !== -1);
+      const amSorted = amList.slice().sort((a, b) => a.r.upd - b.r.upd);
+      const amRows = amSorted.map((x) => {
+        const isSel = am.sel === x.r.id;
+        return {
+          name: x.r.name,
+          kcalLabel: self.fmtInt(x.perKcal) + ' kcal',
+          macroLabel: 'B ' + Math.round(x.tot.b / x.r.por) + ' · T ' + Math.round(x.tot.t / x.r.por) + ' · W ' + Math.round(x.tot.w / x.r.por),
+          pressed: isSel ? 'true' : 'false',
+          border: isSel ? '1.5px solid #C75B38' : '1px solid #E5DAC3',
+          bg: isSel ? 'rgba(199,91,56,0.08)' : '#FCF7EC',
+          markBg: isSel ? '#C75B38' : 'transparent',
+          markBorder: isSel ? '1px solid #C75B38' : '1.5px solid #DCCFB2',
+          mark: isSel ? '✓' : '',
+          pick: () => self.setState((s) => ({ am: Object.assign({}, s.am, { sel: x.r.id }) }))
+        };
+      });
+      const amPorN = this.parseNum(am.por);
+      const amPorOk = amPorN > 0;
+      const selCalc = am.sel ? withCalc.filter((x) => x.r.id === am.sel)[0] : null;
+      const amTypes = this.AM_TYPES.map((t) => {
+        const isSel = am.type === t.key;
+        return {
+          label: t.label,
+          pressed: isSel ? 'true' : 'false',
+          border: isSel ? '1.5px solid #C75B38' : '1px solid #E5DAC3',
+          bg: isSel ? 'rgba(199,91,56,0.08)' : '#FCF7EC',
+          fg: isSel ? '#C75B38' : '#5C5140',
+          weight: isSel ? 700 : 500,
+          on: () => self.setState((s) => ({ am: Object.assign({}, s.am, { type: t.key }) }))
+        };
+      });
+      const canConfirm = !!selCalc && amPorOk;
+      amVals = {
+        amDateLabel: 'jutro, 12 lipca · ' + (this.AM_TYPES.filter((t) => t.key === am.type)[0] || {}).label,
+        amOkShow: !!am.ok,
+        amOkLabel: am.ok || '',
+        amSearchVal: am.search,
+        onAmSearch: (e) => self.setState((s) => ({ am: Object.assign({}, s.am, { search: e.target.value }) })),
+        amSearchHasText: am.search.length > 0,
+        clearAmSearch: () => self.setState((s) => ({ am: Object.assign({}, s.am, { search: '' }) })),
+        amRows: amRows,
+        amListShow: amRows.length > 0,
+        amNoResShow: amRows.length === 0,
+        amNoResLabel: amQn ? 'Brak przepisów dla „' + am.search.trim() + '”' : 'Nie masz jeszcze przepisów',
+        amGoCreate: () => {
+          self.setState({ amCtx: Object.assign({}, am, { ok: null }), am: null });
+          self.openCreate('addmeal');
+        },
+        amTypes: amTypes,
+        amPorText: am.por,
+        onAmPor: (e) => self.setState((s) => ({ am: Object.assign({}, s.am, { por: e.target.value }) })),
+        decAm: () => self.setState((s) => {
+          const n = self.parseNum(s.am.por);
+          const next = Math.max(0.5, (n > 0 ? n : 1.5) - 0.5);
+          return { am: Object.assign({}, s.am, { por: String(next).replace('.', ',') }) };
+        }),
+        incAm: () => self.setState((s) => {
+          const n = self.parseNum(s.am.por);
+          const next = (n > 0 ? n : 0.5) + 0.5;
+          return { am: Object.assign({}, s.am, { por: String(next).replace('.', ',') }) };
+        }),
+        amPorErrShow: !amPorOk && am.por.trim() !== '',
+        amPrevShow: canConfirm,
+        amPrevLine: canConfirm
+          ? this.fmtInt((selCalc.tot.kcal / selCalc.r.por) * amPorN) + ' kcal · B ' + Math.round((selCalc.tot.b / selCalc.r.por) * amPorN) + ' g · T ' + Math.round((selCalc.tot.t / selCalc.r.por) * amPorN) + ' g · W ' + Math.round((selCalc.tot.w / selCalc.r.por) * amPorN) + ' g'
+          : '',
+        amConfirm: () => {
+          if (!canConfirm) return;
+          self.setState({ am: null });
+          self.toastMsg('Dodano do planu (jutro): „' + selCalc.r.name + '” · ' + am.por + ' ' + self.pol(Math.round(amPorN), 'porcja', 'porcje', 'porcji') + '.', 'ok');
+        },
+        amConfirmDisabled: !canConfirm,
+        amConfirmAria: canConfirm ? 'false' : 'true',
+        amBg: canConfirm ? '#C75B38' : '#E5D8C2',
+        amFg: canConfirm ? '#FFF8EC' : '#A79A83',
+        amCursor: canConfirm ? 'pointer' : 'not-allowed',
+        closeAm: () => self.setState({ am: null }),
+        closeAmBg: (e) => { if (e.target === e.currentTarget) self.setState({ am: null }); }
+      };
+    } else {
+      amVals = {
+        amDateLabel: '', amOkShow: false, amOkLabel: '', amSearchVal: '', onAmSearch: () => {}, amSearchHasText: false, clearAmSearch: () => {},
+        amRows: [], amListShow: true, amNoResShow: false, amNoResLabel: '', amGoCreate: () => {}, amTypes: [],
+        amPorText: '1', onAmPor: () => {}, decAm: () => {}, incAm: () => {}, amPorErrShow: false,
+        amPrevShow: false, amPrevLine: '', amConfirm: () => {}, amConfirmDisabled: true, amConfirmAria: 'true',
+        amBg: '#E5D8C2', amFg: '#A79A83', amCursor: 'not-allowed', closeAm: () => {}, closeAmBg: () => {}
+      };
+    }
+
+    // ── usuwanie ──
+    const del = st.del;
+    const delRec = del ? this.recipeById(del.rid) : null;
+    const delUsage = delRec ? this.usageOf(delRec.id) : null;
+
+    // ── style modala ──
+    const ovlStyle = st.isMobile
+      ? { position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(18,12,8,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }
+      : { position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(18,12,8,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' };
+    const panelStyle = st.isMobile
+      ? { width: '100%', maxHeight: 'calc(100dvh - 40px)', background: '#F8F1E3', borderRadius: '20px 20px 0 0', color: '#2A2018', display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: 'jd-rise 0.25s ease-out' }
+      : { width: 'min(560px,100%)', maxHeight: 'calc(100vh - 48px)', background: '#F8F1E3', borderRadius: '22px', color: '#2A2018', display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: 'jd-rise 0.25s ease-out' };
+
+    const toast = st.toast;
+
+    return Object.assign({
+      isMobile: st.isMobile, isDesktop: !st.isMobile,
+      statusLabel: 'MAKIETA · PRZEPISY', statusDot: '#8FBF6A', statusFg: 'rgba(242,233,216,0.7)',
+      goHome: goHref('Jadlify - Strona główna v5.dc.html'),
+      goLista: goHref('Jadlify - Lista zakupów.dc.html'),
+      goProdukty: goHref('Jadlify - Produkty.dc.html'),
+      goPlan: goHref('Jadlify - Plan posiłków.dc.html'),
+      goCele: goHref('Jadlify - Dzienne cele.dc.html'),
+      goKonto: goStub('Moje konto'),
+      goWyloguj: goStub('Wylogowanie'),
+      goPrzepisy: (e) => { e.preventDefault(); self.guard({ kind: 'index' }, () => self.setState({ screen: 'index', form: null, formView: 'recipe', pickerFor: null })); },
+
+      showLoading: showLoading, showError: showError, showContent: showContent,
+      retryLoad: () => {
+        self.setState({ reloading: true });
+        clearTimeout(self._t1);
+        self._t1 = setTimeout(() => self.setState({ reloading: false, loadFixed: true }), 1100);
+      },
+
+      scrIndex: showContent && st.screen === 'index',
+      scrDetails: showContent && st.screen === 'details',
+      scrForm: showContent && st.screen === 'form',
+      formIsRecipe: st.formView === 'recipe',
+      formIsProduct: st.formView === 'product',
+
+      idxCtaShow: recipes.length > 0,
+      startCreate: () => self.openCreate('index'),
+      startAddProduct: () => self.openProductForm('index', null),
+      toolbarShow: recipes.length > 0,
+      searchVal: st.search,
+      onSearch: (e) => self.setState({ search: e.target.value }),
+      searchHasText: st.search.length > 0,
+      clearSearch: () => self.setState({ search: '' }),
+      sortVal: st.sort,
+      onSort: (e) => self.setState({ sort: e.target.value }),
+      countLabel: countLabel,
+      idxGridShow: idxGridShow,
+      recipeCards: recipeCards,
+      idxEmptyProducts: idxEmptyProducts,
+      idxEmptyRecipes: idxEmptyRecipes,
+      idxNoMatch: idxNoMatch,
+      noMatchLabel: 'Brak przepisów dla „' + q + '”',
+
+      backToIndex: () => self.setState({ screen: 'index', detailId: null }),
+
+      barShow: showContent && st.screen === 'form' && st.formView === 'recipe' && st.isMobile && !!f,
+
+      amOpen: !!am,
+      ovlStyle: ovlStyle, panelStyle: panelStyle,
+      stopClick: (e) => e.stopPropagation(),
+
+      delOpen: !!del && !!delRec,
+      delTitle: delUsage ? 'Nie można jeszcze usunąć przepisu' : 'Usunąć przepis?',
+      delName: delRec ? delRec.name : '',
+      delBlockedShow: !!delUsage,
+      delFreeShow: !delUsage,
+      delUsedLabel: delUsage ? (delUsage.count + ' ' + this.pol(delUsage.count, 'zaplanowanym posiłku', 'zaplanowanych posiłkach', 'zaplanowanych posiłkach') + ' (' + delUsage.range + ')') : '',
+      closeDel: () => self.setState({ del: null }),
+      closeDelBg: (e) => { if (e.target === e.currentTarget) self.setState({ del: null }); },
+      delGoPlan: () => { self.setState({ del: null }); self.stub('Plan posiłków'); },
+      delDeleting: !!del && del.deleting,
+      delNotDeleting: !del || !del.deleting,
+      delDeletingDis: !!del && del.deleting,
+      delConfirm: () => {
+        if (!del || del.deleting) return;
+        self.setState({ del: Object.assign({}, del, { deleting: true }) });
+        clearTimeout(self._t3);
+        self._t3 = setTimeout(() => {
+          self.setState((s) => {
+            const dl = Object.assign({}, s.deleted); dl[del.rid] = true;
+            return { deleted: dl, del: null, screen: s.screen === 'details' ? 'index' : s.screen, detailId: null };
+          });
+          self.toastMsg('Przepis „' + (delRec ? delRec.name : '') + '” został usunięty. Listy zakupów pozostały bez zmian.', 'ok');
+        }, 700);
+      },
+
+      leaveOpen: !!st.leave,
+      leaveStay: () => self.setState({ leave: null }),
+      leaveStayBg: (e) => { if (e.target === e.currentTarget) self.setState({ leave: null }); },
+      leaveDiscard: () => { const d = st.leave; self.setState({ leave: null }); if (d) self.execLeave(d); },
+
+      toastShow: !!toast,
+      toastMsg: toast ? toast.msg : '',
+      toastBg: toast ? (toast.kind === 'ok' ? '#5F7C4E' : (toast.kind === 'err' ? '#B3402E' : '#2A2018')) : '#2A2018',
+      toastIsOk: !!toast && toast.kind === 'ok'
+    }, detVals, formVals, prodVals, amVals);
+  }
+}
+</script>
+</body>
+</html>

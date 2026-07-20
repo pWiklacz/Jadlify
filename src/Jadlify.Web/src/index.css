@@ -1,3 +1,45 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    /* Native form controls (date pickers, scrollbars) render dark. */
+    color-scheme: dark;
+  }
+
+  html {
+    /* Numbers line up in tables, steppers and macro rows. */
+    font-variant-numeric: tabular-nums;
+  }
+
+  body {
+    @apply bg-ink bg-ink-radial font-sans text-parchment antialiased;
+    min-height: 100vh;
+  }
+
+  /* User-supplied names (products, recipes) must wrap instead of overflowing. */
+  .break-name {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* Visible, consistent keyboard focus across the redesign. */
+  :focus-visible {
+    outline: 2px solid theme('colors.terracotta.DEFAULT');
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Respect reduced-motion: neutralize entrance/loop animations. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
