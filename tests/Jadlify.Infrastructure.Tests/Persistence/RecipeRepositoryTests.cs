@@ -1,4 +1,5 @@
 using Jadlify.Application.Identity;
+using Jadlify.Application.Recipes;
 using Jadlify.Domain.Nutrition;
 using Jadlify.Domain.Planning;
 using Jadlify.Domain.Products;
@@ -97,6 +98,86 @@ public class RecipeRepositoryTests
 
         Assert.Equal(2, recipes.Count);
         Assert.All(recipes, recipe => Assert.Contains(recipe.Name, new[] { "Porridge", "Pancakes" }));
+    }
+
+    [Fact]
+    public async Task GetCatalogAsync_PagesOwnerScopedRecipesWithIngredients()
+    {
+        using SqliteTestDatabase database = new();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository ownerRecipes = new(context, new TestCurrentUser(OwnerId));
+            await ownerRecipes.AddAsync(BuildRecipe("Apple pie", 2, 100m, 200m));
+            await ownerRecipes.AddAsync(BuildRecipe("Banana bread", 2, 100m, 200m));
+            await ownerRecipes.AddAsync(BuildRecipe("Cherry tart", 2, 100m, 200m));
+
+            RecipeRepository otherRecipes = new(context, new TestCurrentUser(OtherId));
+            await otherRecipes.AddAsync(BuildRecipe("Apple strudel", 2, 100m, 200m));
+        }
+
+        RecipeCatalogResult page;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository repository = new(context, new TestCurrentUser(OwnerId));
+            page = await repository.GetCatalogAsync(null, RecipeCatalogSort.NameAsc, skip: 0, take: 2);
+        }
+
+        Assert.Equal(3, page.Total);
+        Assert.Equal(new[] { "Apple pie", "Banana bread" }, page.Items.Select(r => r.Name).ToArray());
+        // Ingredients must be loaded so the shared macro core can compute the summaries.
+        Assert.All(page.Items, recipe => Assert.Single(recipe.Ingredients));
+    }
+
+    [Fact]
+    public async Task GetCatalogAsync_OrdersByCaloriesPerServing_BeforePaging()
+    {
+        using SqliteTestDatabase database = new();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            // Per-serving kcal: Alpha 400, Beta 100, Gamma 200 — the inverse of alphabetical
+            // order, so a window taken by name and then re-sorted would return the wrong rows.
+            await recipes.AddAsync(BuildRecipe("Alpha", 1, 100m, 400m));
+            await recipes.AddAsync(BuildRecipe("Beta", 1, 100m, 100m));
+            await recipes.AddAsync(BuildRecipe("Gamma", 1, 100m, 200m));
+        }
+
+        RecipeCatalogResult page;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository repository = new(context, new TestCurrentUser(OwnerId));
+            page = await repository.GetCatalogAsync(
+                null, RecipeCatalogSort.CaloriesPerServingAsc, skip: 0, take: 2);
+        }
+
+        Assert.Equal(3, page.Total);
+        Assert.Equal(new[] { "Beta", "Gamma" }, page.Items.Select(r => r.Name).ToArray());
+    }
+
+    [Fact]
+    public async Task GetCatalogAsync_FiltersByNameSearch_CaseInsensitively()
+    {
+        using SqliteTestDatabase database = new();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            await recipes.AddAsync(BuildRecipe("Owsianka", 1, 100m, 100m));
+            await recipes.AddAsync(BuildRecipe("Kurczak", 1, 100m, 100m));
+        }
+
+        RecipeCatalogResult page;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository repository = new(context, new TestCurrentUser(OwnerId));
+            page = await repository.GetCatalogAsync(
+                "KURCZ", RecipeCatalogSort.NameAsc, skip: 0, take: 10);
+        }
+
+        Assert.Equal(1, page.Total);
+        Assert.Equal("Kurczak", Assert.Single(page.Items).Name);
     }
 
     [Fact]
@@ -376,5 +457,18 @@ public class RecipeRepositoryTests
         }
 
         Assert.Empty(found);
+    }
+
+    /// <summary>One-ingredient recipe whose per-serving calories are <c>calories * grams / 100 / portions</c>.</summary>
+    private static Recipe BuildRecipe(string name, int portions, decimal calories, decimal grams)
+    {
+        Recipe recipe = new(Guid.NewGuid(), name, portions);
+        recipe.AddIngredient(new RecipeIngredient(
+            Guid.NewGuid(),
+            "Product",
+            new MacroNutrients(calories, 10m, 5m, 20m),
+            new GramAmount(grams)));
+
+        return recipe;
     }
 }

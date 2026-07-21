@@ -180,4 +180,59 @@ public class MealPlanRepositoryTests
         Assert.Equal(MealType.Breakfast, reloaded!.MealType);
         Assert.Equal(1, reloaded.Portions);
     }
+
+    [Fact]
+    public async Task ListUsedRecipeIdsAsync_ReturnsRequestedIdsPlannedByCurrentUserOnly()
+    {
+        using SqliteTestDatabase database = new();
+        DateOnly date = new(2026, 5, 28);
+        var plannedId = Guid.NewGuid();
+        var unplannedId = Guid.NewGuid();
+        var otherUsersPlannedId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository ownerRecipes = new(context, new TestCurrentUser(OwnerId));
+            await ownerRecipes.AddAsync(new Recipe(plannedId, "Planned", 1));
+            await ownerRecipes.AddAsync(new Recipe(unplannedId, "Unplanned", 1));
+            RecipeRepository otherRecipes = new(context, new TestCurrentUser(OtherId));
+            await otherRecipes.AddAsync(new Recipe(otherUsersPlannedId, "Theirs", 1));
+
+            MealPlanRepository ownerPlans = new(context, new TestCurrentUser(OwnerId));
+            // Two entries for the same recipe: the projection must be distinct.
+            await ownerPlans.AddAsync(
+                new MealPlanEntry(Guid.NewGuid(), date, plannedId, MealType.Breakfast, 1));
+            await ownerPlans.AddAsync(
+                new MealPlanEntry(Guid.NewGuid(), date, plannedId, MealType.Dinner, 1));
+
+            MealPlanRepository otherPlans = new(context, new TestCurrentUser(OtherId));
+            await otherPlans.AddAsync(
+                new MealPlanEntry(Guid.NewGuid(), date, otherUsersPlannedId, MealType.Lunch, 1));
+        }
+
+        IReadOnlyCollection<Guid> used;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            MealPlanRepository repository = new(context, new TestCurrentUser(OwnerId));
+            used = await repository.ListUsedRecipeIdsAsync(
+                [plannedId, unplannedId, otherUsersPlannedId]);
+        }
+
+        Assert.Equal([plannedId], used);
+    }
+
+    [Fact]
+    public async Task ListUsedRecipeIdsAsync_ReturnsEmpty_WhenNoIdsRequested()
+    {
+        using SqliteTestDatabase database = new();
+
+        IReadOnlyCollection<Guid> used;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            MealPlanRepository repository = new(context, new TestCurrentUser(OwnerId));
+            used = await repository.ListUsedRecipeIdsAsync([]);
+        }
+
+        Assert.Empty(used);
+    }
 }

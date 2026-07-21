@@ -223,6 +223,160 @@ public class RecipeEndpointsTests
     }
 
     [Fact]
+    public async Task Get_ReportsInPlan_ForOwnersPlannedRecipeOnly()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient clientA = factory.CreateClientAs(UserA);
+        Guid productId = await CreateProductAsync(clientA, "Oats", 100m, 10m, 5m, 20m);
+        Guid plannedId = await CreateRecipeAsync(
+            clientA, "Planned", 1, [new RecipeIngredientRequest(productId, 100m)]);
+        Guid unplannedId = await CreateRecipeAsync(
+            clientA, "Unplanned", 1, [new RecipeIngredientRequest(productId, 100m)]);
+
+        await PlanRecipeAsync(factory, plannedId, UserA);
+        // User B planning A's unplanned recipe must not flip A's flag.
+        await PlanRecipeAsync(factory, unplannedId, UserB);
+
+        RecipeResponse? planned = await clientA.GetFromJsonAsync<RecipeResponse>($"/api/recipes/{plannedId}");
+        RecipeResponse? unplanned = await clientA.GetFromJsonAsync<RecipeResponse>($"/api/recipes/{unplannedId}");
+
+        Assert.True(planned!.IsInPlan);
+        Assert.False(unplanned!.IsInPlan);
+    }
+
+    [Fact]
+    public async Task Catalog_ReturnsSummaryPage_WithTotalAndMacros()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid oatsId = await CreateProductAsync(client, "Oats", 200m, 10m, 5m, 20m);
+        // Oracle: 150 g at 200 kcal/100 g = 300 kcal total; 2 portions -> 150 kcal per serving.
+        await CreateRecipeAsync(client, "Porridge", 2, [new RecipeIngredientRequest(oatsId, 150m)]);
+        await CreateRecipeAsync(client, "Almond bowl", 1, [new RecipeIngredientRequest(oatsId, 100m)]);
+
+        RecipeCatalogResponse? page =
+            await client.GetFromJsonAsync<RecipeCatalogResponse>("/api/recipes/catalog?skip=0&take=10");
+
+        Assert.NotNull(page);
+        Assert.Equal(2, page!.Total);
+        Assert.Equal(0, page.Skip);
+        Assert.Equal(10, page.Take);
+        // Default sort is alphabetical.
+        Assert.Equal(new[] { "Almond bowl", "Porridge" }, page.Items.Select(r => r.Name).ToArray());
+
+        RecipeSummaryResponse porridge = page.Items.Single(r => r.Name == "Porridge");
+        Assert.Equal(2, porridge.Portions);
+        Assert.Equal(1, porridge.IngredientCount);
+        Assert.Equal(300m, porridge.TotalMacros.Calories);
+        Assert.Equal(150m, porridge.PerServingMacros.Calories);
+        Assert.False(porridge.IsInPlan);
+    }
+
+    [Fact]
+    public async Task Catalog_SortsByCaloriesPerServing_AcrossTheWholeResultSet()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid productId = await CreateProductAsync(client, "Base", 100m, 10m, 5m, 20m);
+        // Per-serving kcal: Alpha 400, Beta 100, Gamma 200 — deliberately the inverse of the
+        // alphabetical order, so an in-page sort over a name-ordered window would be caught.
+        await CreateRecipeAsync(client, "Alpha", 1, [new RecipeIngredientRequest(productId, 400m)]);
+        await CreateRecipeAsync(client, "Beta", 1, [new RecipeIngredientRequest(productId, 100m)]);
+        await CreateRecipeAsync(client, "Gamma", 1, [new RecipeIngredientRequest(productId, 200m)]);
+
+        RecipeCatalogResponse? page = await client.GetFromJsonAsync<RecipeCatalogResponse>(
+            "/api/recipes/catalog?sort=CaloriesPerServingAsc&take=2");
+
+        Assert.NotNull(page);
+        Assert.Equal(3, page!.Total);
+        Assert.Equal(new[] { "Beta", "Gamma" }, page.Items.Select(r => r.Name).ToArray());
+    }
+
+    [Fact]
+    public async Task Catalog_FiltersByNameSearch()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid productId = await CreateProductAsync(client, "Base", 100m, 10m, 5m, 20m);
+        await CreateRecipeAsync(client, "Owsianka", 1, [new RecipeIngredientRequest(productId, 100m)]);
+        await CreateRecipeAsync(client, "Kurczak", 1, [new RecipeIngredientRequest(productId, 100m)]);
+
+        RecipeCatalogResponse? page =
+            await client.GetFromJsonAsync<RecipeCatalogResponse>("/api/recipes/catalog?search=kurcz");
+
+        Assert.NotNull(page);
+        Assert.Equal(1, page!.Total);
+        Assert.Equal("Kurczak", Assert.Single(page.Items).Name);
+    }
+
+    [Fact]
+    public async Task Catalog_FlagsRecipesUsedByMealPlanEntries()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid productId = await CreateProductAsync(client, "Oats", 100m, 10m, 5m, 20m);
+        Guid plannedId = await CreateRecipeAsync(
+            client, "Planned", 1, [new RecipeIngredientRequest(productId, 100m)]);
+        await CreateRecipeAsync(client, "Unplanned", 1, [new RecipeIngredientRequest(productId, 100m)]);
+
+        await PlanRecipeAsync(factory, plannedId, UserA);
+
+        RecipeCatalogResponse? page =
+            await client.GetFromJsonAsync<RecipeCatalogResponse>("/api/recipes/catalog");
+
+        Assert.NotNull(page);
+        Assert.True(page!.Items.Single(r => r.Name == "Planned").IsInPlan);
+        Assert.False(page.Items.Single(r => r.Name == "Unplanned").IsInPlan);
+    }
+
+    [Fact]
+    public async Task Catalog_DoesNotFlagInPlan_ForAnotherUsersMealPlanEntry()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient clientA = factory.CreateClientAs(UserA);
+        Guid productId = await CreateProductAsync(clientA, "Oats", 100m, 10m, 5m, 20m);
+        Guid recipeId = await CreateRecipeAsync(
+            clientA, "Porridge", 1, [new RecipeIngredientRequest(productId, 100m)]);
+
+        // User B plans user A's recipe id: the usage read is owner-scoped, so A's badge stays off.
+        await PlanRecipeAsync(factory, recipeId, UserB);
+
+        RecipeCatalogResponse? page =
+            await clientA.GetFromJsonAsync<RecipeCatalogResponse>("/api/recipes/catalog");
+
+        Assert.NotNull(page);
+        Assert.False(Assert.Single(page!.Items).IsInPlan);
+    }
+
+    [Fact]
+    public async Task Catalog_ReturnsBadRequest_ForUnknownSort()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+
+        HttpResponseMessage response = await client.GetAsync("/api/recipes/catalog?sort=bogus");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Catalog_IsOwnerScoped()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient clientA = factory.CreateClientAs(UserA);
+        using HttpClient clientB = factory.CreateClientAs(UserB);
+        Guid productId = await CreateProductAsync(clientA, "Oats", 100m, 10m, 5m, 20m);
+        await CreateRecipeAsync(clientA, "A-only", 1, [new RecipeIngredientRequest(productId, 100m)]);
+
+        RecipeCatalogResponse? page =
+            await clientB.GetFromJsonAsync<RecipeCatalogResponse>("/api/recipes/catalog");
+
+        Assert.NotNull(page);
+        Assert.Equal(0, page!.Total);
+        Assert.Empty(page.Items);
+    }
+
+    [Fact]
     public async Task RecipesRequireAuthentication()
     {
         using TestApiFactory factory = new();
@@ -234,6 +388,22 @@ public class RecipeEndpointsTests
         HttpResponseMessage response = await client.GetAsync("/api/recipes");
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    /// <summary>Plants a meal-plan entry for <paramref name="userId"/> straight through the DbContext.</summary>
+    private static async Task PlanRecipeAsync(TestApiFactory factory, Guid recipeId, string userId)
+    {
+        await using AsyncServiceScope scope = factory.Services.CreateAsyncScope();
+        JadlifyDbContext context = scope.ServiceProvider.GetRequiredService<JadlifyDbContext>();
+        var entry = new MealPlanEntry(
+            Guid.NewGuid(),
+            new DateOnly(2026, 6, 1),
+            recipeId,
+            MealType.Breakfast,
+            1);
+        context.MealPlanEntries.Add(entry);
+        context.Entry(entry).Property("UserId").CurrentValue = userId;
+        await context.SaveChangesAsync();
     }
 
     private static async Task<Guid> CreateProductAsync(

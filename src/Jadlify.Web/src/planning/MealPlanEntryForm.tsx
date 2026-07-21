@@ -9,6 +9,8 @@ type MealPlanEntryFormProps =
       mode: 'create'
       date: string
       recipes: Recipe[]
+      /** Recipe preselected by an add-to-plan handoff; defaults to the first recipe. */
+      initialRecipeId?: string
       isSubmitting: boolean
       onSubmit: (body: AddMealPlanEntryRequest) => Promise<void>
     }
@@ -23,7 +25,10 @@ type MealPlanEntryFormProps =
     }
 
 export function MealPlanEntryForm(props: MealPlanEntryFormProps) {
-  const initialRecipeId = props.mode === 'edit' ? props.entry.recipeId : props.recipes[0]?.id ?? ''
+  const initialRecipeId =
+    props.mode === 'edit'
+      ? props.entry.recipeId
+      : (props.initialRecipeId ?? props.recipes[0]?.id ?? '')
   const initialMealType = props.mode === 'edit' ? props.entry.mealType : 'Breakfast'
   const initialPortions = props.mode === 'edit' ? String(props.entry.portions) : '1'
   const [recipeId, setRecipeId] = useState(initialRecipeId)

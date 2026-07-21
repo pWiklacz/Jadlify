@@ -1,84 +1,174 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { formatKcal } from '../ui/formatters'
 import { useProductSearch } from './useProductSearch'
 import type { RecipeProductSelection } from './types'
 
 interface ProductPickerProps {
+  /** Ties the picker's trigger to its `Field` label. */
+  id: string
   selected: RecipeProductSelection | null
+  /** Products already used by other rows; selecting them again is blocked. */
   excludedProductIds: string[]
   onSelect: (product: RecipeProductSelection) => void
   onAddMissing: () => void
+  invalid?: boolean
+  describedBy?: string
 }
 
-/** Search/select control for one ingredient row. */
+/**
+ * Search/select control for one ingredient row: a button showing the current
+ * choice that opens an inline listbox with a name/barcode search. A product used
+ * by another row is listed but disabled ("już w przepisie"), so the duplicate
+ * rule is visible rather than silently swallowed on save.
+ */
 export function ProductPicker({
+  id,
   selected,
   excludedProductIds,
   onSelect,
   onAddMissing,
+  invalid = false,
+  describedBy,
 }: ProductPickerProps) {
-  const [search, setSearch] = useState(selected?.name ?? '')
-  const { data: products, isLoading, isError } = useProductSearch(search)
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const containerRef = useRef<HTMLDivElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const { data: products, isPending, isError } = useProductSearch(search)
+
+  useEffect(() => {
+    if (open) {
+      searchRef.current?.focus()
+    }
+  }, [open])
+
+  // Clicking outside closes the list; Escape is handled on the container so it
+  // does not bubble up and close the surrounding dialog as well.
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+    function onPointerDown(event: MouseEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    return () => document.removeEventListener('mousedown', onPointerDown)
+  }, [open])
 
   return (
-    <div className="flex flex-col gap-2">
-      <label className="text-sm font-medium">
-        Product
-        <input
-          type="search"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search by name or barcode"
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-        />
-      </label>
-
-      {selected && (
-        <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-          Selected: <span className="font-medium">{selected.name}</span>
-        </p>
-      )}
-
-      <div className="max-h-36 overflow-y-auto rounded-md border border-slate-200 bg-white">
-        {isLoading && <p className="px-3 py-2 text-sm text-slate-600">Searching products.</p>}
-        {isError && (
-          <p role="alert" className="px-3 py-2 text-sm text-red-600">
-            Could not search products.
-          </p>
-        )}
-        {products?.length === 0 && (
-          <p className="px-3 py-2 text-sm text-slate-600">No matching products.</p>
-        )}
-        {products?.map((product) => {
-          const alreadyUsed = excludedProductIds.includes(product.id) && selected?.id !== product.id
-          return (
-            <button
-              key={product.id}
-              type="button"
-              onClick={() => onSelect(product)}
-              disabled={alreadyUsed}
-              className="flex w-full items-center justify-between gap-3 border-b border-slate-100 px-3 py-2 text-left text-sm last:border-b-0 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <span className="min-w-0">
-                <span className="block truncate font-medium">{product.name}</span>
-                <span className="text-slate-500">
-                  {product.calories} kcal / 100 g
-                </span>
-              </span>
-              <span className="shrink-0 text-xs font-medium text-slate-600">
-                {alreadyUsed ? 'Used' : 'Select'}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-
+    <div
+      ref={containerRef}
+      className="relative"
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && open) {
+          event.stopPropagation()
+          setOpen(false)
+        }
+      }}
+    >
       <button
         type="button"
-        onClick={onAddMissing}
-        className="self-start rounded-md border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-100"
+        id={id}
+        onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
+        className={[
+          'flex min-h-[46px] w-full items-center gap-2 rounded-field border-[1.5px] bg-cream-input px-3.5 py-2.5 text-left text-espresso transition-colors focus:border-terracotta',
+          invalid ? 'border-danger' : 'border-cream-border',
+        ].join(' ')}
       >
-        Add missing product
+        <span className={`min-w-0 flex-1 break-words ${selected ? '' : 'text-mocha/80'}`}>
+          {selected ? selected.name : 'Wybierz produkt…'}
+        </span>
+        <span aria-hidden="true" className="flex-none text-mocha">
+          <ChevronGlyph />
+        </span>
       </button>
+
+      {open && (
+        <div className="absolute left-0 right-0 z-10 mt-1 overflow-hidden rounded-panel border border-cream-border bg-cream shadow-modal">
+          <div className="p-2">
+            <input
+              ref={searchRef}
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Szukaj produktu…"
+              aria-label="Szukaj produktu"
+              className="w-full rounded-field border-[1.5px] border-cream-border bg-cream-input px-3 py-2 text-sm text-espresso outline-none placeholder:text-mocha/70 focus:border-terracotta"
+            />
+          </div>
+
+          <ul className="max-h-56 overflow-y-auto" aria-label="Wybierz produkt">
+            {isPending && (
+              <li className="px-3.5 py-2.5 text-sm text-mocha">Szukamy produktów…</li>
+            )}
+            {isError && (
+              <li role="alert" className="px-3.5 py-2.5 text-sm text-danger">
+                Nie udało się wyszukać produktów.
+              </li>
+            )}
+            {products?.length === 0 && (
+              <li className="px-3.5 py-2.5 text-sm text-mocha">Brak pasujących produktów.</li>
+            )}
+            {products?.map((product) => {
+              const alreadyUsed =
+                excludedProductIds.includes(product.id) && selected?.id !== product.id
+              return (
+                <li key={product.id}>
+                  <button
+                    type="button"
+                    disabled={alreadyUsed}
+                    onClick={() => {
+                      onSelect(product)
+                      setOpen(false)
+                    }}
+                    className="flex w-full items-center gap-3 border-b border-dotted border-cream-line px-3.5 py-2.5 text-left last:border-b-0 hover:bg-cream-hover disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:bg-transparent"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block break-words text-[13.5px] font-semibold text-espresso">
+                        {product.name}
+                      </span>
+                      <span className="text-xs tabular-nums text-mocha">
+                        {formatKcal(product.calories)} kcal / 100 g
+                      </span>
+                    </span>
+                    {alreadyUsed && (
+                      <span className="flex-none rounded-pill bg-cream-hover px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-eyebrow text-mocha">
+                        Już w przepisie
+                      </span>
+                    )}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+
+          <div className="border-t border-cream-border p-2">
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false)
+                onAddMissing()
+              }}
+              className="min-h-[40px] w-full rounded-pill px-3 text-[13px] font-bold text-terracotta underline underline-offset-[3px] hover:bg-terracotta/10"
+            >
+              Dodaj nowy produkt
+            </button>
+          </div>
+        </div>
+      )}
     </div>
+  )
+}
+
+function ChevronGlyph() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="m5 8 5 5 5-5" />
+    </svg>
   )
 }

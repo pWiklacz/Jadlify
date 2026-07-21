@@ -639,27 +639,27 @@ Migrujemy shopping UI na trwałe kontrakty, budujemy dashboard na współdzielon
 
 #### Automated
 
-- [x] 3.1 Frontendowe testy produktów przechodzą
-- [x] 3.2 Frontend lint i build przechodzą
-- [x] 3.3 Filtry, detail, lookup i cache invalidation są pokryte
+- [x] 3.1 Frontendowe testy produktów przechodzą — deef72a
+- [x] 3.2 Frontend lint i build przechodzą — deef72a
+- [x] 3.3 Filtry, detail, lookup i cache invalidation są pokryte — deef72a
 
 #### Manual
 
-- [x] 3.4 Product index/detail/CRUD odpowiada mockupom na trzech szerokościach
-- [x] 3.5 Focus, overflow i powrót z zachowaniem filtrów działają
+- [x] 3.4 Product index/detail/CRUD odpowiada mockupom na trzech szerokościach — 79be743
+- [x] 3.5 Focus, overflow i powrót z zachowaniem filtrów działają — 79be743
 
 ### Phase 4: Przepisy i dzienne cele
 
 #### Automated
 
-- [ ] 4.1 Backend recipe catalog i usage testy przechodzą
-- [ ] 4.2 Frontend recipe i daily-goal testy przechodzą
-- [ ] 4.3 Frontend lint/build i backend build przechodzą
+- [x] 4.1 Backend recipe catalog i usage testy przechodzą
+- [x] 4.2 Frontend recipe i daily-goal testy przechodzą
+- [x] 4.3 Frontend lint/build i backend build przechodzą
 
 #### Manual
 
-- [ ] 4.4 Recipes index/detail/builder i Add-to-plan działają responsywnie
-- [ ] 4.5 Goal empty/view/edit, warning i unsaved guard działają dostępnie
+- [x] 4.4 Recipes index/detail/builder i Add-to-plan działają responsywnie
+- [x] 4.5 Goal empty/view/edit, warning i unsaved guard działają dostępnie
 
 ### Phase 5: Rdzeń pełnego planera
 

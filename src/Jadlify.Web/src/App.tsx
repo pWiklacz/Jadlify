@@ -6,6 +6,7 @@ import { LoginPage } from './routes/LoginPage'
 import { ProductsPage } from './routes/sections/ProductsPage'
 import { ProductDetailsPage } from './routes/sections/ProductDetailsPage'
 import { RecipesPage } from './routes/sections/RecipesPage'
+import { RecipeDetailsPage } from './routes/sections/RecipeDetailsPage'
 import { MealPlanPage } from './routes/sections/MealPlanPage'
 import { GoalsPage } from './routes/sections/GoalsPage'
 import { ShoppingListPage } from './routes/sections/ShoppingListPage'
@@ -24,6 +25,7 @@ function App() {
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/products/:id" element={<ProductDetailsPage />} />
             <Route path="/recipes" element={<RecipesPage />} />
+            <Route path="/recipes/:id" element={<RecipeDetailsPage />} />
             <Route path="/meal-plan" element={<MealPlanPage />} />
             <Route path="/goals" element={<GoalsPage />} />
             <Route path="/shopping-list" element={<ShoppingListPage />} />

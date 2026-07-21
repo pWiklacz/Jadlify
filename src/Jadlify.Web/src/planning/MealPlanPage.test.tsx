@@ -26,7 +26,10 @@ const recipe: Recipe = {
   ingredients: [],
   totalMacros: { calories: 400, protein: 20, fat: 12, carbohydrates: 50 },
   perServingMacros: { calories: 200, protein: 10, fat: 6, carbohydrates: 25 },
+  isInPlan: false,
 }
+
+const soup: Recipe = { ...recipe, id: 'r2', name: 'Soup', isInPlan: false }
 
 let recipes: Recipe[] = []
 let entriesByDate: Record<string, MealPlanEntry[]> = {}
@@ -113,10 +116,10 @@ afterEach(() => {
   vi.clearAllMocks()
 })
 
-function renderPage() {
+function renderPage(initialEntry = '/meal-plan') {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <QueryClientProvider client={queryClient}>
         <MealPlanPage />
       </QueryClientProvider>
@@ -327,6 +330,31 @@ describe('MealPlanPage', () => {
     expect(mockApiClient.get).toHaveBeenCalledWith(
       expect.stringMatching(/^\/api\/meal-plan\/summary\?date=/),
     )
+  })
+
+  it('preselects the handed-off recipe and offers the return link', async () => {
+    recipes = [recipe, soup]
+    renderPage('/meal-plan?addRecipe=r2&date=2026-06-09&returnTo=%2Frecipes%2Fr2')
+
+    await screen.findByRole('form', { name: 'Add meal-plan entry' })
+
+    expect(await screen.findByLabelText('Date')).toHaveValue('2026-06-09')
+    expect(screen.getByLabelText('Recipe')).toHaveValue('r2')
+    expect(screen.getByRole('link', { name: 'Wróć do przepisu' })).toHaveAttribute(
+      'href',
+      '/recipes/r2',
+    )
+  })
+
+  it('ignores a handed-off recipe id that is not one of the user’s recipes', async () => {
+    recipes = [recipe]
+    renderPage('/meal-plan?addRecipe=not-mine&returnTo=%2Frecipes%2Fnot-mine')
+
+    await screen.findByRole('form', { name: 'Add meal-plan entry' })
+
+    // Falls back to the first own recipe; no handoff banner is shown.
+    expect(screen.getByLabelText('Recipe')).toHaveValue('r1')
+    expect(screen.queryByRole('link', { name: 'Wróć do przepisu' })).not.toBeInTheDocument()
   })
 
   it('does not show goal delta or shopping-list output', async () => {

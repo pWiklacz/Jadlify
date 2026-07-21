@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { readAddToPlanParams, stripAddToPlanParams } from '../recipes/addToPlan'
 import { DailyMacroSummaryPanel } from './DailyMacroSummaryPanel'
 import { MealPlanEntryForm } from './MealPlanEntryForm'
 import { useDailyMacroSummary } from './useDailyMacroSummary'
@@ -18,15 +20,45 @@ import {
   type MealType,
 } from './types'
 
+/** A recipe handed off from `/recipes/:id`, once validated against the user's own recipes. */
+interface AcceptedHandoff {
+  recipeId: string
+  returnTo?: string
+}
+
 export function MealPlanPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [date, setDate] = useState(todayIsoDate())
   const [editing, setEditing] = useState<MealPlanEntry | null>(null)
+  const [handoff, setHandoff] = useState<AcceptedHandoff | null>(null)
   const { data: entries, isLoading, isError } = useMealPlan(date)
   const summaryQuery = useDailyMacroSummary(date)
   const recipesQuery = useRecipes()
   const addEntry = useAddMealPlanEntry()
   const updateEntry = useUpdateMealPlanEntry()
   const deleteEntry = useDeleteMealPlanEntry()
+
+  // Take over an add-to-plan handoff from `/recipes/:id`. The recipe id is only
+  // accepted once it is found in the user's own recipes — a foreign or stale id is
+  // dropped rather than preselected. The parameters are stripped as soon as they are
+  // consumed, so a reload does not re-apply the handoff.
+  const availableRecipes = recipesQuery.data
+  useEffect(() => {
+    const requested = readAddToPlanParams(searchParams)
+    if (!requested || !availableRecipes) {
+      return
+    }
+
+    const known = availableRecipes.some((recipe) => recipe.id === requested.recipeId)
+    if (known) {
+      setHandoff({ recipeId: requested.recipeId, returnTo: requested.returnTo })
+      if (requested.date) {
+        setDate(requested.date)
+      }
+    }
+
+    setSearchParams(stripAddToPlanParams(searchParams), { replace: true })
+  }, [availableRecipes, searchParams, setSearchParams])
 
   const orderedEntries = [...(entries ?? [])].sort(compareEntries)
   const entryMacros = new Map(
@@ -81,11 +113,28 @@ export function MealPlanPage() {
         </p>
       )}
 
+      {handoff && (
+        <p
+          role="status"
+          className="rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-700"
+        >
+          Wybrano przepis z katalogu — uzupełnij typ posiłku i liczbę porcji.{' '}
+          {handoff.returnTo && (
+            <Link to={handoff.returnTo} className="font-medium underline">
+              Wróć do przepisu
+            </Link>
+          )}
+        </p>
+      )}
+
       {recipesQuery.data && (
         <MealPlanEntryForm
+          // Remounting on a handoff lets the preselected recipe seed the form's state.
+          key={handoff?.recipeId ?? 'create'}
           mode="create"
           date={date}
           recipes={recipesQuery.data}
+          initialRecipeId={handoff?.recipeId}
           isSubmitting={addEntry.isPending}
           onSubmit={addMealPlanEntry}
         />

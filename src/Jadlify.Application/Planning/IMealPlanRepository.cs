@@ -18,6 +18,15 @@ public interface IMealPlanRepository
         DateOnly date,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Returns the subset of <paramref name="recipeIds"/> that the current user has planned
+    /// at least one meal for. One batched read backs the catalog's "W PLANIE" badge, so the
+    /// index never issues a usage query per recipe. Must filter by current user.
+    /// </summary>
+    Task<IReadOnlyCollection<Guid>> ListUsedRecipeIdsAsync(
+        IReadOnlyCollection<Guid> recipeIds,
+        CancellationToken cancellationToken = default);
+
     Task UpdateAsync(MealPlanEntry entry, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);

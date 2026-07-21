@@ -49,6 +49,29 @@ internal sealed class MealPlanRepository : IMealPlanRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<Guid>> ListUsedRecipeIdsAsync(
+        IReadOnlyCollection<Guid> recipeIds,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(recipeIds);
+
+        if (recipeIds.Count == 0)
+        {
+            return [];
+        }
+
+        string owner = _currentUser.UserId.Value;
+
+        // One owner-scoped IN-filter over the requested ids, projected distinct: the catalog
+        // resolves usage for the whole page in a single round-trip instead of per recipe.
+        return await _context.MealPlanEntries
+            .Where(entry => recipeIds.Contains(entry.RecipeId)
+                && EF.Property<string>(entry, PersistenceConstants.UserIdProperty) == owner)
+            .Select(entry => entry.RecipeId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task UpdateAsync(MealPlanEntry entry, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(entry);

@@ -56,6 +56,55 @@ internal sealed class RecipeRepository : IRecipeRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<RecipeCatalogResult> GetCatalogAsync(
+        string? search,
+        RecipeCatalogSort sort,
+        int skip,
+        int take,
+        CancellationToken cancellationToken = default)
+    {
+        string owner = _currentUser.UserId.Value;
+
+        IQueryable<Recipe> query = _context.Recipes
+            .Where(recipe => EF.Property<string>(recipe, PersistenceConstants.UserIdProperty) == owner);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            string normalizedSearch = search.Trim().ToLowerInvariant();
+            query = query.Where(recipe => recipe.Name.ToLower().Contains(normalizedSearch));
+        }
+
+        // Count all matches before paging so the caller can render totals / page controls.
+        int total = await query.CountAsync(cancellationToken);
+
+        // Ordering happens in the database so it applies across the whole result set, not just
+        // the fetched window — sorting a name-ordered page in memory would order the wrong rows.
+        // The per-serving key repeats the macro formula as a *sort key only*; every displayed
+        // value still comes from MacroCalculator over the loaded aggregate, which stays the one
+        // deterministic macro core. Dividing by 100 is a constant positive factor and is folded
+        // away here, so the key is proportional to calories per serving.
+        query = sort switch
+        {
+            RecipeCatalogSort.CaloriesPerServingAsc => query
+                .OrderBy(recipe =>
+                    recipe.Ingredients.Sum(i => i.Per100Grams.Calories * i.WholeRecipeAmount.Value)
+                    / recipe.Portions)
+                .ThenBy(recipe => recipe.Name)
+                .ThenBy(recipe => recipe.Id),
+            _ => query
+                .OrderBy(recipe => recipe.Name)
+                .ThenBy(recipe => recipe.Id),
+        };
+
+        List<Recipe> items = await query
+            .Include(recipe => recipe.Ingredients)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+
+        return new RecipeCatalogResult(items, total);
+    }
+
     public async Task<IReadOnlyList<Recipe>> ListByIdsAsync(
         IReadOnlyCollection<Guid> ids,
         CancellationToken cancellationToken = default)

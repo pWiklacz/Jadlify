@@ -4,6 +4,7 @@ using Jadlify.Application.Recipes;
 using Jadlify.Application.Recipes.CreateRecipe;
 using Jadlify.Application.Recipes.DeleteRecipe;
 using Jadlify.Application.Recipes.GetRecipe;
+using Jadlify.Application.Recipes.GetRecipeCatalog;
 using Jadlify.Application.Recipes.ListRecipes;
 using Jadlify.Application.Recipes.UpdateRecipe;
 using Jadlify.SharedKernel;
@@ -27,6 +28,31 @@ public static class RecipeEndpoints
 
             return result.IsSuccess
                 ? Results.Ok(result.Value.Select(RecipeResponse.FromDto).ToArray())
+                : result.ToProblem();
+        });
+
+        // Paginated catalog: name search + sort, returning items/total/skip/take. The literal
+        // "catalog" segment never collides with the GUID-constrained GET /{id:guid} below.
+        recipes.MapGet("/catalog", async (
+            string? search,
+            string? sort,
+            int? skip,
+            int? take,
+            IMediator mediator,
+            CancellationToken cancellationToken) =>
+        {
+            Result<RecipeCatalogSort> sortOrder = ParseCatalogSort(sort);
+            if (sortOrder.IsFailure)
+            {
+                return sortOrder.ToProblem();
+            }
+
+            Result<RecipeCatalogPageDto> result = await mediator.QueryAsync(
+                new GetRecipeCatalogQuery(search, sortOrder.Value, skip, take),
+                cancellationToken);
+
+            return result.IsSuccess
+                ? Results.Ok(RecipeCatalogResponse.FromDto(result.Value))
                 : result.ToProblem();
         });
 
@@ -88,6 +114,28 @@ public static class RecipeEndpoints
         });
 
         return app;
+    }
+
+    // null/empty -> the default NameAsc; a stable enum name -> that sort; anything else -> 400.
+    private static Result<RecipeCatalogSort> ParseCatalogSort(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return Result.Ok(RecipeCatalogSort.NameAsc);
+        }
+
+        if (Enum.TryParse(value, ignoreCase: false, out RecipeCatalogSort sort) && Enum.IsDefined(sort))
+        {
+            return Result.Ok(sort);
+        }
+
+        return Result.Fail<RecipeCatalogSort>(new ValidationError(
+        [
+            new Error(
+                "Sort",
+                "The sort must be one of NameAsc or CaloriesPerServingAsc.",
+                ErrorType.Validation)
+        ]));
     }
 
     private static IReadOnlyList<RecipeIngredientInput> ToInputs(

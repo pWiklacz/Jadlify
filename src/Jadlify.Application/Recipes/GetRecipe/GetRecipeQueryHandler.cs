@@ -1,4 +1,5 @@
 using Jadlify.Application.Common.Mediator;
+using Jadlify.Application.Planning;
 using Jadlify.Domain.Recipes;
 using Jadlify.SharedKernel;
 
@@ -10,18 +11,25 @@ public sealed class GetRecipeQueryHandler : IQueryHandler<GetRecipeQuery, Recipe
         Error.NotFound("Recipe.NotFound", "The recipe was not found for the current user.");
 
     private readonly IRecipeRepository _recipes;
+    private readonly IMealPlanRepository _mealPlan;
 
-    public GetRecipeQueryHandler(IRecipeRepository recipes)
+    public GetRecipeQueryHandler(IRecipeRepository recipes, IMealPlanRepository mealPlan)
     {
         _recipes = recipes;
+        _mealPlan = mealPlan;
     }
 
     public async Task<Result<RecipeDto>> HandleAsync(GetRecipeQuery query, CancellationToken cancellationToken)
     {
         Recipe? recipe = await _recipes.GetByIdAsync(query.Id, cancellationToken);
+        if (recipe is null)
+        {
+            return Result.Fail<RecipeDto>(NotFound);
+        }
 
-        return recipe is null
-            ? Result.Fail<RecipeDto>(NotFound)
-            : Result.Ok(RecipeDto.FromDomain(recipe));
+        IReadOnlyCollection<Guid> used =
+            await _mealPlan.ListUsedRecipeIdsAsync([recipe.Id], cancellationToken);
+
+        return Result.Ok(RecipeDto.FromDomain(recipe, used.Count > 0));
     }
 }
