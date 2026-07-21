@@ -645,8 +645,8 @@ Migrujemy shopping UI na trwałe kontrakty, budujemy dashboard na współdzielon
 
 #### Manual
 
-- [ ] 3.4 Product index/detail/CRUD odpowiada mockupom na trzech szerokościach
-- [ ] 3.5 Focus, overflow i powrót z zachowaniem filtrów działają
+- [x] 3.4 Product index/detail/CRUD odpowiada mockupom na trzech szerokościach
+- [x] 3.5 Focus, overflow i powrót z zachowaniem filtrów działają
 
 ### Phase 4: Przepisy i dzienne cele
 
