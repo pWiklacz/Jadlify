@@ -197,11 +197,14 @@ describe('RecipesPage', () => {
     await user.type(screen.getByLabelText('Name'), 'Post workout')
     await user.click(screen.getByRole('button', { name: 'Add missing product' }))
 
-    const productDialog = await screen.findByRole('dialog', { name: 'Add product' })
-    await user.type(within(productDialog).getByLabelText('Name'), 'Protein powder')
-    await user.type(within(productDialog).getByLabelText(/^Calories/i), '400')
-    await user.type(within(productDialog).getByLabelText(/^Protein/i), '80')
-    await user.click(within(productDialog).getByRole('button', { name: 'Save' }))
+    const productDialog = await screen.findByRole('dialog', { name: 'Dodaj produkt' })
+    await user.type(within(productDialog).getByLabelText('Nazwa produktu'), 'Protein powder')
+    await user.type(within(productDialog).getByLabelText(/^Kalorie/i), '400')
+    await user.type(within(productDialog).getByLabelText(/^Białko/i), '80')
+    // The redesigned form requires all four macros (0 is a valid value).
+    await user.type(within(productDialog).getByLabelText(/^Tłuszcz/i), '0')
+    await user.type(within(productDialog).getByLabelText(/^Węglowodany/i), '0')
+    await user.click(within(productDialog).getByRole('button', { name: 'Zapisz produkt' }))
 
     expect(await screen.findByDisplayValue('Post workout')).toBeInTheDocument()
     const selectedNotice = await screen.findByText(/selected:/i)

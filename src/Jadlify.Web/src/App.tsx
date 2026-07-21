@@ -4,6 +4,7 @@ import { AppShell } from './layout/AppShell'
 import { LandingPage } from './routes/LandingPage'
 import { LoginPage } from './routes/LoginPage'
 import { ProductsPage } from './routes/sections/ProductsPage'
+import { ProductDetailsPage } from './routes/sections/ProductDetailsPage'
 import { RecipesPage } from './routes/sections/RecipesPage'
 import { MealPlanPage } from './routes/sections/MealPlanPage'
 import { GoalsPage } from './routes/sections/GoalsPage'
@@ -21,6 +22,7 @@ function App() {
           <Route element={<AppShell />}>
             <Route path="/" element={<LandingPage />} />
             <Route path="/products" element={<ProductsPage />} />
+            <Route path="/products/:id" element={<ProductDetailsPage />} />
             <Route path="/recipes" element={<RecipesPage />} />
             <Route path="/meal-plan" element={<MealPlanPage />} />
             <Route path="/goals" element={<GoalsPage />} />

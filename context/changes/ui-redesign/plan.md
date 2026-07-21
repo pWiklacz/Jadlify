@@ -626,22 +626,22 @@ Migrujemy shopping UI na trwałe kontrakty, budujemy dashboard na współdzielon
 
 #### Automated
 
-- [x] 2.1 Testy produktu przechodzą we wszystkich warstwach
-- [x] 2.2 Build rozwiązania przechodzi
-- [x] 2.3 Migracja i owner-scoped catalog contracts są zweryfikowane
+- [x] 2.1 Testy produktu przechodzą we wszystkich warstwach — 05fc4a9
+- [x] 2.2 Build rozwiązania przechodzi — 05fc4a9
+- [x] 2.3 Migracja i owner-scoped catalog contracts są zweryfikowane — 05fc4a9
 
 #### Manual
 
-- [x] 2.4 Migracja zachowuje istniejące produkty
-- [x] 2.5 Brand/category round-trip i barcode fallback działają
+- [x] 2.4 Migracja zachowuje istniejące produkty — 05fc4a9
+- [x] 2.5 Brand/category round-trip i barcode fallback działają — 05fc4a9
 
 ### Phase 3: Nowy katalog produktów
 
 #### Automated
 
-- [ ] 3.1 Frontendowe testy produktów przechodzą
-- [ ] 3.2 Frontend lint i build przechodzą
-- [ ] 3.3 Filtry, detail, lookup i cache invalidation są pokryte
+- [x] 3.1 Frontendowe testy produktów przechodzą
+- [x] 3.2 Frontend lint i build przechodzą
+- [x] 3.3 Filtry, detail, lookup i cache invalidation są pokryte
 
 #### Manual
 
