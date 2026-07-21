@@ -63,10 +63,19 @@ internal sealed class FakeRecipeRepository : IRecipeRepository
         CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<Recipe>>([.. _recipes.Where(recipe => ids.Contains(recipe.Id))]);
 
+    /// <summary>
+    /// Counts calls so tests can assert that a range read batches recipes once rather than
+    /// resolving them per day or per entry.
+    /// </summary>
+    public int ListByIdsWithIngredientsCallCount { get; private set; }
+
     public Task<IReadOnlyList<Recipe>> ListByIdsWithIngredientsAsync(
         IReadOnlyCollection<Guid> ids,
-        CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<Recipe>>([.. _recipes.Where(recipe => ids.Contains(recipe.Id))]);
+        CancellationToken cancellationToken = default)
+    {
+        ListByIdsWithIngredientsCallCount++;
+        return Task.FromResult<IReadOnlyList<Recipe>>([.. _recipes.Where(recipe => ids.Contains(recipe.Id))]);
+    }
 
     public Task<Result> UpdateAsync(Recipe recipe, CancellationToken cancellationToken = default)
     {

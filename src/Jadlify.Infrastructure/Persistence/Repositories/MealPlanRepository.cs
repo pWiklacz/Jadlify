@@ -46,6 +46,27 @@ internal sealed class MealPlanRepository : IMealPlanRepository
         return await _context.MealPlanEntries
             .Where(entry => entry.Date == date
                 && EF.Property<string>(entry, PersistenceConstants.UserIdProperty) == owner)
+            .OrderBy(entry => entry.Id)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<MealPlanEntry>> ListByDateRangeAsync(
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken = default)
+    {
+        string owner = _currentUser.UserId.Value;
+
+        // One owner-scoped read over the whole window, served by the (user_id, date) index.
+        // Ordering by date then id gives a stable sequence across repeat reads; the meal-type
+        // ordering inside a day is applied in the application, where the enum order is known
+        // (the column stores names, so sorting it here would be alphabetical, not meal order).
+        return await _context.MealPlanEntries
+            .Where(entry => entry.Date >= from
+                && entry.Date <= to
+                && EF.Property<string>(entry, PersistenceConstants.UserIdProperty) == owner)
+            .OrderBy(entry => entry.Date)
+            .ThenBy(entry => entry.Id)
             .ToListAsync(cancellationToken);
     }
 
@@ -64,10 +85,12 @@ internal sealed class MealPlanRepository : IMealPlanRepository
 
         // One owner-scoped IN-filter over the requested ids, projected distinct: the catalog
         // resolves usage for the whole page in a single round-trip instead of per recipe.
+        // Product entries have a null recipe_id and are filtered out by the IN-filter itself.
         return await _context.MealPlanEntries
-            .Where(entry => recipeIds.Contains(entry.RecipeId)
+            .Where(entry => entry.RecipeId != null
+                && recipeIds.Contains(entry.RecipeId.Value)
                 && EF.Property<string>(entry, PersistenceConstants.UserIdProperty) == owner)
-            .Select(entry => entry.RecipeId)
+            .Select(entry => entry.RecipeId!.Value)
             .Distinct()
             .ToListAsync(cancellationToken);
     }

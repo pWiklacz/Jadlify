@@ -52,7 +52,7 @@ public class MealPlanEndpointsTests
 
         HttpResponseMessage response = await client.PostAsJsonAsync(
             "/api/meal-plan",
-            new AddMealPlanEntryRequest(Date, recipeId, "Breakfast", 1));
+            new AddMealPlanEntryRequest(Date, "Breakfast", RecipeId: recipeId, Portions: 1));
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         CreatedMealPlanEntryResponse? body =
@@ -76,7 +76,7 @@ public class MealPlanEndpointsTests
         Assert.Equal(recipeId, entry.RecipeId);
         Assert.Equal("Porridge", entry.RecipeName);
         Assert.Equal("Breakfast", entry.MealType);
-        Assert.Equal(2, entry.Portions);
+        Assert.Equal(2m, entry.Portions);
         Assert.Equal(Date, entry.Date);
     }
 
@@ -123,7 +123,7 @@ public class MealPlanEndpointsTests
 
         HttpResponseMessage response = await client.PostAsJsonAsync(
             "/api/meal-plan",
-            new AddMealPlanEntryRequest(Date, Guid.NewGuid(), "Breakfast", 1));
+            new AddMealPlanEntryRequest(Date, "Breakfast", RecipeId: Guid.NewGuid(), Portions: 1));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -138,7 +138,7 @@ public class MealPlanEndpointsTests
 
         HttpResponseMessage response = await clientA.PostAsJsonAsync(
             "/api/meal-plan",
-            new AddMealPlanEntryRequest(Date, userBRecipeId, "Breakfast", 1));
+            new AddMealPlanEntryRequest(Date, "Breakfast", RecipeId: userBRecipeId, Portions: 1));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -152,7 +152,7 @@ public class MealPlanEndpointsTests
 
         HttpResponseMessage response = await client.PostAsJsonAsync(
             "/api/meal-plan",
-            new AddMealPlanEntryRequest(Date, recipeId, "Brunch", 1));
+            new AddMealPlanEntryRequest(Date, "Brunch", RecipeId: recipeId, Portions: 1));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -166,7 +166,7 @@ public class MealPlanEndpointsTests
 
         HttpResponseMessage response = await client.PostAsJsonAsync(
             "/api/meal-plan",
-            new AddMealPlanEntryRequest(Date, recipeId, "Breakfast", 0));
+            new AddMealPlanEntryRequest(Date, "Breakfast", RecipeId: recipeId, Portions: 0));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -181,14 +181,14 @@ public class MealPlanEndpointsTests
 
         HttpResponseMessage update = await client.PutAsJsonAsync(
             $"/api/meal-plan/{entryId}",
-            new UpdateMealPlanEntryRequest("Dinner", 3));
+            new UpdateMealPlanEntryRequest("Dinner", Portions: 3));
         Assert.Equal(HttpStatusCode.NoContent, update.StatusCode);
 
         MealPlanEntryResponse[] entries = await ListAsync(client, Date);
         MealPlanEntryResponse entry = Assert.Single(entries);
         Assert.Equal(entryId, entry.Id);
         Assert.Equal("Dinner", entry.MealType);
-        Assert.Equal(3, entry.Portions);
+        Assert.Equal(3m, entry.Portions);
         // Date and recipe are immutable through update.
         Assert.Equal(Date, entry.Date);
         Assert.Equal(recipeId, entry.RecipeId);
@@ -226,7 +226,7 @@ public class MealPlanEndpointsTests
 
         HttpResponseMessage update = await clientB.PutAsJsonAsync(
             $"/api/meal-plan/{entryId}",
-            new UpdateMealPlanEntryRequest("Dinner", 5));
+            new UpdateMealPlanEntryRequest("Dinner", Portions: 5));
         Assert.Equal(HttpStatusCode.NotFound, update.StatusCode);
 
         // A cross-user delete is an owner-scoped no-op: User A's entry survives.
@@ -235,7 +235,7 @@ public class MealPlanEndpointsTests
         MealPlanEntryResponse entry = Assert.Single(userAEntries);
         Assert.Equal(entryId, entry.Id);
         Assert.Equal("Breakfast", entry.MealType);
-        Assert.Equal(1, entry.Portions);
+        Assert.Equal(1m, entry.Portions);
     }
 
     [Fact]
@@ -314,6 +314,275 @@ public class MealPlanEndpointsTests
         AssertMacros(summary.Total, calories: 100m, protein: 10m, fat: 5m, carbohydrates: 20m);
     }
 
+    [Fact]
+    public async Task Create_AcceptsHalfPortionsForARecipe()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge");
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            "/api/meal-plan",
+            new AddMealPlanEntryRequest(Date, "Snack", RecipeId: recipeId, Portions: 0.5m));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        MealPlanEntryResponse entry = Assert.Single(await ListAsync(client, Date));
+        Assert.Equal("Recipe", entry.Source);
+        Assert.Equal(0.5m, entry.Portions);
+    }
+
+    [Theory]
+    [InlineData(0.25)]
+    [InlineData(1.1)]
+    public async Task Create_RejectsOffStepPortions(decimal portions)
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge");
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            "/api/meal-plan",
+            new AddMealPlanEntryRequest(Date, "Breakfast", RecipeId: recipeId, Portions: portions));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_AddsProductEntry_CarryingItsOwnSnapshot()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid productId = await CreateProductAsync(client, "Oats", 380m, 13m, 7m, 60m);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            "/api/meal-plan",
+            new AddMealPlanEntryRequest(Date, "Snack", ProductId: productId, Grams: 45m));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        MealPlanEntryResponse entry = Assert.Single(await ListAsync(client, Date));
+        Assert.Equal("Product", entry.Source);
+        Assert.Equal(productId, entry.ProductId);
+        Assert.Equal("Oats", entry.ProductName);
+        Assert.Equal(45m, entry.Grams);
+        Assert.Null(entry.RecipeId);
+        Assert.Null(entry.Portions);
+    }
+
+    [Fact]
+    public async Task Create_RejectsAmbiguousSource()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge");
+        Guid productId = await CreateProductAsync(client, "Oats", 380m, 13m, 7m, 60m);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            "/api/meal-plan",
+            new AddMealPlanEntryRequest(
+                Date,
+                "Breakfast",
+                RecipeId: recipeId,
+                Portions: 1m,
+                ProductId: productId,
+                Grams: 45m));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Empty(await ListAsync(client, Date));
+    }
+
+    [Fact]
+    public async Task Create_RejectsEmptySource()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            "/api/meal-plan",
+            new AddMealPlanEntryRequest(Date, "Breakfast"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_RejectsCrossUserProduct()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient clientA = factory.CreateClientAs(UserA);
+        using HttpClient clientB = factory.CreateClientAs(UserB);
+        Guid userBProductId = await CreateProductAsync(clientB, "Private oats", 380m, 13m, 7m, 60m);
+
+        HttpResponseMessage response = await clientA.PostAsJsonAsync(
+            "/api/meal-plan",
+            new AddMealPlanEntryRequest(Date, "Snack", ProductId: userBProductId, Grams: 45m));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ProductEntry_SurvivesItsCatalogProductBeingDeleted()
+    {
+        // The snapshot is the whole point: a past day must not change when the catalog does.
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid productId = await CreateProductAsync(client, "Oats", 380m, 13m, 7m, 60m);
+        await client.PostAsJsonAsync(
+            "/api/meal-plan",
+            new AddMealPlanEntryRequest(Date, "Snack", ProductId: productId, Grams: 100m));
+
+        HttpResponseMessage delete = await client.DeleteAsync($"/api/products/{productId}");
+        Assert.Equal(HttpStatusCode.NoContent, delete.StatusCode);
+
+        MealPlanEntryResponse entry = Assert.Single(await ListAsync(client, Date));
+        Assert.Equal("Oats", entry.ProductName);
+        DailyMacroSummaryResponse summary = await SummaryAsync(client, Date);
+        AssertMacros(summary.Total, calories: 380m, protein: 13m, fat: 7m, carbohydrates: 60m);
+    }
+
+    [Fact]
+    public async Task Update_RejectsGramsForARecipeEntry()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge");
+        Guid entryId = await CreateEntryAsync(client, Date, recipeId, "Breakfast", 1);
+
+        HttpResponseMessage update = await client.PutAsJsonAsync(
+            $"/api/meal-plan/{entryId}",
+            new UpdateMealPlanEntryRequest("Dinner", Grams: 100m));
+
+        Assert.Equal(HttpStatusCode.BadRequest, update.StatusCode);
+        Assert.Equal(1m, Assert.Single(await ListAsync(client, Date)).Portions);
+    }
+
+    [Fact]
+    public async Task Summary_TotalsMixedRecipeAndProductEntries()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge", 100m, 10m, 5m, 20m);
+        Guid productId = await CreateProductAsync(client, "Oats", 380m, 13m, 7m, 60m);
+        await CreateEntryAsync(client, Date, recipeId, "Breakfast", 1);
+        await client.PostAsJsonAsync(
+            "/api/meal-plan",
+            new AddMealPlanEntryRequest(Date, "Snack", ProductId: productId, Grams: 50m));
+
+        DailyMacroSummaryResponse summary = await SummaryAsync(client, Date);
+
+        // Oracle: recipe 100 kcal + 380 kcal/100 g * 50 g (190 kcal) = 290 kcal.
+        Assert.Equal(2, summary.Entries.Count);
+        AssertMacros(summary.Total, calories: 290m, protein: 16.5m, fat: 8.5m, carbohydrates: 50m);
+    }
+
+    [Fact]
+    public async Task Range_ReturnsEveryDayInclusiveOfBothBounds()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge", 100m, 10m, 5m, 20m);
+        await CreateEntryAsync(client, Date, recipeId, "Breakfast", 1);
+        await CreateEntryAsync(client, Date.AddDays(2), recipeId, "Dinner", 2);
+
+        MealPlanRangeResponse range = await RangeAsync(client, Date, Date.AddDays(2));
+
+        Assert.Equal(3, range.Days.Count);
+        Assert.Equal(Date, range.Days[0].Date);
+        Assert.Equal(Date.AddDays(2), range.Days[^1].Date);
+        Assert.Single(range.Days[0].Entries);
+        Assert.Empty(range.Days[1].Entries);
+        AssertMacros(range.Days[0].Total, calories: 100m, protein: 10m, fat: 5m, carbohydrates: 20m);
+        AssertMacros(range.Days[1].Total, calories: 0m, protein: 0m, fat: 0m, carbohydrates: 0m);
+        AssertMacros(range.Days[2].Total, calories: 200m, protein: 20m, fat: 10m, carbohydrates: 40m);
+    }
+
+    [Fact]
+    public async Task Range_ReturnsFullMonthGridOfDays()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+
+        MealPlanRangeResponse range = await RangeAsync(client, Date, Date.AddDays(41));
+
+        Assert.Equal(42, range.Days.Count);
+    }
+
+    [Fact]
+    public async Task Range_RejectsWindowBeyondMaximum()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+
+        HttpResponseMessage response = await client.GetAsync(
+            $"/api/meal-plan/range?from={Iso(Date)}&to={Iso(Date.AddDays(42))}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Range_RejectsInvertedWindow()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+
+        HttpResponseMessage response = await client.GetAsync(
+            $"/api/meal-plan/range?from={Iso(Date)}&to={Iso(Date.AddDays(-1))}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Range_RequiresAuthentication()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("https://localhost")
+        });
+
+        HttpResponseMessage response = await client.GetAsync(
+            $"/api/meal-plan/range?from={Iso(Date)}&to={Iso(Date)}");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Range_IsScopedToCurrentUser()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient clientA = factory.CreateClientAs(UserA);
+        using HttpClient clientB = factory.CreateClientAs(UserB);
+        Guid userBRecipeId = await CreateRecipeAsync(clientB, "User B recipe", 300m, 30m, 15m, 60m);
+        await CreateEntryAsync(clientB, Date, userBRecipeId, "Dinner", 1);
+
+        MealPlanRangeResponse range = await RangeAsync(clientA, Date, Date.AddDays(6));
+
+        Assert.All(range.Days, day => Assert.Empty(day.Entries));
+    }
+
+    [Fact]
+    public async Task Range_CarriesGoalAndSignedRemainingOnEveryDay()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge", 100m, 10m, 5m, 20m);
+        await CreateEntryAsync(client, Date, recipeId, "Breakfast", 2);
+        await UpsertGoalAsync(client, calories: 150m, protein: 40m, fat: 10m, carbohydrates: 100m);
+
+        MealPlanRangeResponse range = await RangeAsync(client, Date, Date.AddDays(1));
+
+        Assert.NotNull(range.Days[0].Goal);
+        // Oracle: 200 kcal planned against a 150 kcal goal leaves -50 remaining.
+        Assert.Equal(-50m, range.Days[0].Remaining!.Calories);
+        // An empty day still carries the goal, with the whole target outstanding.
+        Assert.Equal(150m, range.Days[1].Remaining!.Calories);
+    }
+
+    private static async Task<MealPlanRangeResponse> RangeAsync(HttpClient client, DateOnly from, DateOnly to)
+    {
+        MealPlanRangeResponse? range = await client.GetFromJsonAsync<MealPlanRangeResponse>(
+            $"/api/meal-plan/range?from={Iso(from)}&to={Iso(to)}");
+        return range!;
+    }
+
     private static string Iso(DateOnly date) => date.ToString("yyyy-MM-dd");
 
     private static async Task<MealPlanEntryResponse[]> ListAsync(HttpClient client, DateOnly date)
@@ -332,7 +601,7 @@ public class MealPlanEndpointsTests
     {
         HttpResponseMessage response = await client.PostAsJsonAsync(
             "/api/meal-plan",
-            new AddMealPlanEntryRequest(date, recipeId, mealType, portions));
+            new AddMealPlanEntryRequest(date, mealType, RecipeId: recipeId, Portions: portions));
         response.EnsureSuccessStatusCode();
         CreatedMealPlanEntryResponse body =
             (await response.Content.ReadFromJsonAsync<CreatedMealPlanEntryResponse>())!;

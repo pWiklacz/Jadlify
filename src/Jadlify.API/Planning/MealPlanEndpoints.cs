@@ -4,6 +4,7 @@ using Jadlify.Application.Planning;
 using Jadlify.Application.Planning.DailyMacroSummary;
 using Jadlify.Application.Planning.MealPlans.AddMealPlanEntry;
 using Jadlify.Application.Planning.MealPlans.DeleteMealPlanEntry;
+using Jadlify.Application.Planning.MealPlans.GetMealPlanRange;
 using Jadlify.Application.Planning.MealPlans.ListMealPlanEntries;
 using Jadlify.Application.Planning.MealPlans.UpdateMealPlanEntry;
 using Jadlify.Domain.Planning;
@@ -50,6 +51,20 @@ public static class MealPlanEndpoints
                 : result.ToProblem();
         });
 
+        mealPlan.MapGet("/range", async (
+            DateOnly from,
+            DateOnly to,
+            IMediator mediator,
+            CancellationToken cancellationToken) =>
+        {
+            Result<MealPlanRangeDto> result =
+                await mediator.QueryAsync(new GetMealPlanRangeQuery(from, to), cancellationToken);
+
+            return result.IsSuccess
+                ? Results.Ok(MealPlanRangeResponse.FromDto(result.Value))
+                : result.ToProblem();
+        });
+
         mealPlan.MapPost("/", async (
             AddMealPlanEntryRequest request,
             IMediator mediator,
@@ -62,7 +77,13 @@ public static class MealPlanEndpoints
             }
 
             Result<Guid> result = await mediator.SendAsync(
-                new AddMealPlanEntryCommand(request.Date, request.RecipeId, mealType.Value, request.Portions),
+                new AddMealPlanEntryCommand(
+                    request.Date,
+                    mealType.Value,
+                    request.RecipeId,
+                    request.Portions,
+                    request.ProductId,
+                    request.Grams),
                 cancellationToken);
 
             return result.IsSuccess
@@ -85,7 +106,7 @@ public static class MealPlanEndpoints
             }
 
             Result result = await mediator.SendAsync(
-                new UpdateMealPlanEntryCommand(id, mealType.Value, request.Portions),
+                new UpdateMealPlanEntryCommand(id, mealType.Value, request.Portions, request.Grams),
                 cancellationToken);
 
             return result.IsSuccess ? Results.NoContent() : result.ToProblem();

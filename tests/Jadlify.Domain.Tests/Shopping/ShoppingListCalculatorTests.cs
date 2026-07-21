@@ -25,7 +25,7 @@ public class ShoppingListCalculatorTests
             "Porridge",
             portions: 4,
             Ingredient(productId, "Oats", 400m));
-        var entry = new MealPlanEntry(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 2);
+        var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 2);
 
         ShoppingListItem item = Assert.Single(ShoppingListCalculator.ForMealEntries([(entry, recipe)]));
 
@@ -47,9 +47,9 @@ public class ShoppingListCalculatorTests
             "Overnight oats",
             portions: 2,
             Ingredient(sharedProductId, "Oats", 100m));
-        var breakfast = new MealPlanEntry(Guid.NewGuid(), Day, porridge.Id, MealType.Breakfast, portions: 2);
-        var snack = new MealPlanEntry(Guid.NewGuid(), Day, overnightOats.Id, MealType.Snack, portions: 1);
-        var secondBreakfast = new MealPlanEntry(Guid.NewGuid(), Day, porridge.Id, MealType.Lunch, portions: 1);
+        var breakfast = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, porridge.Id, MealType.Breakfast, portions: 2);
+        var snack = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, overnightOats.Id, MealType.Snack, portions: 1);
+        var secondBreakfast = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, porridge.Id, MealType.Lunch, portions: 1);
 
         IReadOnlyList<ShoppingListItem> result = ShoppingListCalculator.ForMealEntries(
             [(breakfast, porridge), (snack, overnightOats), (secondBreakfast, porridge)]);
@@ -59,13 +59,73 @@ public class ShoppingListCalculatorTests
     }
 
     [Fact]
+    public void ForMealEntries_ScalesWholeRecipeAmountByHalfPortions()
+    {
+        // Oracle: 400 g across 4 portions is 100 g per portion; half a portion is 50 g.
+        var productId = Guid.NewGuid();
+        Recipe recipe = BuildRecipe(
+            "Porridge",
+            portions: 4,
+            Ingredient(productId, "Oats", 400m));
+        var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, recipe.Id, MealType.Snack, portions: 0.5m);
+
+        ShoppingListItem item = Assert.Single(ShoppingListCalculator.ForMealEntries([(entry, recipe)]));
+
+        Assert.Equal(50m, item.Grams);
+    }
+
+    [Fact]
+    public void ForMealEntries_AddsProductEntryGramsDirectly()
+    {
+        var productId = Guid.NewGuid();
+        var entry = MealPlanEntry.ForProduct(
+            Guid.NewGuid(),
+            Day,
+            new PlannedProductSnapshot(productId, "Oats", new MacroNutrients(380m, 13m, 7m, 60m)),
+            MealType.Snack,
+            grams: 45m);
+
+        ShoppingListItem item = Assert.Single(ShoppingListCalculator.ForMealEntries([(entry, null)]));
+
+        Assert.Equal(productId, item.ProductId);
+        Assert.Equal("Oats", item.ProductName);
+        Assert.Equal(45m, item.Grams);
+    }
+
+    [Fact]
+    public void ForMealEntries_FoldsProductEntriesIntoTheSameBucketAsRecipeIngredients()
+    {
+        // A product planned both ways is one shopping line, not two.
+        var sharedProductId = Guid.NewGuid();
+        Recipe porridge = BuildRecipe(
+            "Porridge",
+            portions: 4,
+            Ingredient(sharedProductId, "Oats", 400m));
+        var fromRecipe = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, porridge.Id, MealType.Breakfast, portions: 2);
+        var direct = MealPlanEntry.ForProduct(
+            Guid.NewGuid(),
+            Day,
+            new PlannedProductSnapshot(sharedProductId, "Oats", new MacroNutrients(380m, 13m, 7m, 60m)),
+            MealType.Snack,
+            grams: 45m);
+
+        IReadOnlyList<ShoppingListItem> result =
+            ShoppingListCalculator.ForMealEntries([(fromRecipe, porridge), (direct, null)]);
+
+        // Oracle: 400 g * (2/4) = 200 g from the recipe, plus 45 g planned directly.
+        ShoppingListItem oats = Assert.Single(result);
+        Assert.Equal(sharedProductId, oats.ProductId);
+        Assert.Equal(245m, oats.Grams);
+    }
+
+    [Fact]
     public void ForMealEntries_DoesNotRoundBeforeReturning()
     {
         Recipe recipe = BuildRecipe(
             "Soup",
             portions: 3,
             Ingredient(Guid.NewGuid(), "Lentils", 100m));
-        var entry = new MealPlanEntry(Guid.NewGuid(), Day, recipe.Id, MealType.Dinner, portions: 2);
+        var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, recipe.Id, MealType.Dinner, portions: 2);
 
         ShoppingListItem item = Assert.Single(ShoppingListCalculator.ForMealEntries([(entry, recipe)]));
 
@@ -83,7 +143,7 @@ public class ShoppingListCalculatorTests
             Ingredient(Guid.NewGuid(), "banana", 10m),
             Ingredient(lateAppleId, "Apple", 10m),
             Ingredient(earlyAppleId, "apple", 10m));
-        var entry = new MealPlanEntry(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 1);
+        var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 1);
 
         IReadOnlyList<ShoppingListItem> result = ShoppingListCalculator.ForMealEntries([(entry, recipe)]);
 
@@ -101,7 +161,7 @@ public class ShoppingListCalculatorTests
             "Historical",
             portions: 1,
             Ingredient(Guid.NewGuid(), "Original oats", 100m));
-        var entry = new MealPlanEntry(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 1);
+        var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 1);
 
         ShoppingListItem item = Assert.Single(ShoppingListCalculator.ForMealEntries([(entry, recipe)]));
 
@@ -120,7 +180,7 @@ public class ShoppingListCalculatorTests
             // ProductId, so these must stay as two separate shopping-list entries.
             Ingredient(firstOatsId, "Oats", 100m),
             Ingredient(secondOatsId, "Oats", 50m));
-        var entry = new MealPlanEntry(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 1);
+        var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 1);
 
         IReadOnlyList<ShoppingListItem> result = ShoppingListCalculator.ForMealEntries([(entry, recipe)]);
 
@@ -144,8 +204,8 @@ public class ShoppingListCalculatorTests
             "Newer recipe",
             portions: 1,
             Ingredient(sharedProductId, "Renamed oats", 50m));
-        var firstEntry = new MealPlanEntry(Guid.NewGuid(), Day, firstRecipe.Id, MealType.Breakfast, portions: 1);
-        var secondEntry = new MealPlanEntry(Guid.NewGuid(), Day, secondRecipe.Id, MealType.Lunch, portions: 1);
+        var firstEntry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, firstRecipe.Id, MealType.Breakfast, portions: 1);
+        var secondEntry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, secondRecipe.Id, MealType.Lunch, portions: 1);
 
         ShoppingListItem item = Assert.Single(ShoppingListCalculator.ForMealEntries(
             [(firstEntry, firstRecipe), (secondEntry, secondRecipe)]));
@@ -173,8 +233,8 @@ public class ShoppingListCalculatorTests
             portions: 2,
             Ingredient(tomatoId, "Tomato", 150m),
             Ingredient(oilId, "Oil", 50m));
-        var pastaEntry = new MealPlanEntry(Guid.NewGuid(), Day, pastaDish.Id, MealType.Dinner, portions: 2);
-        var saladEntry = new MealPlanEntry(Guid.NewGuid(), Day, salad.Id, MealType.Lunch, portions: 3);
+        var pastaEntry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, pastaDish.Id, MealType.Dinner, portions: 2);
+        var saladEntry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, salad.Id, MealType.Lunch, portions: 3);
 
         IReadOnlyList<ShoppingListItem> result = ShoppingListCalculator.ForMealEntries(
             [(pastaEntry, pastaDish), (saladEntry, salad)]);

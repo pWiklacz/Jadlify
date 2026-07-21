@@ -43,9 +43,9 @@ public class GetShoppingListQueryHandlerTests
             portions: 2,
             Ingredient(sharedProductId, "Oats", 100m),
             Ingredient(Guid.NewGuid(), "Eggs", 120m));
-        var breakfast = new MealPlanEntry(Guid.NewGuid(), Day, porridge.Id, MealType.Breakfast, portions: 2);
-        var lunch = new MealPlanEntry(Guid.NewGuid(), Day, pancakes.Id, MealType.Lunch, portions: 1);
-        var dinner = new MealPlanEntry(Guid.NewGuid(), Day, porridge.Id, MealType.Dinner, portions: 1);
+        var breakfast = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, porridge.Id, MealType.Breakfast, portions: 2);
+        var lunch = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, pancakes.Id, MealType.Lunch, portions: 1);
+        var dinner = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, porridge.Id, MealType.Dinner, portions: 1);
         var handler = new GetShoppingListQueryHandler(
             new FakeMealPlanRepository(breakfast, lunch, dinner),
             new FakeRecipeRepository(porridge, pancakes));
@@ -70,7 +70,7 @@ public class GetShoppingListQueryHandlerTests
             Ingredient(Guid.NewGuid(), "Carrots", 100m),
             Ingredient(lateAppleId, "Apple", 100m),
             Ingredient(earlyAppleId, "apple", 100m));
-        var entry = new MealPlanEntry(Guid.NewGuid(), Day, recipe.Id, MealType.Lunch, portions: 1);
+        var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, recipe.Id, MealType.Lunch, portions: 1);
         var handler = new GetShoppingListQueryHandler(
             new FakeMealPlanRepository(entry),
             new FakeRecipeRepository(recipe));
@@ -93,9 +93,9 @@ public class GetShoppingListQueryHandlerTests
             "Soup",
             portions: 2,
             Ingredient(Guid.NewGuid(), "Lentils", 300m));
-        var visibleEntry = new MealPlanEntry(Guid.NewGuid(), Day, visibleRecipe.Id, MealType.Lunch, portions: 1);
+        var visibleEntry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, visibleRecipe.Id, MealType.Lunch, portions: 1);
         var missingRecipeId = Guid.NewGuid();
-        var missingEntry = new MealPlanEntry(Guid.NewGuid(), Day, missingRecipeId, MealType.Dinner, portions: 3);
+        var missingEntry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, missingRecipeId, MealType.Dinner, portions: 3);
         var handler = new GetShoppingListQueryHandler(
             new FakeMealPlanRepository(visibleEntry, missingEntry),
             new FakeRecipeRepository(visibleRecipe));
@@ -121,8 +121,8 @@ public class GetShoppingListQueryHandlerTests
             "Porridge",
             portions: 1,
             Ingredient(Guid.NewGuid(), "Oats", 100m));
-        var selectedDayEntry = new MealPlanEntry(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 1);
-        var otherDayEntry = new MealPlanEntry(Guid.NewGuid(), Day.AddDays(1), recipe.Id, MealType.Breakfast, portions: 1);
+        var selectedDayEntry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 1);
+        var otherDayEntry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day.AddDays(1), recipe.Id, MealType.Breakfast, portions: 1);
         var handler = new GetShoppingListQueryHandler(
             new FakeMealPlanRepository(selectedDayEntry, otherDayEntry),
             new FakeRecipeRepository(recipe));
@@ -142,7 +142,7 @@ public class GetShoppingListQueryHandlerTests
             "Historical",
             portions: 1,
             Ingredient(Guid.NewGuid(), "Original oats", 100m));
-        var entry = new MealPlanEntry(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 1);
+        var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 1);
         var handler = new GetShoppingListQueryHandler(
             new FakeMealPlanRepository(entry),
             new FakeRecipeRepository(recipe));

@@ -37,20 +37,38 @@ public static class MacroCalculator
         return RecipeTotal(recipe).Scale(1m / recipe.Portions);
     }
 
-    public static MacroNutrients ForMealEntry(MealPlanEntry entry, Recipe recipe)
+    /// <summary>
+    /// Macros for one planned meal. A recipe entry scales the recipe's per-serving values by
+    /// its portion count and needs <paramref name="recipe"/>; a product entry scales its own
+    /// snapshot by grams and ignores <paramref name="recipe"/>. Every step stays in decimal —
+    /// nothing is rounded here, so callers see full precision.
+    /// </summary>
+    public static MacroNutrients ForMealEntry(MealPlanEntry entry, Recipe? recipe)
     {
         ArgumentNullException.ThrowIfNull(entry);
 
-        return RecipePerServing(recipe).Scale(entry.Portions);
+        if (entry.Source is MealPlanEntrySource.Product)
+        {
+            return entry.Product!.Per100Grams.Scale(entry.Quantity / NutrientBasisGrams);
+        }
+
+        ArgumentNullException.ThrowIfNull(recipe);
+
+        return RecipePerServing(recipe).Scale(entry.Quantity);
     }
 
-    public static MacroNutrients DayTotal(IEnumerable<(MealPlanEntry entry, Recipe recipe)> entries)
+    /// <summary>
+    /// Sums a day's planned meals. Each pair carries the entry and, for a recipe entry, the
+    /// recipe it resolved to; a product entry pairs with <c>null</c> because its snapshot is
+    /// self-contained. Callers drop entries whose recipe could not be resolved before calling.
+    /// </summary>
+    public static MacroNutrients DayTotal(IEnumerable<(MealPlanEntry Entry, Recipe? Recipe)> entries)
     {
         ArgumentNullException.ThrowIfNull(entries);
 
         MacroNutrients total = MacroNutrients.Zero;
 
-        foreach ((MealPlanEntry entry, Recipe recipe) in entries)
+        foreach ((MealPlanEntry entry, Recipe? recipe) in entries)
         {
             total += ForMealEntry(entry, recipe);
         }

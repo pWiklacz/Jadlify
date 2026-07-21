@@ -5,33 +5,40 @@ namespace Jadlify.Domain.Shopping;
 
 public static class ShoppingListCalculator
 {
+    /// <summary>
+    /// Aggregates planned meals into per-product gram totals. A recipe entry contributes each
+    /// ingredient scaled by the planned share of the recipe; a product entry contributes its
+    /// own grams directly. Both fold into the same <c>ProductId</c> bucket, so a product
+    /// planned both ways appears once. Pairs for product entries carry a <c>null</c> recipe.
+    /// </summary>
     public static IReadOnlyList<ShoppingListItem> ForMealEntries(
-        IEnumerable<(MealPlanEntry Entry, Recipe Recipe)> entries)
+        IEnumerable<(MealPlanEntry Entry, Recipe? Recipe)> entries)
     {
         ArgumentNullException.ThrowIfNull(entries);
 
         Dictionary<Guid, ShoppingListItemAccumulator> itemsByProductId = [];
 
-        foreach ((MealPlanEntry entry, Recipe recipe) in entries)
+        foreach ((MealPlanEntry entry, Recipe? recipe) in entries)
         {
             ArgumentNullException.ThrowIfNull(entry);
+
+            if (entry.Source is MealPlanEntrySource.Product)
+            {
+                Accumulate(itemsByProductId, entry.Product!.ProductId, entry.Product.Name, entry.Quantity);
+                continue;
+            }
+
             ArgumentNullException.ThrowIfNull(recipe);
 
-            decimal portionFactor = entry.Portions / (decimal)recipe.Portions;
+            decimal portionFactor = entry.Quantity / recipe.Portions;
 
             foreach (RecipeIngredient ingredient in recipe.Ingredients)
             {
-                decimal scaledGrams = ingredient.WholeRecipeAmount.Value * portionFactor;
-
-                if (itemsByProductId.TryGetValue(ingredient.ProductId, out ShoppingListItemAccumulator? existing))
-                {
-                    existing.Add(scaledGrams);
-                    continue;
-                }
-
-                itemsByProductId.Add(
+                Accumulate(
+                    itemsByProductId,
                     ingredient.ProductId,
-                    new ShoppingListItemAccumulator(ingredient.ProductId, ingredient.ProductName, scaledGrams));
+                    ingredient.ProductName,
+                    ingredient.WholeRecipeAmount.Value * portionFactor);
             }
         }
 
@@ -40,6 +47,21 @@ public static class ShoppingListCalculator
             .OrderBy(item => item.ProductName, StringComparer.OrdinalIgnoreCase)
             .ThenBy(item => item.ProductId)
             .ToList();
+    }
+
+    private static void Accumulate(
+        Dictionary<Guid, ShoppingListItemAccumulator> itemsByProductId,
+        Guid productId,
+        string productName,
+        decimal grams)
+    {
+        if (itemsByProductId.TryGetValue(productId, out ShoppingListItemAccumulator? existing))
+        {
+            existing.Add(grams);
+            return;
+        }
+
+        itemsByProductId.Add(productId, new ShoppingListItemAccumulator(productId, productName, grams));
     }
 
     private sealed class ShoppingListItemAccumulator

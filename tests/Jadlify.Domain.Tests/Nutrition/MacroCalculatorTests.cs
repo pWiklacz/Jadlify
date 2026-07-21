@@ -52,7 +52,7 @@ public class MacroCalculatorTests
     public void ForMealEntry_ScalesPerServingBySelectedPortions()
     {
         Recipe recipe = BuildRecipe(portions: 4);
-        var entry = new MealPlanEntry(Guid.NewGuid(), new DateOnly(2026, 5, 28), recipe.Id, MealType.Lunch, portions: 2);
+        var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), new DateOnly(2026, 5, 28), recipe.Id, MealType.Lunch, portions: 2);
 
         MacroNutrients result = MacroCalculator.ForMealEntry(entry, recipe);
 
@@ -63,13 +63,13 @@ public class MacroCalculatorTests
     public void DayTotal_SumsMultipleMealEntries()
     {
         Recipe recipe = BuildRecipe(portions: 4);
-        var breakfast = new MealPlanEntry(
+        var breakfast = MealPlanEntry.ForRecipe(
             Guid.NewGuid(),
             new DateOnly(2026, 5, 28),
             recipe.Id,
             MealType.Breakfast,
             portions: 1);
-        var lunch = new MealPlanEntry(
+        var lunch = MealPlanEntry.ForRecipe(
             Guid.NewGuid(),
             new DateOnly(2026, 5, 28),
             recipe.Id,
@@ -88,6 +88,101 @@ public class MacroCalculatorTests
 
         Assert.Equal(MacroNutrients.Zero, result);
     }
+
+    [Fact]
+    public void ForMealEntry_ScalesPerServingByHalfPortions()
+    {
+        // Oracle: total 450/24/11/46 over 4 portions = 112.5/6/2.75/11.5 per serving;
+        // half a serving halves each value exactly, with no intermediate rounding.
+        Recipe recipe = BuildRecipe(portions: 4);
+        var entry = MealPlanEntry.ForRecipe(
+            Guid.NewGuid(),
+            new DateOnly(2026, 5, 28),
+            recipe.Id,
+            MealType.Snack,
+            portions: 0.5m);
+
+        MacroNutrients result = MacroCalculator.ForMealEntry(entry, recipe);
+
+        Assert.Equal(new MacroNutrients(56.25m, 3m, 1.375m, 5.75m), result);
+    }
+
+    [Fact]
+    public void ForMealEntry_ScalesProductSnapshotByGrams()
+    {
+        // Oracle: 380/13/7/60 per 100 g at 45 g = 171/5.85/3.15/27.
+        var entry = MealPlanEntry.ForProduct(
+            Guid.NewGuid(),
+            new DateOnly(2026, 5, 28),
+            OatsSnapshot(),
+            MealType.Snack,
+            grams: 45m);
+
+        MacroNutrients result = MacroCalculator.ForMealEntry(entry, recipe: null);
+
+        Assert.Equal(new MacroNutrients(171m, 5.85m, 3.15m, 27m), result);
+    }
+
+    [Fact]
+    public void ForMealEntry_IgnoresRecipe_ForAProductEntry()
+    {
+        // A product entry is self-contained; passing a recipe alongside must not change it.
+        Recipe recipe = BuildRecipe(portions: 4);
+        var entry = MealPlanEntry.ForProduct(
+            Guid.NewGuid(),
+            new DateOnly(2026, 5, 28),
+            OatsSnapshot(),
+            MealType.Snack,
+            grams: 100m);
+
+        Assert.Equal(
+            MacroCalculator.ForMealEntry(entry, recipe: null),
+            MacroCalculator.ForMealEntry(entry, recipe));
+    }
+
+    [Fact]
+    public void DayTotal_SumsMixedRecipeAndProductEntries()
+    {
+        // Oracle: 112.5 kcal for one serving + 190 kcal for 50 g of a 380 kcal/100 g product.
+        Recipe recipe = BuildRecipe(portions: 4);
+        var lunch = MealPlanEntry.ForRecipe(
+            Guid.NewGuid(),
+            new DateOnly(2026, 5, 28),
+            recipe.Id,
+            MealType.Lunch,
+            portions: 1m);
+        var snack = MealPlanEntry.ForProduct(
+            Guid.NewGuid(),
+            new DateOnly(2026, 5, 28),
+            OatsSnapshot(),
+            MealType.Snack,
+            grams: 50m);
+
+        MacroNutrients result = MacroCalculator.DayTotal([(lunch, recipe), (snack, null)]);
+
+        Assert.Equal(new MacroNutrients(302.5m, 12.5m, 6.25m, 41.5m), result);
+    }
+
+    [Fact]
+    public void ForMealEntry_Throws_WhenARecipeEntryHasNoRecipe()
+    {
+        // A missing recipe is a caller-side resolution failure, not a silent zero here.
+        var entry = MealPlanEntry.ForRecipe(
+            Guid.NewGuid(),
+            new DateOnly(2026, 5, 28),
+            Guid.NewGuid(),
+            MealType.Lunch,
+            portions: 1m);
+
+        Assert.Throws<ArgumentNullException>(() => MacroCalculator.ForMealEntry(entry, recipe: null));
+    }
+
+    private static PlannedProductSnapshot OatsSnapshot() =>
+        new(
+            Guid.NewGuid(),
+            "Oats",
+            new MacroNutrients(380m, 13m, 7m, 60m),
+            ProductCategory.GrainsAndBread);
 
     [Fact]
     public void RecipeTotal_UsesIngredientSnapshots_NotCurrentProductValues()
@@ -149,7 +244,7 @@ public class MacroCalculatorTests
     public void MealPlanEntry_RejectsNonPositivePortions(int portions)
     {
         Assert.Throws<ArgumentOutOfRangeException>(
-            () => new MealPlanEntry(Guid.NewGuid(), new DateOnly(2026, 5, 28), Guid.NewGuid(), MealType.Dinner, portions));
+            () => MealPlanEntry.ForRecipe(Guid.NewGuid(), new DateOnly(2026, 5, 28), Guid.NewGuid(), MealType.Dinner, portions));
     }
 
     [Fact]
@@ -221,7 +316,7 @@ public class MacroCalculatorTests
         recipe.AddIngredient(new RecipeIngredient(oats.Id, oats.Name, oats.Per100Grams, new GramAmount(200m)));
         recipe.AddIngredient(new RecipeIngredient(milk.Id, milk.Name, milk.Per100Grams, new GramAmount(100m)));
 
-        var entry = new MealPlanEntry(Guid.NewGuid(), new DateOnly(2026, 5, 28), recipe.Id, MealType.Lunch, portions: 10);
+        var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), new DateOnly(2026, 5, 28), recipe.Id, MealType.Lunch, portions: 10);
 
         MacroNutrients result = MacroCalculator.ForMealEntry(entry, recipe);
 
@@ -249,8 +344,8 @@ public class MacroCalculatorTests
         var recipeB = new Recipe(Guid.NewGuid(), "Roast", portions: 5);
         recipeB.AddIngredient(new RecipeIngredient(chicken.Id, chicken.Name, chicken.Per100Grams, new GramAmount(250m)));
 
-        var entryA = new MealPlanEntry(Guid.NewGuid(), new DateOnly(2026, 5, 28), recipeA.Id, MealType.Breakfast, portions: 2);
-        var entryB = new MealPlanEntry(Guid.NewGuid(), new DateOnly(2026, 5, 28), recipeB.Id, MealType.Dinner, portions: 3);
+        var entryA = MealPlanEntry.ForRecipe(Guid.NewGuid(), new DateOnly(2026, 5, 28), recipeA.Id, MealType.Breakfast, portions: 2);
+        var entryB = MealPlanEntry.ForRecipe(Guid.NewGuid(), new DateOnly(2026, 5, 28), recipeB.Id, MealType.Dinner, portions: 3);
 
         MacroNutrients result = MacroCalculator.DayTotal([(entryA, recipeA), (entryB, recipeB)]);
 

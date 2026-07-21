@@ -234,7 +234,12 @@ function compareEntries(left: MealPlanEntry, right: MealPlanEntry): number {
     return mealTypeDifference
   }
 
-  return left.recipeName.localeCompare(right.recipeName)
+  return entryDisplayName(left).localeCompare(entryDisplayName(right))
+}
+
+/** A recipe entry sorts by its live recipe name, a product entry by its snapshot name. */
+function entryDisplayName(entry: MealPlanEntry): string {
+  return (entry.source === 'Product' ? entry.productName : entry.recipeName) ?? ''
 }
 
 function formatEntryMacros(macros: MacroSummary | undefined): string {

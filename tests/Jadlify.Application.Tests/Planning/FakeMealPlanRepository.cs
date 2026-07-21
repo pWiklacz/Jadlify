@@ -38,14 +38,26 @@ internal sealed class FakeMealPlanRepository : IMealPlanRepository
         CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<MealPlanEntry>>([.. _entries.Where(entry => entry.Date == date)]);
 
+    public Task<IReadOnlyList<MealPlanEntry>> ListByDateRangeAsync(
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<MealPlanEntry>>(
+        [
+            .. _entries
+                .Where(entry => entry.Date >= from && entry.Date <= to)
+                .OrderBy(entry => entry.Date)
+                .ThenBy(entry => entry.Id)
+        ]);
+
     public Task<IReadOnlyCollection<Guid>> ListUsedRecipeIdsAsync(
         IReadOnlyCollection<Guid> recipeIds,
         CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyCollection<Guid>>(
         [
             .. _entries
-                .Select(entry => entry.RecipeId)
-                .Where(recipeIds.Contains)
+                .Where(entry => entry.RecipeId is { } recipeId && recipeIds.Contains(recipeId))
+                .Select(entry => entry.RecipeId!.Value)
                 .Distinct()
         ]);
 

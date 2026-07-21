@@ -25,21 +25,23 @@ type MealPlanEntryFormProps =
     }
 
 export function MealPlanEntryForm(props: MealPlanEntryFormProps) {
+  // This form is recipe-only; the product variant arrives with the Phase 7 planner rebuild.
+  // Until then a product entry's null recipe/portions fall back to the empty create defaults.
   const initialRecipeId =
     props.mode === 'edit'
-      ? props.entry.recipeId
+      ? (props.entry.recipeId ?? '')
       : (props.initialRecipeId ?? props.recipes[0]?.id ?? '')
   const initialMealType = props.mode === 'edit' ? props.entry.mealType : 'Breakfast'
-  const initialPortions = props.mode === 'edit' ? String(props.entry.portions) : '1'
+  const initialPortions = props.mode === 'edit' ? String(props.entry.portions ?? 1) : '1'
   const [recipeId, setRecipeId] = useState(initialRecipeId)
   const [mealType, setMealType] = useState<MealType>(initialMealType)
   const [portions, setPortions] = useState(initialPortions)
 
   useEffect(() => {
     if (props.mode === 'edit') {
-      setRecipeId(props.entry.recipeId)
+      setRecipeId(props.entry.recipeId ?? '')
       setMealType(props.entry.mealType)
-      setPortions(String(props.entry.portions))
+      setPortions(String(props.entry.portions ?? 1))
       return
     }
 

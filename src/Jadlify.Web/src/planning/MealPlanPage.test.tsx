@@ -67,14 +67,14 @@ beforeEach(() => {
         mealType: MealPlanEntry['mealType']
         portions: number
       }
-      const created: MealPlanEntry = {
+      const created: MealPlanEntry = entry({
         id: `entry-${Object.values(entriesByDate).flat().length + 1}`,
         date: request.date,
         recipeId: request.recipeId,
         recipeName: recipes.find((item) => item.id === request.recipeId)?.name ?? 'Unknown recipe',
         mealType: request.mealType,
         portions: request.portions,
-      }
+      })
       entriesByDate[request.date] = [...(entriesByDate[request.date] ?? []), created]
       summariesByDate[request.date] = {
         ...emptySummary(request.date),
@@ -127,14 +127,20 @@ function renderPage(initialEntry = '/meal-plan') {
   )
 }
 
+/** Builds a recipe-source entry; the product variant arrives with the Phase 7 planner rebuild. */
 function entry(overrides: Partial<MealPlanEntry> = {}): MealPlanEntry {
   return {
     id: 'e1',
     date: '2026-06-03',
+    mealType: 'Breakfast',
+    source: 'Recipe',
     recipeId: 'r1',
     recipeName: 'Porridge',
-    mealType: 'Breakfast',
     portions: 1,
+    productId: null,
+    productName: null,
+    category: null,
+    grams: null,
     ...overrides,
   }
 }

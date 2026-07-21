@@ -307,7 +307,7 @@ public class RecipeRepositoryTests
 
             MealPlanRepository mealPlans = new(context, new TestCurrentUser(OwnerId));
             await mealPlans.AddAsync(
-                new MealPlanEntry(Guid.NewGuid(), new DateOnly(2026, 5, 28), recipeId, MealType.Breakfast, 1));
+                MealPlanEntry.ForRecipe(Guid.NewGuid(), new DateOnly(2026, 5, 28), recipeId, MealType.Breakfast, 1));
         }
 
         Result result;

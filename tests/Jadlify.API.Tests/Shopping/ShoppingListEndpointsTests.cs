@@ -164,7 +164,7 @@ public class ShoppingListEndpointsTests
     {
         HttpResponseMessage response = await client.PostAsJsonAsync(
             "/api/meal-plan",
-            new AddMealPlanEntryRequest(date, recipeId, mealType, portions));
+            new AddMealPlanEntryRequest(date, mealType, RecipeId: recipeId, Portions: portions));
         response.EnsureSuccessStatusCode();
         CreatedMealPlanEntryResponse body =
             (await response.Content.ReadFromJsonAsync<CreatedMealPlanEntryResponse>())!;
@@ -178,7 +178,7 @@ public class ShoppingListEndpointsTests
     {
         await using AsyncServiceScope scope = factory.Services.CreateAsyncScope();
         JadlifyDbContext context = scope.ServiceProvider.GetRequiredService<JadlifyDbContext>();
-        var entry = new MealPlanEntry(Guid.NewGuid(), Date, recipeId, MealType.Breakfast, 1);
+        var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Date, recipeId, MealType.Breakfast, 1);
         context.MealPlanEntries.Add(entry);
         context.Entry(entry).Property("UserId").CurrentValue = userId;
         await context.SaveChangesAsync();

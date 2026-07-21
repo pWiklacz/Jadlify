@@ -21,6 +21,18 @@ public static class PlanningValidationBounds
     /// </summary>
     public const decimal MaxDailyMacroGrams = 5_000m;
 
-    /// <summary>Meal-plan portions are positive integers with a sane per-entry ceiling.</summary>
-    public const int MaxPortions = 100;
+    /// <summary>Meal-plan recipe portions are positive half-steps with a sane per-entry ceiling.</summary>
+    public const decimal MaxPortions = 100m;
+
+    /// <summary>
+    /// Per-entry ceiling for a direct product amount. Ten kilograms is far beyond any single
+    /// planned serving, so it only rejects data-entry mistakes such as a misplaced decimal.
+    /// </summary>
+    public const decimal MaxEntryGrams = 10_000m;
+
+    /// <summary>
+    /// Largest inclusive planner range, in days. Six full weeks is exactly what the month
+    /// grid renders, and bounding it here keeps one range read from degrading into a scan.
+    /// </summary>
+    public const int MaxRangeDays = 42;
 }

@@ -87,7 +87,7 @@ public class GetRecipeCatalogQueryHandlerTests
     {
         Recipe planned = BuildRecipe("Planned", 1, 100m, 100m);
         Recipe unplanned = BuildRecipe("Unplanned", 1, 100m, 100m);
-        FakeMealPlanRepository mealPlan = new(new MealPlanEntry(
+        FakeMealPlanRepository mealPlan = new(MealPlanEntry.ForRecipe(
             Guid.NewGuid(),
             new DateOnly(2026, 7, 21),
             planned.Id,

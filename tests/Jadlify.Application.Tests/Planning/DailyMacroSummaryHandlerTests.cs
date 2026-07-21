@@ -17,8 +17,8 @@ public class DailyMacroSummaryHandlerTests
     {
         Recipe porridge = BuildPorridgeRecipe();
         Recipe lentilSoup = BuildLentilSoupRecipe();
-        var breakfast = new MealPlanEntry(Guid.NewGuid(), Day, porridge.Id, MealType.Breakfast, portions: 2);
-        var lunch = new MealPlanEntry(Guid.NewGuid(), Day, lentilSoup.Id, MealType.Lunch, portions: 1);
+        var breakfast = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, porridge.Id, MealType.Breakfast, portions: 2);
+        var lunch = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, lentilSoup.Id, MealType.Lunch, portions: 1);
         var goal = new DailyMacroGoal(
             Guid.NewGuid(),
             new MacroNutrients(calories: 400m, protein: 40m, fat: 6m, carbohydrates: 80m));
@@ -64,7 +64,7 @@ public class DailyMacroSummaryHandlerTests
     public async Task GetDailyMacroSummary_ReturnsNullGoalAndRemaining_WhenNoGoalConfigured()
     {
         Recipe porridge = BuildPorridgeRecipe();
-        var entry = new MealPlanEntry(Guid.NewGuid(), Day, porridge.Id, MealType.Breakfast, portions: 1);
+        var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, porridge.Id, MealType.Breakfast, portions: 1);
         var handler = new GetDailyMacroSummaryQueryHandler(
             new FakeMealPlanRepository(entry),
             new FakeRecipeRepository(porridge),
@@ -102,8 +102,8 @@ public class DailyMacroSummaryHandlerTests
     public async Task GetDailyMacroSummary_TreatsMissingOrCrossUserRecipeAsZeroContribution()
     {
         Recipe visibleRecipe = BuildPorridgeRecipe();
-        var visibleEntry = new MealPlanEntry(Guid.NewGuid(), Day, visibleRecipe.Id, MealType.Breakfast, portions: 1);
-        var hiddenRecipeEntry = new MealPlanEntry(Guid.NewGuid(), Day, Guid.NewGuid(), MealType.Dinner, portions: 3);
+        var visibleEntry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, visibleRecipe.Id, MealType.Breakfast, portions: 1);
+        var hiddenRecipeEntry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, Guid.NewGuid(), MealType.Dinner, portions: 3);
         var handler = new GetDailyMacroSummaryQueryHandler(
             new FakeMealPlanRepository(visibleEntry, hiddenRecipeEntry),
             new FakeRecipeRepository(visibleRecipe),

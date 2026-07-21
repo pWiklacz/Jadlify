@@ -136,7 +136,7 @@ public class RecipeEndpointsTests
         await using (AsyncServiceScope scope = factory.Services.CreateAsyncScope())
         {
             JadlifyDbContext context = scope.ServiceProvider.GetRequiredService<JadlifyDbContext>();
-            var entry = new MealPlanEntry(
+            var entry = MealPlanEntry.ForRecipe(
                 Guid.NewGuid(),
                 new DateOnly(2026, 6, 1),
                 recipeId,
@@ -395,7 +395,7 @@ public class RecipeEndpointsTests
     {
         await using AsyncServiceScope scope = factory.Services.CreateAsyncScope();
         JadlifyDbContext context = scope.ServiceProvider.GetRequiredService<JadlifyDbContext>();
-        var entry = new MealPlanEntry(
+        var entry = MealPlanEntry.ForRecipe(
             Guid.NewGuid(),
             new DateOnly(2026, 6, 1),
             recipeId,
