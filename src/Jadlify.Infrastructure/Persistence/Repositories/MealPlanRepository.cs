@@ -95,6 +95,51 @@ internal sealed class MealPlanRepository : IMealPlanRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task AddRangeAsync(
+        IReadOnlyCollection<MealPlanEntry> entries,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+
+        if (entries.Count == 0)
+        {
+            return;
+        }
+
+        AddOwned(entries);
+
+        // One SaveChanges for the whole batch: EF wraps the inserts in a single transaction,
+        // so a constraint violation on any copy rolls back every other copy with it.
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task ReplaceDaysAsync(
+        IReadOnlyCollection<DateOnly> datesToClear,
+        IReadOnlyCollection<MealPlanEntry> entries,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(datesToClear);
+        ArgumentNullException.ThrowIfNull(entries);
+
+        string owner = _currentUser.UserId.Value;
+
+        // Owner-scoped read of everything being cleared: another user's entries on the same
+        // dates are never loaded, so they can never be removed.
+        List<MealPlanEntry> existing = datesToClear.Count == 0
+            ? []
+            : await _context.MealPlanEntries
+                .Where(entry => datesToClear.Contains(entry.Date)
+                    && EF.Property<string>(entry, PersistenceConstants.UserIdProperty) == owner)
+                .ToListAsync(cancellationToken);
+
+        _context.MealPlanEntries.RemoveRange(existing);
+        AddOwned(entries);
+
+        // The removals and the inserts are staged together and committed by one SaveChanges, so
+        // the target days are never observably empty and a failure leaves the day as it was.
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task UpdateAsync(MealPlanEntry entry, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(entry);
@@ -129,5 +174,18 @@ internal sealed class MealPlanRepository : IMealPlanRepository
 
         _context.MealPlanEntries.Remove(existing);
         await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    // Stages entries as the current user's without saving, so a caller can compose several
+    // changes into one transaction. The owner is a shadow property, hence the per-entry set.
+    private void AddOwned(IReadOnlyCollection<MealPlanEntry> entries)
+    {
+        string owner = _currentUser.UserId.Value;
+
+        foreach (MealPlanEntry entry in entries)
+        {
+            _context.MealPlanEntries.Add(entry);
+            _context.Entry(entry).Property(PersistenceConstants.UserIdProperty).CurrentValue = owner;
+        }
     }
 }

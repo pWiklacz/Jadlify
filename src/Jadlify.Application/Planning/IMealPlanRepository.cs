@@ -37,6 +37,27 @@ public interface IMealPlanRepository
         IReadOnlyCollection<Guid> recipeIds,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Adds every entry in <paramref name="entries"/> in one write. Batch copies go through
+    /// here rather than a loop over <see cref="AddAsync"/> so a failure anywhere leaves no
+    /// entries behind at all — a half-copied week is worse than a rejected request.
+    /// </summary>
+    Task AddRangeAsync(
+        IReadOnlyCollection<MealPlanEntry> entries,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Clears the current user's entries on <paramref name="datesToClear"/> and adds
+    /// <paramref name="entries"/> in the same write, so the target days are never observably
+    /// empty. Only owner-scoped rows are removed; another user's entries on the same dates are
+    /// untouched. Callers validate the whole request before calling — the repository writes
+    /// what it is given.
+    /// </summary>
+    Task ReplaceDaysAsync(
+        IReadOnlyCollection<DateOnly> datesToClear,
+        IReadOnlyCollection<MealPlanEntry> entries,
+        CancellationToken cancellationToken = default);
+
     Task UpdateAsync(MealPlanEntry entry, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);

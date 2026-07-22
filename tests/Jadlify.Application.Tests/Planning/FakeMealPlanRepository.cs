@@ -22,6 +22,12 @@ internal sealed class FakeMealPlanRepository : IMealPlanRepository
 
     public int UpdateCount { get; private set; }
 
+    public int AddRangeCount { get; private set; }
+
+    public int ReplaceDaysCount { get; private set; }
+
+    public List<DateOnly> ClearedDates { get; } = [];
+
     public List<Guid> DeletedIds { get; } = [];
 
     public Task AddAsync(MealPlanEntry entry, CancellationToken cancellationToken = default)
@@ -60,6 +66,30 @@ internal sealed class FakeMealPlanRepository : IMealPlanRepository
                 .Select(entry => entry.RecipeId!.Value)
                 .Distinct()
         ]);
+
+    public Task AddRangeAsync(
+        IReadOnlyCollection<MealPlanEntry> entries,
+        CancellationToken cancellationToken = default)
+    {
+        AddRangeCount++;
+        _entries.AddRange(entries);
+        return Task.CompletedTask;
+    }
+
+    public Task ReplaceDaysAsync(
+        IReadOnlyCollection<DateOnly> datesToClear,
+        IReadOnlyCollection<MealPlanEntry> entries,
+        CancellationToken cancellationToken = default)
+    {
+        ReplaceDaysCount++;
+        ClearedDates.AddRange(datesToClear);
+
+        // The real repository clears and inserts in one transaction; the fake keeps the same
+        // all-or-nothing shape so a handler test cannot pass against a half-applied batch.
+        _entries.RemoveAll(entry => datesToClear.Contains(entry.Date));
+        _entries.AddRange(entries);
+        return Task.CompletedTask;
+    }
 
     public Task UpdateAsync(MealPlanEntry entry, CancellationToken cancellationToken = default)
     {

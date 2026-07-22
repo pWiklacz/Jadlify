@@ -50,4 +50,21 @@ public sealed class PlannedProductSnapshot
 
         return new PlannedProductSnapshot(product.Id, product.Name, product.Per100Grams, product.Category);
     }
+
+    /// <summary>
+    /// Returns an independent snapshot carrying the same planned values. Copying an entry must
+    /// not hand the same snapshot instance to two entries: this is an owned type, so a shared
+    /// instance would belong to two owners at once and the persistence layer would reject it.
+    /// The macro values are rebuilt for the same reason.
+    /// </summary>
+    public PlannedProductSnapshot Copy() =>
+        new(
+            ProductId,
+            Name,
+            new MacroNutrients(
+                Per100Grams.Calories,
+                Per100Grams.Protein,
+                Per100Grams.Fat,
+                Per100Grams.Carbohydrates),
+            Category);
 }

@@ -5,6 +5,7 @@ using Jadlify.Domain.Products;
 using Jadlify.Domain.Recipes;
 using Jadlify.Infrastructure.Persistence;
 using Jadlify.Infrastructure.Persistence.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Jadlify.Infrastructure.Tests.Persistence;
 
@@ -435,5 +436,213 @@ public class MealPlanRepositoryTests
         }
 
         Assert.Equal([plannedId], used);
+    }
+
+    [Fact]
+    public async Task AddRangeAsync_PersistsEveryEntryForTheCurrentUser()
+    {
+        using SqliteTestDatabase database = new();
+        DateOnly start = new(2026, 5, 25);
+        var recipeId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            await recipes.AddAsync(new Recipe(recipeId, "Porridge", 2));
+
+            MealPlanRepository plans = new(context, new TestCurrentUser(OwnerId));
+            await plans.AddRangeAsync(
+            [
+                MealPlanEntry.ForRecipe(Guid.NewGuid(), start, recipeId, MealType.Breakfast, 1.5m),
+                MealPlanEntry.ForRecipe(Guid.NewGuid(), start.AddDays(1), recipeId, MealType.Breakfast, 1.5m),
+                MealPlanEntry.ForProduct(Guid.NewGuid(), start.AddDays(2), OatsSnapshot(), MealType.Snack, 30m)
+            ]);
+        }
+
+        IReadOnlyList<MealPlanEntry> entries;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            MealPlanRepository plans = new(context, new TestCurrentUser(OwnerId));
+            entries = await plans.ListByDateRangeAsync(start, start.AddDays(2));
+        }
+
+        Assert.Equal(3, entries.Count);
+        Assert.Equal(1.5m, entries[0].RecipePortions);
+        Assert.Equal(30m, entries[2].ProductGrams);
+    }
+
+    [Fact]
+    public async Task AddRangeAsync_IsANoOp_ForAnEmptyBatch()
+    {
+        using SqliteTestDatabase database = new();
+        DateOnly date = new(2026, 5, 28);
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            MealPlanRepository plans = new(context, new TestCurrentUser(OwnerId));
+            await plans.AddRangeAsync([]);
+        }
+
+        await using (JadlifyDbContext verification = database.CreateContext())
+        {
+            MealPlanRepository plans = new(verification, new TestCurrentUser(OwnerId));
+            Assert.Empty(await plans.ListByDateAsync(date));
+        }
+    }
+
+    [Fact]
+    public async Task AddRangeAsync_WritesNothing_WhenOneEntryInTheBatchIsRejected()
+    {
+        using SqliteTestDatabase database = new();
+        DateOnly start = new(2026, 5, 25);
+        var recipeId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            await recipes.AddAsync(new Recipe(recipeId, "Porridge", 2));
+        }
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            MealPlanRepository plans = new(context, new TestCurrentUser(OwnerId));
+
+            // The last entry references a recipe that does not exist, so its insert violates the
+            // foreign key. The two valid entries in front of it must not survive on their own.
+            await Assert.ThrowsAsync<DbUpdateException>(() => plans.AddRangeAsync(
+            [
+                MealPlanEntry.ForRecipe(Guid.NewGuid(), start, recipeId, MealType.Breakfast, 1m),
+                MealPlanEntry.ForRecipe(Guid.NewGuid(), start.AddDays(1), recipeId, MealType.Lunch, 1m),
+                MealPlanEntry.ForRecipe(Guid.NewGuid(), start.AddDays(2), Guid.NewGuid(), MealType.Dinner, 1m)
+            ]));
+        }
+
+        await using (JadlifyDbContext verification = database.CreateContext())
+        {
+            MealPlanRepository plans = new(verification, new TestCurrentUser(OwnerId));
+            Assert.Empty(await plans.ListByDateRangeAsync(start, start.AddDays(2)));
+        }
+    }
+
+    [Fact]
+    public async Task ReplaceDaysAsync_ClearsTargetDaysAndLeavesOnlyTheReplacements()
+    {
+        using SqliteTestDatabase database = new();
+        DateOnly target = new(2026, 5, 28);
+        DateOnly untouched = target.AddDays(1);
+        var recipeId = Guid.NewGuid();
+        var survivorId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            await recipes.AddAsync(new Recipe(recipeId, "Porridge", 2));
+
+            MealPlanRepository plans = new(context, new TestCurrentUser(OwnerId));
+            await plans.AddAsync(
+                MealPlanEntry.ForRecipe(Guid.NewGuid(), target, recipeId, MealType.Breakfast, 1m));
+            // A day outside the replaced set must be left alone.
+            await plans.AddAsync(
+                MealPlanEntry.ForRecipe(survivorId, untouched, recipeId, MealType.Lunch, 1m));
+        }
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            MealPlanRepository plans = new(context, new TestCurrentUser(OwnerId));
+            await plans.ReplaceDaysAsync(
+                [target],
+                [MealPlanEntry.ForRecipe(Guid.NewGuid(), target, recipeId, MealType.Dinner, 2.5m)]);
+        }
+
+        await using (JadlifyDbContext verification = database.CreateContext())
+        {
+            MealPlanRepository plans = new(verification, new TestCurrentUser(OwnerId));
+
+            MealPlanEntry replaced = Assert.Single(await plans.ListByDateAsync(target));
+            Assert.Equal(MealType.Dinner, replaced.MealType);
+            Assert.Equal(2.5m, replaced.RecipePortions);
+
+            Assert.Equal(survivorId, Assert.Single(await plans.ListByDateAsync(untouched)).Id);
+        }
+    }
+
+    [Fact]
+    public async Task ReplaceDaysAsync_DoesNotRemoveAnotherUsersEntriesOnTheSameDay()
+    {
+        using SqliteTestDatabase database = new();
+        DateOnly target = new(2026, 5, 28);
+        var ownerRecipeId = Guid.NewGuid();
+        var otherRecipeId = Guid.NewGuid();
+        var otherEntryId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository ownerRecipes = new(context, new TestCurrentUser(OwnerId));
+            await ownerRecipes.AddAsync(new Recipe(ownerRecipeId, "Porridge", 2));
+            RecipeRepository otherRecipes = new(context, new TestCurrentUser(OtherId));
+            await otherRecipes.AddAsync(new Recipe(otherRecipeId, "Salad", 1));
+
+            MealPlanRepository ownerPlans = new(context, new TestCurrentUser(OwnerId));
+            await ownerPlans.AddAsync(
+                MealPlanEntry.ForRecipe(Guid.NewGuid(), target, ownerRecipeId, MealType.Breakfast, 1m));
+            MealPlanRepository otherPlans = new(context, new TestCurrentUser(OtherId));
+            await otherPlans.AddAsync(
+                MealPlanEntry.ForRecipe(otherEntryId, target, otherRecipeId, MealType.Lunch, 1m));
+        }
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            MealPlanRepository plans = new(context, new TestCurrentUser(OwnerId));
+            await plans.ReplaceDaysAsync(
+                [target],
+                [MealPlanEntry.ForRecipe(Guid.NewGuid(), target, ownerRecipeId, MealType.Dinner, 1m)]);
+        }
+
+        await using (JadlifyDbContext verification = database.CreateContext())
+        {
+            MealPlanRepository otherPlans = new(verification, new TestCurrentUser(OtherId));
+            Assert.Equal(otherEntryId, Assert.Single(await otherPlans.ListByDateAsync(target)).Id);
+        }
+    }
+
+    [Fact]
+    public async Task ReplaceDaysAsync_LeavesTheDayIntact_WhenAReplacementIsRejected()
+    {
+        using SqliteTestDatabase database = new();
+        DateOnly target = new(2026, 5, 28);
+        var recipeId = Guid.NewGuid();
+        var originalId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            RecipeRepository recipes = new(context, new TestCurrentUser(OwnerId));
+            await recipes.AddAsync(new Recipe(recipeId, "Porridge", 2));
+
+            MealPlanRepository plans = new(context, new TestCurrentUser(OwnerId));
+            await plans.AddAsync(
+                MealPlanEntry.ForRecipe(originalId, target, recipeId, MealType.Breakfast, 1m));
+        }
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            MealPlanRepository plans = new(context, new TestCurrentUser(OwnerId));
+
+            // The clear and the insert are one transaction: a rejected replacement must not
+            // leave the day emptied by the delete that came before it.
+            await Assert.ThrowsAsync<DbUpdateException>(() => plans.ReplaceDaysAsync(
+                [target],
+                [
+                    MealPlanEntry.ForRecipe(Guid.NewGuid(), target, recipeId, MealType.Lunch, 1m),
+                    MealPlanEntry.ForRecipe(Guid.NewGuid(), target, Guid.NewGuid(), MealType.Dinner, 1m)
+                ]));
+        }
+
+        await using (JadlifyDbContext verification = database.CreateContext())
+        {
+            MealPlanRepository plans = new(verification, new TestCurrentUser(OwnerId));
+            MealPlanEntry surviving = Assert.Single(await plans.ListByDateAsync(target));
+            Assert.Equal(originalId, surviving.Id);
+            Assert.Equal(MealType.Breakfast, surviving.MealType);
+        }
     }
 }

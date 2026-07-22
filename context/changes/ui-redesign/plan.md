@@ -665,26 +665,26 @@ Migrujemy shopping UI na trwałe kontrakty, budujemy dashboard na współdzielon
 
 #### Automated
 
-- [x] 5.1 Domain oracle pokrywa fractional recipe i product entries
-- [x] 5.2 Planning, migration, repository i API tests przechodzą
-- [x] 5.3 Build rozwiązania przechodzi
+- [x] 5.1 Domain oracle pokrywa fractional recipe i product entries — 2eabf86
+- [x] 5.2 Planning, migration, repository i API tests przechodzą — 2eabf86
+- [x] 5.3 Build rozwiązania przechodzi — 2eabf86
 
 #### Manual
 
-- [x] 5.4 Migracja zachowuje istniejące wpisy i makro
-- [x] 5.5 Recipe 0.5, product grams i range 42 dni działają owner-scoped
+- [x] 5.4 Migracja zachowuje istniejące wpisy i makro — 2eabf86
+- [x] 5.5 Recipe 0.5, product grams i range 42 dni działają owner-scoped — 2eabf86
 
 ### Phase 6: Atomowe operacje planera
 
 #### Automated
 
-- [ ] 6.1 Move/copy/copy-day testy przechodzą
-- [ ] 6.2 Atomowość, limity, rollback i cross-user są potwierdzone
+- [x] 6.1 Move/copy/copy-day testy przechodzą
+- [x] 6.2 Atomowość, limity, rollback i cross-user są potwierdzone
 
 #### Manual
 
-- [ ] 6.3 Move/copy i Add/Replace mają oczekiwane wyniki
-- [ ] 6.4 Błędny batch nie pozostawia częściowych zmian
+- [x] 6.3 Move/copy i Add/Replace mają oczekiwane wyniki
+- [x] 6.4 Błędny batch nie pozostawia częściowych zmian
 
 ### Phase 7: UI planera dzień/tydzień/miesiąc
 

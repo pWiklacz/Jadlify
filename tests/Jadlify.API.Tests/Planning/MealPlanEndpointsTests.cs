@@ -4,6 +4,7 @@ using Jadlify.API.Planning;
 using Jadlify.API.Products;
 using Jadlify.API.Recipes;
 using Jadlify.API.Tests.Common;
+using Jadlify.Application.Planning;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Jadlify.API.Tests.Planning;
@@ -574,6 +575,294 @@ public class MealPlanEndpointsTests
         Assert.Equal(-50m, range.Days[0].Remaining!.Calories);
         // An empty day still carries the goal, with the whole target outstanding.
         Assert.Equal(150m, range.Days[1].Remaining!.Calories);
+    }
+
+    [Fact]
+    public async Task MoveRequiresAuthentication()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("https://localhost")
+        });
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            $"/api/meal-plan/{Guid.NewGuid()}/move",
+            new MoveMealPlanEntryRequest(Date, "Lunch"));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Move_ReschedulesEntry_KeepingItsIdAndQuantity()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge");
+        Guid entryId = await CreateEntryAsync(client, Date, recipeId, "Breakfast", 2);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            $"/api/meal-plan/{entryId}/move",
+            new MoveMealPlanEntryRequest(OtherDate, "Dinner"));
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Empty(await ListAsync(client, Date));
+        MealPlanEntryResponse moved = Assert.Single(await ListAsync(client, OtherDate));
+        Assert.Equal(entryId, moved.Id);
+        Assert.Equal("Dinner", moved.MealType);
+        Assert.Equal(2m, moved.Portions);
+    }
+
+    [Fact]
+    public async Task Move_ReturnsNotFound_ForAnotherUsersEntry()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient clientA = factory.CreateClientAs(UserA);
+        using HttpClient clientB = factory.CreateClientAs(UserB);
+        Guid recipeId = await CreateRecipeAsync(clientA, "Porridge");
+        Guid entryId = await CreateEntryAsync(clientA, Date, recipeId, "Breakfast", 1);
+
+        HttpResponseMessage response = await clientB.PostAsJsonAsync(
+            $"/api/meal-plan/{entryId}/move",
+            new MoveMealPlanEntryRequest(OtherDate, "Dinner"));
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(Date, Assert.Single(await ListAsync(clientA, Date)).Date);
+    }
+
+    [Fact]
+    public async Task Move_RejectsUnknownMealType()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge");
+        Guid entryId = await CreateEntryAsync(client, Date, recipeId, "Breakfast", 1);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            $"/api/meal-plan/{entryId}/move",
+            new MoveMealPlanEntryRequest(OtherDate, "Brunch"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Single(await ListAsync(client, Date));
+    }
+
+    [Fact]
+    public async Task Copies_CreateOneEntryPerTargetDay_LeavingTheOriginal()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge");
+        Guid entryId = await CreateEntryAsync(client, Date, recipeId, "Breakfast", 2);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            $"/api/meal-plan/{entryId}/copies",
+            new CopyMealPlanEntryRequest([Date.AddDays(1), Date.AddDays(2)]));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        CopiedMealPlanEntriesResponse body =
+            (await response.Content.ReadFromJsonAsync<CopiedMealPlanEntriesResponse>())!;
+        Assert.Equal(2, body.Entries.Count);
+        Assert.Equal([Date.AddDays(1), Date.AddDays(2)], body.Entries.Select(entry => entry.Date).ToList());
+        Assert.DoesNotContain(body.Entries, entry => entry.Id == entryId);
+
+        Assert.Equal(entryId, Assert.Single(await ListAsync(client, Date)).Id);
+        MealPlanEntryResponse copy = Assert.Single(await ListAsync(client, Date.AddDays(1)));
+        Assert.Equal("Breakfast", copy.MealType);
+        Assert.Equal(2m, copy.Portions);
+    }
+
+    [Fact]
+    public async Task Copies_ReturnNotFound_ForAnotherUsersEntry()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient clientA = factory.CreateClientAs(UserA);
+        using HttpClient clientB = factory.CreateClientAs(UserB);
+        Guid recipeId = await CreateRecipeAsync(clientA, "Porridge");
+        Guid entryId = await CreateEntryAsync(clientA, Date, recipeId, "Breakfast", 1);
+
+        HttpResponseMessage response = await clientB.PostAsJsonAsync(
+            $"/api/meal-plan/{entryId}/copies",
+            new CopyMealPlanEntryRequest([Date.AddDays(1)]));
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Empty(await ListAsync(clientB, Date.AddDays(1)));
+        Assert.Empty(await ListAsync(clientA, Date.AddDays(1)));
+    }
+
+    [Fact]
+    public async Task Copies_RejectRepeatedTargetDays()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge");
+        Guid entryId = await CreateEntryAsync(client, Date, recipeId, "Breakfast", 1);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            $"/api/meal-plan/{entryId}/copies",
+            new CopyMealPlanEntryRequest([Date.AddDays(1), Date.AddDays(1)]));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Empty(await ListAsync(client, Date.AddDays(1)));
+    }
+
+    [Fact]
+    public async Task Copies_RejectMoreTargetDaysThanTheLimit()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge");
+        Guid entryId = await CreateEntryAsync(client, Date, recipeId, "Breakfast", 1);
+        DateOnly[] targets =
+        [
+            .. Enumerable
+                .Range(1, PlanningValidationBounds.MaxCopyTargetDays + 1)
+                .Select(offset => Date.AddDays(offset))
+        ];
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            $"/api/meal-plan/{entryId}/copies",
+            new CopyMealPlanEntryRequest(targets));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Empty(await ListAsync(client, Date.AddDays(1)));
+    }
+
+    [Fact]
+    public async Task CopyDay_Add_KeepsWhatTheTargetDayAlreadyHeld()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge");
+        await CreateEntryAsync(client, Date, recipeId, "Breakfast", 1);
+        await CreateEntryAsync(client, Date, recipeId, "Lunch", 1);
+        Guid existingId = await CreateEntryAsync(client, OtherDate, recipeId, "Dinner", 1);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            $"/api/meal-plan/days/{Iso(Date)}/copies",
+            new CopyMealPlanDayRequest([OtherDate], "Add"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        CopiedMealPlanEntriesResponse body =
+            (await response.Content.ReadFromJsonAsync<CopiedMealPlanEntriesResponse>())!;
+        Assert.Equal(2, body.Entries.Count);
+
+        MealPlanEntryResponse[] target = await ListAsync(client, OtherDate);
+        Assert.Equal(3, target.Length);
+        Assert.Contains(target, entry => entry.Id == existingId);
+    }
+
+    [Fact]
+    public async Task CopyDay_Replace_LeavesOnlyTheCopies()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge");
+        await CreateEntryAsync(client, Date, recipeId, "Breakfast", 1);
+        await CreateEntryAsync(client, Date, recipeId, "Lunch", 1);
+        Guid replacedId = await CreateEntryAsync(client, OtherDate, recipeId, "Dinner", 1);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            $"/api/meal-plan/days/{Iso(Date)}/copies",
+            new CopyMealPlanDayRequest([OtherDate], "Replace"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        MealPlanEntryResponse[] target = await ListAsync(client, OtherDate);
+        Assert.Equal(2, target.Length);
+        Assert.DoesNotContain(target, entry => entry.Id == replacedId);
+        // The source day is untouched by either mode.
+        Assert.Equal(2, (await ListAsync(client, Date)).Length);
+    }
+
+    [Fact]
+    public async Task CopyDay_Replace_DoesNotClearAnotherUsersDay()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient clientA = factory.CreateClientAs(UserA);
+        using HttpClient clientB = factory.CreateClientAs(UserB);
+        Guid recipeA = await CreateRecipeAsync(clientA, "Porridge");
+        Guid recipeB = await CreateRecipeAsync(clientB, "Salad");
+        await CreateEntryAsync(clientA, Date, recipeA, "Breakfast", 1);
+        Guid userBEntryId = await CreateEntryAsync(clientB, OtherDate, recipeB, "Dinner", 1);
+
+        HttpResponseMessage response = await clientA.PostAsJsonAsync(
+            $"/api/meal-plan/days/{Iso(Date)}/copies",
+            new CopyMealPlanDayRequest([OtherDate], "Replace"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(userBEntryId, Assert.Single(await ListAsync(clientB, OtherDate)).Id);
+    }
+
+    [Fact]
+    public async Task CopyDay_RejectsEmptySourceDay_WithoutClearingTheTarget()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge");
+        Guid existingId = await CreateEntryAsync(client, OtherDate, recipeId, "Dinner", 1);
+
+        // Replace from an empty day would otherwise be a silent way to wipe the target.
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            $"/api/meal-plan/days/{Iso(Date)}/copies",
+            new CopyMealPlanDayRequest([OtherDate], "Replace"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(existingId, Assert.Single(await ListAsync(client, OtherDate)).Id);
+    }
+
+    [Fact]
+    public async Task CopyDay_RejectsSourceDayAmongTargets()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge");
+        await CreateEntryAsync(client, Date, recipeId, "Breakfast", 1);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            $"/api/meal-plan/days/{Iso(Date)}/copies",
+            new CopyMealPlanDayRequest([OtherDate, Date], "Add"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Single(await ListAsync(client, Date));
+        Assert.Empty(await ListAsync(client, OtherDate));
+    }
+
+    [Fact]
+    public async Task CopyDay_RejectsUnknownMode()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid recipeId = await CreateRecipeAsync(client, "Porridge");
+        await CreateEntryAsync(client, Date, recipeId, "Breakfast", 1);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            $"/api/meal-plan/days/{Iso(Date)}/copies",
+            new CopyMealPlanDayRequest([OtherDate], "Merge"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Empty(await ListAsync(client, OtherDate));
+    }
+
+    [Fact]
+    public async Task CopyDay_CopiesProductEntriesWithTheirOwnSnapshot()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid productId = await CreateProductAsync(client, "Oats", 380m, 13m, 7m, 60m);
+        HttpResponseMessage created = await client.PostAsJsonAsync(
+            "/api/meal-plan",
+            new AddMealPlanEntryRequest(Date, "Snack", ProductId: productId, Grams: 45m));
+        created.EnsureSuccessStatusCode();
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            $"/api/meal-plan/days/{Iso(Date)}/copies",
+            new CopyMealPlanDayRequest([OtherDate], "Add"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        MealPlanEntryResponse copy = Assert.Single(await ListAsync(client, OtherDate));
+        Assert.Equal("Product", copy.Source);
+        Assert.Equal(productId, copy.ProductId);
+        Assert.Equal("Oats", copy.ProductName);
+        Assert.Equal(45m, copy.Grams);
     }
 
     private static async Task<MealPlanRangeResponse> RangeAsync(HttpClient client, DateOnly from, DateOnly to)

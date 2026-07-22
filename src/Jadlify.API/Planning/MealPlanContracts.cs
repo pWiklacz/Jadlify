@@ -34,6 +34,52 @@ public sealed record UpdateMealPlanEntryRequest(
 public sealed record CreatedMealPlanEntryResponse(Guid Id);
 
 /// <summary>
+/// Reschedules an existing entry. The entry keeps its id, source, and quantity — only the day
+/// and the meal type change, so anything already referring to the entry still refers to it.
+/// </summary>
+public sealed record MoveMealPlanEntryRequest(DateOnly Date, string MealType);
+
+/// <summary>
+/// Copies an entry onto every date in <c>TargetDates</c>, leaving the original in place. Dates
+/// must be distinct; the entry's own date is allowed, which is how a meal is duplicated within
+/// a day.
+/// </summary>
+public sealed record CopyMealPlanEntryRequest(IReadOnlyList<DateOnly> TargetDates);
+
+/// <summary>
+/// Copies a whole day onto every date in <c>TargetDates</c>. <c>Mode</c> is <c>Add</c> to keep
+/// what the target day already holds, or <c>Replace</c> to leave only the copies. The source
+/// date must not appear among the targets, and an empty source day is a 400 rather than a
+/// silent way to clear days.
+/// </summary>
+public sealed record CopyMealPlanDayRequest(IReadOnlyList<DateOnly> TargetDates, string Mode);
+
+/// <summary>An entry a copy created: the new id and the day it landed on.</summary>
+public sealed record CopiedMealPlanEntryResponse(Guid Id, DateOnly Date, string MealType)
+{
+    public static CopiedMealPlanEntryResponse FromDto(CreatedMealPlanEntryDto dto)
+    {
+        ArgumentNullException.ThrowIfNull(dto);
+
+        return new CopiedMealPlanEntryResponse(dto.Id, dto.Date, dto.MealType.ToString());
+    }
+}
+
+/// <summary>
+/// Everything a copy operation created, in target-date order. The whole batch is written or
+/// none of it is, so a success here means every listed entry exists.
+/// </summary>
+public sealed record CopiedMealPlanEntriesResponse(IReadOnlyList<CopiedMealPlanEntryResponse> Entries)
+{
+    public static CopiedMealPlanEntriesResponse FromDtos(IReadOnlyList<CreatedMealPlanEntryDto> dtos)
+    {
+        ArgumentNullException.ThrowIfNull(dtos);
+
+        return new CopiedMealPlanEntriesResponse([.. dtos.Select(CopiedMealPlanEntryResponse.FromDto)]);
+    }
+}
+
+/// <summary>
 /// A planned meal. <c>Source</c> is <c>Recipe</c> or <c>Product</c> and says which group of
 /// fields is populated: a recipe entry carries <c>RecipeId</c>/<c>RecipeName</c>/<c>Portions</c>
 /// with the product fields null, a product entry the reverse.

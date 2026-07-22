@@ -95,10 +95,31 @@ public sealed class MealPlanEntry
     }
 
     /// <summary>
+    /// Reschedules this entry to <paramref name="date"/> under <paramref name="mealType"/>.
+    /// Identity, source, and quantity are deliberately preserved: a move is the same meal on a
+    /// different day, so anything referring to this entry keeps referring to the same meal.
+    /// Moving to the day and meal type it already has is a no-op, not an error.
+    /// </summary>
+    public void MoveTo(DateOnly date, MealType mealType)
+    {
+        Date = date;
+        MealType = mealType;
+    }
+
+    /// <summary>
+    /// Returns a new entry planning the same meal on <paramref name="date"/> under
+    /// <paramref name="id"/>. The source is cloned rather than shared: a recipe entry copies
+    /// the reference so both entries continue to follow the live recipe, and a product entry
+    /// copies its snapshot so the two stay independent of each other.
+    /// </summary>
+    public MealPlanEntry CopyTo(Guid id, DateOnly date) =>
+        new(id, date, MealType, Source, RecipeId, Product?.Copy(), Quantity);
+
+    /// <summary>
     /// Updates the meal type and the planned quantity, validated against this entry's own
     /// source. The identity, date, and source (recipe reference or product snapshot) are
-    /// intentionally immutable here: changing those means deleting the entry and adding a new
-    /// one, or — from Phase 6 on — moving it through a named behavior.
+    /// intentionally immutable here: changing the date means calling <see cref="MoveTo"/>, and
+    /// changing the source means deleting the entry and adding a new one.
     /// </summary>
     public void UpdateDetails(MealType mealType, decimal quantity)
     {

@@ -3,9 +3,12 @@ using Jadlify.Application.Common.Mediator;
 using Jadlify.Application.Planning;
 using Jadlify.Application.Planning.DailyMacroSummary;
 using Jadlify.Application.Planning.MealPlans.AddMealPlanEntry;
+using Jadlify.Application.Planning.MealPlans.CopyMealPlanDay;
+using Jadlify.Application.Planning.MealPlans.CopyMealPlanEntry;
 using Jadlify.Application.Planning.MealPlans.DeleteMealPlanEntry;
 using Jadlify.Application.Planning.MealPlans.GetMealPlanRange;
 using Jadlify.Application.Planning.MealPlans.ListMealPlanEntries;
+using Jadlify.Application.Planning.MealPlans.MoveMealPlanEntry;
 using Jadlify.Application.Planning.MealPlans.UpdateMealPlanEntry;
 using Jadlify.Domain.Planning;
 using Jadlify.SharedKernel;
@@ -112,6 +115,66 @@ public static class MealPlanEndpoints
             return result.IsSuccess ? Results.NoContent() : result.ToProblem();
         });
 
+        // Move and copy are POSTs on named sub-resources rather than a PUT that happens to
+        // change the date: each is one intent the client can name, and copy creates entries a
+        // PUT could not report.
+        mealPlan.MapPost("/{id:guid}/move", async (
+            Guid id,
+            MoveMealPlanEntryRequest request,
+            IMediator mediator,
+            CancellationToken cancellationToken) =>
+        {
+            Result<MealType> mealType = ParseMealType(request.MealType);
+            if (mealType.IsFailure)
+            {
+                return mealType.ToProblem();
+            }
+
+            Result result = await mediator.SendAsync(
+                new MoveMealPlanEntryCommand(id, request.Date, mealType.Value),
+                cancellationToken);
+
+            return result.IsSuccess ? Results.NoContent() : result.ToProblem();
+        });
+
+        mealPlan.MapPost("/{id:guid}/copies", async (
+            Guid id,
+            CopyMealPlanEntryRequest request,
+            IMediator mediator,
+            CancellationToken cancellationToken) =>
+        {
+            Result<IReadOnlyList<CreatedMealPlanEntryDto>> result = await mediator.SendAsync(
+                new CopyMealPlanEntryCommand(id, request.TargetDates ?? []),
+                cancellationToken);
+
+            // 200 rather than 201: several entries are created at once, so there is no single
+            // Location to point at, and the body identifies all of them.
+            return result.IsSuccess
+                ? Results.Ok(CopiedMealPlanEntriesResponse.FromDtos(result.Value))
+                : result.ToProblem();
+        });
+
+        mealPlan.MapPost("/days/{date}/copies", async (
+            DateOnly date,
+            CopyMealPlanDayRequest request,
+            IMediator mediator,
+            CancellationToken cancellationToken) =>
+        {
+            Result<MealPlanDayCopyMode> mode = ParseCopyMode(request.Mode);
+            if (mode.IsFailure)
+            {
+                return mode.ToProblem();
+            }
+
+            Result<IReadOnlyList<CreatedMealPlanEntryDto>> result = await mediator.SendAsync(
+                new CopyMealPlanDayCommand(date, request.TargetDates ?? [], mode.Value),
+                cancellationToken);
+
+            return result.IsSuccess
+                ? Results.Ok(CopiedMealPlanEntriesResponse.FromDtos(result.Value))
+                : result.ToProblem();
+        });
+
         mealPlan.MapDelete("/{id:guid}", async (
             Guid id,
             IMediator mediator,
@@ -139,6 +202,24 @@ public static class MealPlanEndpoints
             new Error(
                 "MealType",
                 "The meal type must be one of Breakfast, Lunch, Dinner, or Snack.",
+                ErrorType.Validation)
+        ]));
+    }
+
+    // The two copy modes differ in whether the target day's existing entries survive, so an
+    // unrecognised value is a 400 rather than a default that might silently discard a day.
+    private static Result<MealPlanDayCopyMode> ParseCopyMode(string value)
+    {
+        if (Enum.TryParse(value, ignoreCase: false, out MealPlanDayCopyMode mode) && Enum.IsDefined(mode))
+        {
+            return Result.Ok(mode);
+        }
+
+        return Result.Fail<MealPlanDayCopyMode>(new ValidationError(
+        [
+            new Error(
+                "Mode",
+                "The copy mode must be either Add or Replace.",
                 ErrorType.Validation)
         ]));
     }

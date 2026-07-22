@@ -35,4 +35,18 @@ public static class PlanningValidationBounds
     /// grid renders, and bounding it here keeps one range read from degrading into a scan.
     /// </summary>
     public const int MaxRangeDays = 42;
+
+    /// <summary>
+    /// Largest number of target days a single copy operation may write to. Matched to
+    /// <see cref="MaxRangeDays"/>: the month grid is the widest selection the planner can
+    /// offer, so a request beyond it is not something a user assembled by hand.
+    /// </summary>
+    public const int MaxCopyTargetDays = MaxRangeDays;
+
+    /// <summary>
+    /// Ceiling on the entries a single copy operation may create, checked once the source is
+    /// known. Target days alone do not bound the write — copying a dense day across six weeks
+    /// multiplies out — so the product of the two is what has to stay bounded.
+    /// </summary>
+    public const int MaxCopyCreatedEntries = 500;
 }

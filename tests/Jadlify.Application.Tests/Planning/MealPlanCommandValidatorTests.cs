@@ -1,6 +1,10 @@
+using Jadlify.Application.Planning;
 using Jadlify.Application.Planning.MealPlans.AddMealPlanEntry;
+using Jadlify.Application.Planning.MealPlans.CopyMealPlanDay;
+using Jadlify.Application.Planning.MealPlans.CopyMealPlanEntry;
 using Jadlify.Application.Planning.MealPlans.DeleteMealPlanEntry;
 using Jadlify.Application.Planning.MealPlans.GetMealPlanRange;
+using Jadlify.Application.Planning.MealPlans.MoveMealPlanEntry;
 using Jadlify.Application.Planning.MealPlans.UpdateMealPlanEntry;
 using Jadlify.Domain.Planning;
 
@@ -227,4 +231,158 @@ public class MealPlanCommandValidatorTests
             Assert.False(_validator.Validate(new DeleteMealPlanEntryCommand(Guid.Empty)).IsValid);
         }
     }
+
+    public class MoveValidator
+    {
+        private readonly MoveMealPlanEntryCommandValidator _validator = new();
+
+        [Fact]
+        public void Accepts_ValidMove()
+        {
+            Assert.True(_validator.Validate(
+                new MoveMealPlanEntryCommand(Guid.NewGuid(), Day, MealType.Dinner)).IsValid);
+        }
+
+        [Fact]
+        public void Accepts_MoveToTheSameDay()
+        {
+            // A same-day move is how the meal type alone is changed; it is not an error.
+            Assert.True(_validator.Validate(
+                new MoveMealPlanEntryCommand(Guid.NewGuid(), Day, MealType.Lunch)).IsValid);
+        }
+
+        [Fact]
+        public void Rejects_EmptyId()
+        {
+            Assert.False(_validator.Validate(
+                new MoveMealPlanEntryCommand(Guid.Empty, Day, MealType.Lunch)).IsValid);
+        }
+
+        [Fact]
+        public void Rejects_UndefinedMealType()
+        {
+            Assert.False(_validator.Validate(
+                new MoveMealPlanEntryCommand(Guid.NewGuid(), Day, (MealType)99)).IsValid);
+        }
+    }
+
+    public class CopyEntryValidator
+    {
+        private readonly CopyMealPlanEntryCommandValidator _validator = new();
+
+        private static CopyMealPlanEntryCommand Copy(params DateOnly[] targets) =>
+            new(Guid.NewGuid(), targets);
+
+        [Fact]
+        public void Accepts_SingleTarget()
+        {
+            Assert.True(_validator.Validate(Copy(Day.AddDays(1))).IsValid);
+        }
+
+        [Fact]
+        public void Accepts_TheSourcesOwnDate()
+        {
+            // Copying onto the same day is how a meal is duplicated within that day.
+            Assert.True(_validator.Validate(Copy(Day)).IsValid);
+        }
+
+        [Fact]
+        public void Accepts_FullMonthGridOfTargets()
+        {
+            Assert.True(_validator.Validate(Copy(Targets(PlanningValidationBounds.MaxCopyTargetDays))).IsValid);
+        }
+
+        [Fact]
+        public void Rejects_NoTargets()
+        {
+            Assert.False(_validator.Validate(Copy()).IsValid);
+        }
+
+        [Fact]
+        public void Rejects_MoreTargetsThanTheLimit()
+        {
+            Assert.False(_validator.Validate(
+                Copy(Targets(PlanningValidationBounds.MaxCopyTargetDays + 1))).IsValid);
+        }
+
+        [Fact]
+        public void Rejects_RepeatedTargets()
+        {
+            Assert.False(_validator.Validate(Copy(Day.AddDays(1), Day.AddDays(1))).IsValid);
+        }
+
+        [Fact]
+        public void Rejects_EmptyId()
+        {
+            Assert.False(_validator.Validate(
+                new CopyMealPlanEntryCommand(Guid.Empty, [Day.AddDays(1)])).IsValid);
+        }
+    }
+
+    public class CopyDayValidator
+    {
+        private readonly CopyMealPlanDayCommandValidator _validator = new();
+
+        private static CopyMealPlanDayCommand Copy(
+            MealPlanDayCopyMode mode = MealPlanDayCopyMode.Add,
+            params DateOnly[] targets) =>
+            new(Day, targets, mode);
+
+        [Fact]
+        public void Accepts_AddToOneTarget()
+        {
+            Assert.True(_validator.Validate(Copy(targets: Day.AddDays(1))).IsValid);
+        }
+
+        [Fact]
+        public void Accepts_ReplaceOnManyTargets()
+        {
+            Assert.True(_validator.Validate(
+                Copy(MealPlanDayCopyMode.Replace, Day.AddDays(1), Day.AddDays(2))).IsValid);
+        }
+
+        [Fact]
+        public void Accepts_FullMonthGridOfTargets()
+        {
+            Assert.True(_validator.Validate(
+                Copy(targets: Targets(PlanningValidationBounds.MaxCopyTargetDays))).IsValid);
+        }
+
+        [Fact]
+        public void Rejects_NoTargets()
+        {
+            Assert.False(_validator.Validate(Copy()).IsValid);
+        }
+
+        [Fact]
+        public void Rejects_MoreTargetsThanTheLimit()
+        {
+            Assert.False(_validator.Validate(
+                Copy(targets: Targets(PlanningValidationBounds.MaxCopyTargetDays + 1))).IsValid);
+        }
+
+        [Fact]
+        public void Rejects_RepeatedTargets()
+        {
+            Assert.False(_validator.Validate(
+                Copy(targets: [Day.AddDays(1), Day.AddDays(1)])).IsValid);
+        }
+
+        [Fact]
+        public void Rejects_SourceDayAmongTargets()
+        {
+            // Under Replace this rewrites the day with itself; under Add it doubles it.
+            Assert.False(_validator.Validate(Copy(targets: [Day.AddDays(1), Day])).IsValid);
+        }
+
+        [Fact]
+        public void Rejects_UndefinedMode()
+        {
+            Assert.False(_validator.Validate(
+                Copy((MealPlanDayCopyMode)7, Day.AddDays(1))).IsValid);
+        }
+    }
+
+    private static DateOnly[] Targets(int count) =>
+        [.. Enumerable.Range(1, count).Select(offset => Day.AddDays(offset))];
 }
