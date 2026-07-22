@@ -3,7 +3,7 @@ change_id: ui-redesign
 title: Ui redesign
 status: implementing
 created: 2026-07-18
-updated: 2026-07-21
+updated: 2026-07-22
 archived_at: null
 ---
 
