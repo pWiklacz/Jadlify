@@ -678,13 +678,13 @@ Migrujemy shopping UI na trwałe kontrakty, budujemy dashboard na współdzielon
 
 #### Automated
 
-- [x] 6.1 Move/copy/copy-day testy przechodzą
-- [x] 6.2 Atomowość, limity, rollback i cross-user są potwierdzone
+- [x] 6.1 Move/copy/copy-day testy przechodzą — 0988440
+- [x] 6.2 Atomowość, limity, rollback i cross-user są potwierdzone — 0988440
 
 #### Manual
 
-- [x] 6.3 Move/copy i Add/Replace mają oczekiwane wyniki
-- [x] 6.4 Błędny batch nie pozostawia częściowych zmian
+- [x] 6.3 Move/copy i Add/Replace mają oczekiwane wyniki — 0988440
+- [x] 6.4 Błędny batch nie pozostawia częściowych zmian — 0988440
 
 ### Phase 7: UI planera dzień/tydzień/miesiąc
 
