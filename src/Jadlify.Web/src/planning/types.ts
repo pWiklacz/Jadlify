@@ -109,3 +109,44 @@ export interface MealPlanRange {
   to: string
   days: MealPlanDay[]
 }
+
+/**
+ * Reschedules an entry: it keeps its id, source and quantity — only the day and meal type
+ * change. The date is `yyyy-MM-dd` (mirrors `MoveMealPlanEntryRequest`).
+ */
+export interface MoveMealPlanEntryRequest {
+  date: string
+  mealType: MealType
+}
+
+/**
+ * Copies an entry onto every date in `targetDates`, leaving the original in place. Dates must
+ * be distinct; the entry's own date is allowed (mirrors `CopyMealPlanEntryRequest`).
+ */
+export interface CopyMealPlanEntryRequest {
+  targetDates: string[]
+}
+
+/** Whether a copied day keeps (`Add`) or clears (`Replace`) what each target day already holds. */
+export type MealPlanDayCopyMode = 'Add' | 'Replace'
+
+/**
+ * Copies a whole day onto every date in `targetDates`. `Replace` first removes each target
+ * day's existing entries (mirrors `CopyMealPlanDayRequest`).
+ */
+export interface CopyMealPlanDayRequest {
+  targetDates: string[]
+  mode: MealPlanDayCopyMode
+}
+
+/** One entry a copy created: the new id and the day it landed on (mirrors the API response). */
+export interface CopiedMealPlanEntry {
+  id: string
+  date: string
+  mealType: MealType
+}
+
+/** Everything a copy operation created, in target-date order (mirrors `CopiedMealPlanEntriesResponse`). */
+export interface CopiedMealPlanEntriesResponse {
+  entries: CopiedMealPlanEntry[]
+}

@@ -1,57 +1,96 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { apiClient } from '../api/apiClient'
-import { shoppingListQueryKey } from '../shopping/useShoppingList'
-import { dailyMacroSummaryQueryKey } from './useDailyMacroSummary'
-import { mealPlanQueryKey } from './useMealPlan'
+import { mealPlanBaseKey } from './useMealPlanRange'
 import type {
   AddMealPlanEntryRequest,
+  CopiedMealPlanEntriesResponse,
+  CopyMealPlanDayRequest,
+  CopyMealPlanEntryRequest,
   CreatedMealPlanEntryResponse,
+  MoveMealPlanEntryRequest,
   UpdateMealPlanEntryRequest,
 } from './types'
 
-/** Adds a recipe entry to the selected day and refreshes only that day's plan. */
+/**
+ * Every planner mutation touches the same shared reads, so instead of each hook
+ * hand-syncing a handful of keys they all invalidate two prefixes: the whole
+ * `meal-plan` tree (every cached range plus the legacy single-day summary) and
+ * every shopping list (a plan change makes existing lists potentially stale). One
+ * invalidation call keeps day / week / month and the shopping surface consistent.
+ */
+function invalidatePlannerReads(queryClient: QueryClient) {
+  void queryClient.invalidateQueries({ queryKey: mealPlanBaseKey })
+  void queryClient.invalidateQueries({ queryKey: ['planning', 'meal-plan-summary'] })
+  void queryClient.invalidateQueries({ queryKey: ['shopping-list'] })
+}
+
+/** Adds one entry (recipe + portions, or product + grams) and refreshes the planner. */
 export function useAddMealPlanEntry() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (body: AddMealPlanEntryRequest) =>
       apiClient.post<CreatedMealPlanEntryResponse>('/api/meal-plan', body),
-    onSuccess: (_result, variables) => {
-      void queryClient.invalidateQueries({ queryKey: mealPlanQueryKey(variables.date) })
-      void queryClient.invalidateQueries({ queryKey: dailyMacroSummaryQueryKey(variables.date) })
-      void queryClient.invalidateQueries({ queryKey: shoppingListQueryKey(variables.date) })
-    },
+    onSuccess: () => invalidatePlannerReads(queryClient),
   })
 }
 
-/** Updates only meal type and portions, then refreshes the entry's selected day. */
+/** Updates an entry's meal type and quantity (in its own source's unit). */
 export function useUpdateMealPlanEntry() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (variables: {
-      id: string
-      date: string
-      body: UpdateMealPlanEntryRequest
-    }) => apiClient.put<void>(`/api/meal-plan/${variables.id}`, variables.body),
-    onSuccess: (_result, variables) => {
-      void queryClient.invalidateQueries({ queryKey: mealPlanQueryKey(variables.date) })
-      void queryClient.invalidateQueries({ queryKey: dailyMacroSummaryQueryKey(variables.date) })
-      void queryClient.invalidateQueries({ queryKey: shoppingListQueryKey(variables.date) })
-    },
+    mutationFn: (variables: { id: string; body: UpdateMealPlanEntryRequest }) =>
+      apiClient.put<void>(`/api/meal-plan/${variables.id}`, variables.body),
+    onSuccess: () => invalidatePlannerReads(queryClient),
   })
 }
 
-/** Deletes one entry and refreshes only the selected day it came from. */
+/** Deletes one entry. */
 export function useDeleteMealPlanEntry() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id }: { id: string; date: string }) => apiClient.del(`/api/meal-plan/${id}`),
-    onSuccess: (_result, variables) => {
-      void queryClient.invalidateQueries({ queryKey: mealPlanQueryKey(variables.date) })
-      void queryClient.invalidateQueries({ queryKey: dailyMacroSummaryQueryKey(variables.date) })
-      void queryClient.invalidateQueries({ queryKey: shoppingListQueryKey(variables.date) })
-    },
+    mutationFn: ({ id }: { id: string }) => apiClient.del(`/api/meal-plan/${id}`),
+    onSuccess: () => invalidatePlannerReads(queryClient),
+  })
+}
+
+/** Moves one entry to a new day and meal type, keeping its id, source and quantity. */
+export function useMoveMealPlanEntry() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (variables: { id: string; body: MoveMealPlanEntryRequest }) =>
+      apiClient.post<void>(`/api/meal-plan/${variables.id}/move`, variables.body),
+    onSuccess: () => invalidatePlannerReads(queryClient),
+  })
+}
+
+/** Copies one entry onto every target day in a single transactional request. */
+export function useCopyMealPlanEntry() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (variables: { id: string; body: CopyMealPlanEntryRequest }) =>
+      apiClient.post<CopiedMealPlanEntriesResponse>(
+        `/api/meal-plan/${variables.id}/copies`,
+        variables.body,
+      ),
+    onSuccess: () => invalidatePlannerReads(queryClient),
+  })
+}
+
+/** Copies a whole day onto every target day (`Add` keeps, `Replace` clears existing entries). */
+export function useCopyMealPlanDay() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (variables: { date: string; body: CopyMealPlanDayRequest }) =>
+      apiClient.post<CopiedMealPlanEntriesResponse>(
+        `/api/meal-plan/days/${variables.date}/copies`,
+        variables.body,
+      ),
+    onSuccess: () => invalidatePlannerReads(queryClient),
   })
 }

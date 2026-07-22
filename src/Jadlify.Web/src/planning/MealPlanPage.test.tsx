@@ -3,9 +3,11 @@ import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Recipe } from '../recipes/types'
+import type { Product } from '../products/types'
+import type { RecipeCatalogResponse } from '../recipes/types'
 import { MealPlanPage } from './MealPlanPage'
-import type { DailyMacroSummary, MealPlanEntry } from './types'
+import { addDays, rangeFor } from './dateRange'
+import type { MacroSummary, MealPlanDay, MealPlanEntry, MealPlanRange } from './types'
 
 const mockApiClient = vi.hoisted(() => ({
   get: vi.fn(),
@@ -19,104 +21,160 @@ vi.mock('../auth/useSession', () => ({
   useSession: () => ({ session: { user: { id: 'u1' } }, isLoading: false }),
 }))
 
-const recipe: Recipe = {
-  id: 'r1',
-  name: 'Porridge',
-  portions: 2,
-  ingredients: [],
-  totalMacros: { calories: 400, protein: 20, fat: 12, carbohydrates: 50 },
-  perServingMacros: { calories: 200, protein: 10, fat: 6, carbohydrates: 25 },
-  isInPlan: false,
+const MACRO: MacroSummary = { calories: 200, protein: 10, fat: 6, carbohydrates: 25 }
+const SELECTED = '2026-06-03'
+
+let entriesByDate: Record<string, MealPlanEntry[]>
+let goal: MacroSummary | null
+let recipeItems: RecipeCatalogResponse['items']
+let productItems: Product[]
+let nextEntryId: number
+
+function entry(overrides: Partial<MealPlanEntry> = {}): MealPlanEntry {
+  return {
+    id: 'e1',
+    date: SELECTED,
+    mealType: 'Breakfast',
+    source: 'Recipe',
+    recipeId: 'r1',
+    recipeName: 'Owsianka',
+    portions: 1,
+    productId: null,
+    productName: null,
+    category: null,
+    grams: null,
+    ...overrides,
+  }
 }
 
-const soup: Recipe = { ...recipe, id: 'r2', name: 'Soup', isInPlan: false }
+function product(overrides: Partial<Product> = {}): Product {
+  return {
+    id: 'p1',
+    name: 'Jogurt naturalny',
+    barcode: null,
+    calories: 60,
+    protein: 5,
+    fat: 3,
+    carbohydrates: 4,
+    packageSizeGrams: null,
+    saturatedFat: null,
+    monounsaturatedFat: null,
+    polyunsaturatedFat: null,
+    transFat: null,
+    sugars: null,
+    fiber: null,
+    salt: null,
+    sodium: null,
+    potassium: null,
+    calcium: null,
+    iron: null,
+    vitaminA: null,
+    vitaminC: null,
+    vitaminD: null,
+    ...overrides,
+  }
+}
 
-let recipes: Recipe[] = []
-let entriesByDate: Record<string, MealPlanEntry[]> = {}
-let summariesByDate: Record<string, DailyMacroSummary> = {}
+function sumMacros(entries: MealPlanEntry[]): MacroSummary {
+  return entries.reduce<MacroSummary>(
+    (total) => ({
+      calories: total.calories + MACRO.calories,
+      protein: total.protein + MACRO.protein,
+      fat: total.fat + MACRO.fat,
+      carbohydrates: total.carbohydrates + MACRO.carbohydrates,
+    }),
+    { calories: 0, protein: 0, fat: 0, carbohydrates: 0 },
+  )
+}
+
+function buildRange(from: string, to: string): MealPlanRange {
+  const days: MealPlanDay[] = []
+  for (let cursor = from; cursor <= to; cursor = addDays(cursor, 1)) {
+    const entries = entriesByDate[cursor] ?? []
+    const total = sumMacros(entries)
+    const remaining = goal
+      ? {
+          calories: goal.calories - total.calories,
+          protein: goal.protein - total.protein,
+          fat: goal.fat - total.fat,
+          carbohydrates: goal.carbohydrates - total.carbohydrates,
+        }
+      : null
+    days.push({
+      date: cursor,
+      entries,
+      entryMacros: entries.map((item) => ({ entryId: item.id, macros: MACRO })),
+      total,
+      goal,
+      remaining,
+    })
+  }
+  return { from, to, days }
+}
+
+function rangeCalls(): string[] {
+  return mockApiClient.get.mock.calls
+    .map(([path]) => path as string)
+    .filter((path) => path.startsWith('/api/meal-plan/range'))
+}
 
 beforeEach(() => {
   vi.clearAllMocks()
-  recipes = [recipe]
-  entriesByDate = {}
-  summariesByDate = {}
+  entriesByDate = { [SELECTED]: [entry()] }
+  goal = null
+  recipeItems = [
+    {
+      id: 'r1',
+      name: 'Owsianka',
+      portions: 2,
+      ingredientCount: 1,
+      totalMacros: { calories: 400, protein: 20, fat: 12, carbohydrates: 50 },
+      perServingMacros: { calories: 200, protein: 10, fat: 6, carbohydrates: 25 },
+      isInPlan: true,
+    },
+  ]
+  productItems = [product()]
+  nextEntryId = 2
 
   mockApiClient.get.mockImplementation(async (path: string) => {
-    if (path === '/api/recipes') {
-      return recipes
+    if (path.startsWith('/api/meal-plan/range')) {
+      const url = new URL(path, 'http://test')
+      return buildRange(url.searchParams.get('from')!, url.searchParams.get('to')!)
     }
-
-    if (path.startsWith('/api/meal-plan/summary?date=')) {
-      const date = decodeURIComponent(path.slice('/api/meal-plan/summary?date='.length))
-      return summariesByDate[date] ?? emptySummary(date)
+    if (path.startsWith('/api/recipes/catalog')) {
+      return { items: recipeItems, total: recipeItems.length, skip: 0, take: 100 }
     }
-
-    if (path.startsWith('/api/meal-plan?date=')) {
-      const date = decodeURIComponent(path.slice('/api/meal-plan?date='.length))
-      return entriesByDate[date] ?? []
+    if (path.startsWith('/api/products')) {
+      return productItems
     }
-
     throw new Error(`unexpected GET ${path}`)
   })
 
-  mockApiClient.post.mockImplementation(async (path: string, body: unknown) => {
+  mockApiClient.post.mockImplementation(async (path: string) => {
     if (path === '/api/meal-plan') {
-      const request = body as {
-        date: string
-        recipeId: string
-        mealType: MealPlanEntry['mealType']
-        portions: number
-      }
-      const created: MealPlanEntry = entry({
-        id: `entry-${Object.values(entriesByDate).flat().length + 1}`,
-        date: request.date,
-        recipeId: request.recipeId,
-        recipeName: recipes.find((item) => item.id === request.recipeId)?.name ?? 'Unknown recipe',
-        mealType: request.mealType,
-        portions: request.portions,
-      })
-      entriesByDate[request.date] = [...(entriesByDate[request.date] ?? []), created]
-      summariesByDate[request.date] = {
-        ...emptySummary(request.date),
-        entries: [
-          ...(summariesByDate[request.date]?.entries ?? []),
-          {
-            entryId: created.id,
-            macros: { calories: 200, protein: 10, fat: 6, carbohydrates: 25 },
-          },
-        ],
-        total: { calories: 200, protein: 10, fat: 6, carbohydrates: 25 },
-      }
-      return { id: created.id }
+      return { id: `new-${nextEntryId++}` }
     }
-
+    if (/\/api\/meal-plan\/[^/]+\/copies$/.test(path)) {
+      return { entries: [{ id: 'c1', date: '2026-06-04', mealType: 'Breakfast' }] }
+    }
+    if (/\/api\/meal-plan\/days\/[^/]+\/copies$/.test(path)) {
+      return { entries: [{ id: 'c1', date: '2026-06-04', mealType: 'Breakfast' }] }
+    }
+    if (/\/api\/meal-plan\/[^/]+\/move$/.test(path)) {
+      return undefined
+    }
     throw new Error(`unexpected POST ${path}`)
   })
 
-  mockApiClient.put.mockImplementation(async (path: string, body: unknown) => {
-    const id = path.replace('/api/meal-plan/', '')
-    for (const date of Object.keys(entriesByDate)) {
-      entriesByDate[date] = entriesByDate[date].map((entry) =>
-        entry.id === id ? { ...entry, ...(body as Pick<MealPlanEntry, 'mealType' | 'portions'>) } : entry,
-      )
-    }
-    return undefined
-  })
-
-  mockApiClient.del.mockImplementation(async (path: string) => {
-    const id = path.replace('/api/meal-plan/', '')
-    for (const date of Object.keys(entriesByDate)) {
-      entriesByDate[date] = entriesByDate[date].filter((entry) => entry.id !== id)
-    }
-    return undefined
-  })
+  mockApiClient.put.mockResolvedValue(undefined)
+  mockApiClient.del.mockResolvedValue(undefined)
 })
 
 afterEach(() => {
   vi.clearAllMocks()
 })
 
-function renderPage(initialEntry = '/meal-plan') {
+function renderPage(initialEntry = `/meal-plan?view=week&date=${SELECTED}`) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
     <MemoryRouter initialEntries={[initialEntry]}>
@@ -127,248 +185,232 @@ function renderPage(initialEntry = '/meal-plan') {
   )
 }
 
-/** Builds a recipe-source entry; the product variant arrives with the Phase 7 planner rebuild. */
-function entry(overrides: Partial<MealPlanEntry> = {}): MealPlanEntry {
-  return {
-    id: 'e1',
-    date: '2026-06-03',
-    mealType: 'Breakfast',
-    source: 'Recipe',
-    recipeId: 'r1',
-    recipeName: 'Porridge',
-    portions: 1,
-    productId: null,
-    productName: null,
-    category: null,
-    grams: null,
-    ...overrides,
-  }
+function dayPanel() {
+  return screen.getByRole('region', { name: 'Szczegóły wybranego dnia' })
 }
 
-function emptySummary(date: string): DailyMacroSummary {
-  return {
-    date,
-    entries: [],
-    total: { calories: 0, protein: 0, fat: 0, carbohydrates: 0 },
-    goal: null,
-    remaining: null,
-  }
-}
-
-describe('MealPlanPage', () => {
-  it('fetches entries for the selected date', async () => {
-    const user = userEvent.setup()
+describe('MealPlanPage — range + URL state', () => {
+  it('reads view/date from the URL and issues exactly one range request for the week', async () => {
     renderPage()
+    await screen.findByRole('region', { name: 'Przegląd tygodnia' })
 
-    const dateInput = await screen.findByLabelText('Date')
-    await user.clear(dateInput)
-    await user.type(dateInput, '2026-06-02')
-
-    await waitFor(() =>
-      expect(mockApiClient.get).toHaveBeenCalledWith('/api/meal-plan?date=2026-06-02'),
-    )
-    expect(mockApiClient.get).toHaveBeenCalledWith(
-      '/api/meal-plan/summary?date=2026-06-02',
-    )
+    const { from, to } = rangeFor('week', SELECTED)
+    expect(mockApiClient.get).toHaveBeenCalledWith(`/api/meal-plan/range?from=${from}&to=${to}`)
+    // The week (and its selected day) render from one request — no per-day fanout.
+    expect(rangeCalls()).toEqual([`/api/meal-plan/range?from=${from}&to=${to}`])
+    const region = screen.getByRole('region', { name: 'Przegląd tygodnia' })
+    const cards =
+      within(region).getAllByRole('button', { pressed: false }).length +
+      within(region).getAllByRole('button', { pressed: true }).length
+    expect(cards).toBe(7)
   })
 
-  it('adds a meal-plan entry with the selected recipe, meal type, and portions', async () => {
+  it('switches to the month view with a single new range request and 42 cells', async () => {
     const user = userEvent.setup()
     renderPage()
+    await screen.findByRole('region', { name: 'Przegląd tygodnia' })
 
-    await screen.findByRole('form', { name: 'Add meal-plan entry' })
-    await user.selectOptions(screen.getByLabelText('Meal type'), 'Lunch')
-    await user.clear(screen.getByLabelText('Portions'))
-    await user.type(screen.getByLabelText('Portions'), '2')
-    await user.click(screen.getByRole('button', { name: 'Add entry' }))
+    await user.click(screen.getByRole('button', { name: 'Miesiąc' }))
+
+    const monthRange = rangeFor('month', SELECTED)
+    await waitFor(() =>
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        `/api/meal-plan/range?from=${monthRange.from}&to=${monthRange.to}`,
+      ),
+    )
+    const grid = await screen.findByRole('region', { name: 'Kalendarz miesiąca' })
+    const cells =
+      within(grid).getAllByRole('button', { pressed: false }).length +
+      within(grid).getAllByRole('button', { pressed: true }).length
+    expect(cells).toBe(42)
+  })
+
+  it('shows only the day panel in the day view', async () => {
+    renderPage(`/meal-plan?view=day&date=${SELECTED}`)
+
+    await screen.findByRole('region', { name: 'Szczegóły wybranego dnia' })
+    expect(screen.queryByRole('region', { name: 'Przegląd tygodnia' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Kalendarz miesiąca' })).not.toBeInTheDocument()
+  })
+})
+
+describe('MealPlanPage — entry rendering', () => {
+  it('renders an entry with its textual and numeric macro line', async () => {
+    renderPage()
+    expect(await screen.findByRole('link', { name: 'Owsianka' })).toBeInTheDocument()
+    expect(within(dayPanel()).getByText('1 × porcja')).toBeInTheDocument()
+    expect(within(dayPanel()).getAllByText(/10 B/).length).toBeGreaterThan(0)
+  })
+
+  it('renders the balance panel with remaining when a goal is configured', async () => {
+    goal = { calories: 500, protein: 40, fat: 20, carbohydrates: 80 }
+    renderPage()
+
+    await screen.findByRole('link', { name: 'Owsianka' })
+    expect(within(dayPanel()).getByText('Bilans dnia')).toBeInTheDocument()
+    expect(within(dayPanel()).getAllByText(/zostało/).length).toBeGreaterThan(0)
+  })
+
+  it('prompts for a goal when none is configured', async () => {
+    renderPage()
+    await screen.findByRole('link', { name: 'Owsianka' })
+    expect(within(dayPanel()).getByRole('link', { name: 'Ustaw dzienne cele' })).toHaveAttribute(
+      'href',
+      '/goals',
+    )
+  })
+})
+
+describe('MealPlanPage — add entry', () => {
+  it('adds a recipe entry with half-portion steps and refetches the range', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByRole('link', { name: 'Owsianka' })
+    const before = rangeCalls().length
+
+    await user.click(within(dayPanel()).getByRole('button', { name: '+ Dodaj posiłek' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Dodaj posiłek' })
+
+    await user.click(await within(dialog).findByRole('button', { name: /Owsianka/ }))
+    await user.click(within(dialog).getByRole('button', { name: 'Obiad' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Zmniejsz: Liczba porcji' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Dodaj do planu' }))
 
     await waitFor(() =>
       expect(mockApiClient.post).toHaveBeenCalledWith(
         '/api/meal-plan',
-        expect.objectContaining({
-          recipeId: 'r1',
-          mealType: 'Lunch',
-          portions: 2,
-        }),
+        { date: SELECTED, mealType: 'Lunch', recipeId: 'r1', portions: 0.5 },
       ),
     )
-    expect(await screen.findByRole('heading', { name: 'Porridge' })).toBeInTheDocument()
-    expect(await screen.findByText(/200 kcal, 10 g protein/i)).toBeInTheDocument()
+    // The mutation invalidates the meal-plan prefix, so the range is read again.
+    await waitFor(() => expect(rangeCalls().length).toBeGreaterThan(before))
   })
 
-  it('renders totals and remaining for a day with a configured goal', async () => {
-    entriesByDate['2026-06-05'] = [entry({ date: '2026-06-05' })]
-    summariesByDate['2026-06-05'] = {
-      date: '2026-06-05',
-      entries: [
-        {
-          entryId: 'e1',
-          macros: { calories: 250.25, protein: 12.34, fat: 8.44, carbohydrates: 30.15 },
-        },
-      ],
-      total: { calories: 250.25, protein: 12.34, fat: 8.44, carbohydrates: 30.15 },
-      goal: { calories: 500, protein: 40, fat: 20, carbohydrates: 80 },
-      remaining: { calories: 249.75, protein: 27.66, fat: 11.56, carbohydrates: 49.85 },
-    }
+  it('adds a single product entry measured in grams', async () => {
     const user = userEvent.setup()
     renderPage()
+    await screen.findByRole('link', { name: 'Owsianka' })
 
-    const dateInput = await screen.findByLabelText('Date')
-    await user.clear(dateInput)
-    await user.type(dateInput, '2026-06-05')
+    await user.click(within(dayPanel()).getByRole('button', { name: '+ Dodaj posiłek' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Dodaj posiłek' })
 
-    await screen.findByText('249.8 remaining')
-    const summary = screen.getByRole('region', { name: 'Daily macro summary' })
-    expect(within(summary).getByText('250.3')).toBeInTheDocument()
-    expect(within(summary).getByText('249.8 remaining')).toBeInTheDocument()
-    expect(await screen.findByText(/250.3 kcal, 12.3 g protein/i)).toBeInTheDocument()
-  })
-
-  it('uses over-goal styling for negative remaining values', async () => {
-    summariesByDate['2026-06-06'] = {
-      date: '2026-06-06',
-      entries: [],
-      total: { calories: 120, protein: 60, fat: 10, carbohydrates: 20 },
-      goal: { calories: 100, protein: 50, fat: 20, carbohydrates: 30 },
-      remaining: { calories: -20, protein: -10, fat: 10, carbohydrates: 10 },
-    }
-    const user = userEvent.setup()
-    renderPage()
-
-    const dateInput = await screen.findByLabelText('Date')
-    await user.clear(dateInput)
-    await user.type(dateInput, '2026-06-06')
-
-    expect(await screen.findByText('-20 remaining')).toHaveClass('text-red-600')
-    expect(screen.getByText('-10 g remaining')).toHaveClass('text-red-600')
-  })
-
-  it('hides remaining and prompts for a goal when no goal is configured', async () => {
-    summariesByDate['2026-06-07'] = {
-      ...emptySummary('2026-06-07'),
-      total: { calories: 300, protein: 20, fat: 9, carbohydrates: 42 },
-    }
-    const user = userEvent.setup()
-    renderPage()
-
-    const dateInput = await screen.findByLabelText('Date')
-    await user.clear(dateInput)
-    await user.type(dateInput, '2026-06-07')
-
-    await screen.findByText('300')
-    const summary = screen.getByRole('region', { name: 'Daily macro summary' })
-    expect(within(summary).getByText('300')).toBeInTheDocument()
-    expect(within(summary).queryByText(/remaining$/i)).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Set a goal' })).toHaveAttribute('href', '/goals')
-  })
-
-  it('renders duplicate entries for the same recipe and meal type', async () => {
-    entriesByDate['2026-06-04'] = [
-      entry({ id: 'e1', date: '2026-06-04' }),
-      entry({ id: 'e2', date: '2026-06-04' }),
-    ]
-    const user = userEvent.setup()
-    renderPage()
-
-    const dateInput = await screen.findByLabelText('Date')
-    await user.clear(dateInput)
-    await user.type(dateInput, '2026-06-04')
-
-    expect(await screen.findAllByRole('heading', { name: 'Porridge' })).toHaveLength(2)
-  })
-
-  it('edits only meal type and portions', async () => {
-    const today = new Date().toISOString().slice(0, 10)
-    entriesByDate[today] = [entry({ date: today })]
-    const user = userEvent.setup()
-    renderPage()
-
-    await screen.findByRole('heading', { name: 'Porridge' })
-    await user.click(screen.getByRole('button', { name: 'Edit' }))
-
-    const form = screen.getByRole('form', { name: 'Edit meal-plan entry' })
-    await user.selectOptions(within(form).getByLabelText('Meal type'), 'Dinner')
-    await user.clear(within(form).getByLabelText('Portions'))
-    await user.type(within(form).getByLabelText('Portions'), '3')
-    await user.click(within(form).getByRole('button', { name: 'Save entry' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Produkt' }))
+    await user.click(await within(dialog).findByRole('button', { name: /Jogurt naturalny/ }))
+    await user.click(within(dialog).getByRole('button', { name: 'Dodaj do planu' }))
 
     await waitFor(() =>
-      expect(mockApiClient.put).toHaveBeenCalledWith('/api/meal-plan/e1', {
+      expect(mockApiClient.post).toHaveBeenCalledWith(
+        '/api/meal-plan',
+        { date: SELECTED, mealType: 'Breakfast', productId: 'p1', grams: 100 },
+      ),
+    )
+  })
+})
+
+describe('MealPlanPage — operations', () => {
+  it('moves an entry to a new meal type', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByRole('link', { name: 'Owsianka' })
+
+    await user.click(within(dayPanel()).getByRole('button', { name: 'Przenieś' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Przenieś posiłek' })
+    await user.click(within(dialog).getByRole('button', { name: 'Kolacja' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Przenieś posiłek' }))
+
+    await waitFor(() =>
+      expect(mockApiClient.post).toHaveBeenCalledWith('/api/meal-plan/e1/move', {
+        date: SELECTED,
         mealType: 'Dinner',
-        portions: 3,
       }),
     )
   })
 
-  it('deletes only the chosen entry', async () => {
-    const today = new Date().toISOString().slice(0, 10)
-    entriesByDate[today] = [
-      entry({ id: 'e1', recipeName: 'Porridge', date: today }),
-      entry({ id: 'e2', recipeName: 'Soup', mealType: 'Lunch', date: today }),
-    ]
+  it('copies an entry to selected target days', async () => {
     const user = userEvent.setup()
     renderPage()
+    await screen.findByRole('link', { name: 'Owsianka' })
 
-    await screen.findByRole('heading', { name: 'Porridge' })
-    const soupCard = screen.getByRole('heading', { name: 'Soup' }).closest('li')
-    expect(soupCard).not.toBeNull()
-    await user.click(within(soupCard!).getByRole('button', { name: 'Delete' }))
+    await user.click(within(dayPanel()).getByRole('button', { name: 'Kopiuj do innych dni' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Kopiuj do innych dni' })
+    const targets = within(dialog).getByRole('group', { name: 'Dni docelowe' })
+    const firstOther = within(targets)
+      .getAllByRole('button')
+      .find((button) => button.textContent !== null && !button.textContent.includes('3 czerwca'))!
+    await user.click(firstOther)
+    await user.click(within(dialog).getByRole('button', { name: /Kopiuj do 1/ }))
 
-    await waitFor(() => expect(mockApiClient.del).toHaveBeenCalledWith('/api/meal-plan/e2'))
-  })
-
-  it('directs the user to create a recipe when none exist', async () => {
-    recipes = []
-    renderPage()
-
-    expect(await screen.findByText(/no recipes are available/i)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Create a recipe' })).toHaveAttribute('href', '/recipes')
-  })
-
-  it('refreshes the summary after adding an entry', async () => {
-    const user = userEvent.setup()
-    renderPage()
-
-    await screen.findByRole('form', { name: 'Add meal-plan entry' })
-    await user.click(screen.getByRole('button', { name: 'Add entry' }))
-
-    expect(await screen.findByText(/200 kcal, 10 g protein/i)).toBeInTheDocument()
-    expect(mockApiClient.get).toHaveBeenCalledWith(
-      expect.stringMatching(/^\/api\/meal-plan\/summary\?date=/),
+    await waitFor(() =>
+      expect(mockApiClient.post).toHaveBeenCalledWith(
+        '/api/meal-plan/e1/copies',
+        expect.objectContaining({ targetDates: expect.arrayContaining([expect.any(String)]) }),
+      ),
     )
   })
 
-  it('preselects the handed-off recipe and offers the return link', async () => {
-    recipes = [recipe, soup]
-    renderPage('/meal-plan?addRecipe=r2&date=2026-06-09&returnTo=%2Frecipes%2Fr2')
+  it('copies a whole day in Add mode', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByRole('link', { name: 'Owsianka' })
 
-    await screen.findByRole('form', { name: 'Add meal-plan entry' })
+    await user.click(within(dayPanel()).getByRole('button', { name: 'Kopiuj dzień' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Kopiuj dzień' })
+    const targets = within(dialog).getByRole('group', { name: 'Dni docelowe' })
+    await user.click(within(targets).getAllByRole('button')[0])
+    await user.click(within(dialog).getByRole('button', { name: /Kopiuj do 1/ }))
 
-    expect(await screen.findByLabelText('Date')).toHaveValue('2026-06-09')
-    expect(screen.getByLabelText('Recipe')).toHaveValue('r2')
-    expect(screen.getByRole('link', { name: 'Wróć do przepisu' })).toHaveAttribute(
-      'href',
-      '/recipes/r2',
+    await waitFor(() =>
+      expect(mockApiClient.post).toHaveBeenCalledWith(
+        `/api/meal-plan/days/${SELECTED}/copies`,
+        expect.objectContaining({ mode: 'Add' }),
+      ),
     )
   })
 
-  it('ignores a handed-off recipe id that is not one of the user’s recipes', async () => {
-    recipes = [recipe]
-    renderPage('/meal-plan?addRecipe=not-mine&returnTo=%2Frecipes%2Fnot-mine')
+  it('requires an acknowledgement before a Replace copy-day', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await screen.findByRole('link', { name: 'Owsianka' })
 
-    await screen.findByRole('form', { name: 'Add meal-plan entry' })
+    await user.click(within(dayPanel()).getByRole('button', { name: 'Kopiuj dzień' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Kopiuj dzień' })
+    await user.click(within(within(dialog).getByRole('group', { name: 'Dni docelowe' })).getAllByRole('button')[0])
+    await user.click(within(dialog).getByRole('radio', { name: /Zastąp posiłki/ }))
 
-    // Falls back to the first own recipe; no handoff banner is shown.
-    expect(screen.getByLabelText('Recipe')).toHaveValue('r1')
-    expect(screen.queryByRole('link', { name: 'Wróć do przepisu' })).not.toBeInTheDocument()
+    const confirm = within(dialog).getByRole('button', { name: /Kopiuj do 1/ })
+    expect(confirm).toBeDisabled()
+
+    await user.click(within(dialog).getByRole('checkbox'))
+    expect(confirm).toBeEnabled()
   })
 
-  it('does not show goal delta or shopping-list output', async () => {
+  it('deletes an entry and offers undo that re-creates it', async () => {
+    const user = userEvent.setup()
     renderPage()
+    await screen.findByRole('link', { name: 'Owsianka' })
 
-    await screen.findByRole('form', { name: 'Add meal-plan entry' })
+    await user.click(within(dayPanel()).getByRole('button', { name: 'Usuń posiłek' }))
+    await waitFor(() => expect(mockApiClient.del).toHaveBeenCalledWith('/api/meal-plan/e1'))
 
-    expect(screen.queryByText(/goal delta/i)).not.toBeInTheDocument()
-    expect(screen.queryByText(/shopping list/i)).not.toBeInTheDocument()
+    const status = await screen.findByRole('status')
+    await user.click(within(status).getByRole('button', { name: 'Cofnij' }))
+
+    await waitFor(() =>
+      expect(mockApiClient.post).toHaveBeenCalledWith(
+        '/api/meal-plan',
+        { date: SELECTED, mealType: 'Breakfast', recipeId: 'r1', portions: 1 },
+      ),
+    )
+  })
+})
+
+describe('MealPlanPage — handoff', () => {
+  it('opens the add dialog with the handed-off recipe pre-selected on the target day', async () => {
+    renderPage('/meal-plan?addRecipe=r1&date=2026-06-05&returnTo=%2Frecipes%2Fr1')
+
+    const dialog = await screen.findByRole('dialog', { name: 'Dodaj posiłek' })
+    expect(within(dialog).getByLabelText('Dzień docelowy')).toHaveValue('2026-06-05')
+    // Pre-selected source enables the confirm button.
+    expect(within(dialog).getByRole('button', { name: 'Dodaj do planu' })).toBeEnabled()
   })
 })

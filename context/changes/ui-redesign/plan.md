@@ -690,14 +690,14 @@ Migrujemy shopping UI na trwałe kontrakty, budujemy dashboard na współdzielon
 
 #### Automated
 
-- [ ] 7.1 Frontendowe testy planera przechodzą
-- [ ] 7.2 URL state, one-range-request, operacje i cache są pokryte
-- [ ] 7.3 Frontend lint i build przechodzą
+- [x] 7.1 Frontendowe testy planera przechodzą — c3dfd20
+- [x] 7.2 URL state, one-range-request, operacje i cache są pokryte — c3dfd20
+- [x] 7.3 Frontend lint i build przechodzą — c3dfd20
 
 #### Manual
 
-- [ ] 7.4 Day/week/month odpowiadają mockupowi na trzech szerokościach
-- [ ] 7.5 Pełny recipe/product/move/copy/undo flow działa dostępnie
+- [x] 7.4 Day/week/month odpowiadają mockupowi na trzech szerokościach — c3dfd20
+- [x] 7.5 Pełny recipe/product/move/copy/undo flow działa dostępnie — c3dfd20
 
 ### Phase 8: Trwałe listy zakupów
 
