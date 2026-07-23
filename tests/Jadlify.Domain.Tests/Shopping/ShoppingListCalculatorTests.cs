@@ -12,7 +12,7 @@ public class ShoppingListCalculatorTests
     [Fact]
     public void ForMealEntries_ReturnsEmptyList_ForEmptyInput()
     {
-        IReadOnlyList<ShoppingListItem> result = ShoppingListCalculator.ForMealEntries([]);
+        IReadOnlyList<ShoppingProjectionItem> result = ShoppingListCalculator.ForMealEntries([]);
 
         Assert.Empty(result);
     }
@@ -27,7 +27,7 @@ public class ShoppingListCalculatorTests
             Ingredient(productId, "Oats", 400m));
         var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 2);
 
-        ShoppingListItem item = Assert.Single(ShoppingListCalculator.ForMealEntries([(entry, recipe)]));
+        ShoppingProjectionItem item = Assert.Single(ShoppingListCalculator.ForMealEntries([(entry, recipe)]));
 
         Assert.Equal(productId, item.ProductId);
         Assert.Equal("Oats", item.ProductName);
@@ -51,10 +51,10 @@ public class ShoppingListCalculatorTests
         var snack = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, overnightOats.Id, MealType.Snack, portions: 1);
         var secondBreakfast = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, porridge.Id, MealType.Lunch, portions: 1);
 
-        IReadOnlyList<ShoppingListItem> result = ShoppingListCalculator.ForMealEntries(
+        IReadOnlyList<ShoppingProjectionItem> result = ShoppingListCalculator.ForMealEntries(
             [(breakfast, porridge), (snack, overnightOats), (secondBreakfast, porridge)]);
 
-        ShoppingListItem oats = Assert.Single(result, item => item.ProductId == sharedProductId);
+        ShoppingProjectionItem oats = Assert.Single(result, item => item.ProductId == sharedProductId);
         Assert.Equal(350m, oats.Grams);
     }
 
@@ -69,7 +69,7 @@ public class ShoppingListCalculatorTests
             Ingredient(productId, "Oats", 400m));
         var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, recipe.Id, MealType.Snack, portions: 0.5m);
 
-        ShoppingListItem item = Assert.Single(ShoppingListCalculator.ForMealEntries([(entry, recipe)]));
+        ShoppingProjectionItem item = Assert.Single(ShoppingListCalculator.ForMealEntries([(entry, recipe)]));
 
         Assert.Equal(50m, item.Grams);
     }
@@ -85,7 +85,7 @@ public class ShoppingListCalculatorTests
             MealType.Snack,
             grams: 45m);
 
-        ShoppingListItem item = Assert.Single(ShoppingListCalculator.ForMealEntries([(entry, null)]));
+        ShoppingProjectionItem item = Assert.Single(ShoppingListCalculator.ForMealEntries([(entry, null)]));
 
         Assert.Equal(productId, item.ProductId);
         Assert.Equal("Oats", item.ProductName);
@@ -109,11 +109,11 @@ public class ShoppingListCalculatorTests
             MealType.Snack,
             grams: 45m);
 
-        IReadOnlyList<ShoppingListItem> result =
+        IReadOnlyList<ShoppingProjectionItem> result =
             ShoppingListCalculator.ForMealEntries([(fromRecipe, porridge), (direct, null)]);
 
         // Oracle: 400 g * (2/4) = 200 g from the recipe, plus 45 g planned directly.
-        ShoppingListItem oats = Assert.Single(result);
+        ShoppingProjectionItem oats = Assert.Single(result);
         Assert.Equal(sharedProductId, oats.ProductId);
         Assert.Equal(245m, oats.Grams);
     }
@@ -127,7 +127,7 @@ public class ShoppingListCalculatorTests
             Ingredient(Guid.NewGuid(), "Lentils", 100m));
         var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, recipe.Id, MealType.Dinner, portions: 2);
 
-        ShoppingListItem item = Assert.Single(ShoppingListCalculator.ForMealEntries([(entry, recipe)]));
+        ShoppingProjectionItem item = Assert.Single(ShoppingListCalculator.ForMealEntries([(entry, recipe)]));
 
         Assert.Equal(66.666666666666666666666666670m, item.Grams);
     }
@@ -145,7 +145,7 @@ public class ShoppingListCalculatorTests
             Ingredient(earlyAppleId, "apple", 10m));
         var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 1);
 
-        IReadOnlyList<ShoppingListItem> result = ShoppingListCalculator.ForMealEntries([(entry, recipe)]);
+        IReadOnlyList<ShoppingProjectionItem> result = ShoppingListCalculator.ForMealEntries([(entry, recipe)]);
 
         Assert.Collection(
             result,
@@ -163,7 +163,7 @@ public class ShoppingListCalculatorTests
             Ingredient(Guid.NewGuid(), "Original oats", 100m));
         var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 1);
 
-        ShoppingListItem item = Assert.Single(ShoppingListCalculator.ForMealEntries([(entry, recipe)]));
+        ShoppingProjectionItem item = Assert.Single(ShoppingListCalculator.ForMealEntries([(entry, recipe)]));
 
         Assert.Equal("Original oats", item.ProductName);
     }
@@ -182,11 +182,11 @@ public class ShoppingListCalculatorTests
             Ingredient(secondOatsId, "Oats", 50m));
         var entry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, recipe.Id, MealType.Breakfast, portions: 1);
 
-        IReadOnlyList<ShoppingListItem> result = ShoppingListCalculator.ForMealEntries([(entry, recipe)]);
+        IReadOnlyList<ShoppingProjectionItem> result = ShoppingListCalculator.ForMealEntries([(entry, recipe)]);
 
         Assert.Equal(2, result.Count);
-        ShoppingListItem first = Assert.Single(result, item => item.ProductId == firstOatsId);
-        ShoppingListItem second = Assert.Single(result, item => item.ProductId == secondOatsId);
+        ShoppingProjectionItem first = Assert.Single(result, item => item.ProductId == firstOatsId);
+        ShoppingProjectionItem second = Assert.Single(result, item => item.ProductId == secondOatsId);
         // Oracle: factor = 1/1 = 1, so grams pass through unchanged per ingredient.
         Assert.Equal(100m, first.Grams);
         Assert.Equal(50m, second.Grams);
@@ -207,7 +207,7 @@ public class ShoppingListCalculatorTests
         var firstEntry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, firstRecipe.Id, MealType.Breakfast, portions: 1);
         var secondEntry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, secondRecipe.Id, MealType.Lunch, portions: 1);
 
-        ShoppingListItem item = Assert.Single(ShoppingListCalculator.ForMealEntries(
+        ShoppingProjectionItem item = Assert.Single(ShoppingListCalculator.ForMealEntries(
             [(firstEntry, firstRecipe), (secondEntry, secondRecipe)]));
 
         Assert.Equal(sharedProductId, item.ProductId);
@@ -236,7 +236,7 @@ public class ShoppingListCalculatorTests
         var pastaEntry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, pastaDish.Id, MealType.Dinner, portions: 2);
         var saladEntry = MealPlanEntry.ForRecipe(Guid.NewGuid(), Day, salad.Id, MealType.Lunch, portions: 3);
 
-        IReadOnlyList<ShoppingListItem> result = ShoppingListCalculator.ForMealEntries(
+        IReadOnlyList<ShoppingProjectionItem> result = ShoppingListCalculator.ForMealEntries(
             [(pastaEntry, pastaDish), (saladEntry, salad)]);
 
         // Oracle: scaled_grams = wholeRecipeAmount × (entryPortions / recipePortions),
@@ -244,9 +244,9 @@ public class ShoppingListCalculatorTests
         // Pasta:  500 × (2/4) = 250
         // Tomato: 300 × (2/4) + 150 × (3/2) = 150 + 225 = 375
         // Oil:     50 × (3/2) = 75
-        ShoppingListItem pasta = Assert.Single(result, item => item.ProductId == pastaId);
-        ShoppingListItem tomato = Assert.Single(result, item => item.ProductId == tomatoId);
-        ShoppingListItem oil = Assert.Single(result, item => item.ProductId == oilId);
+        ShoppingProjectionItem pasta = Assert.Single(result, item => item.ProductId == pastaId);
+        ShoppingProjectionItem tomato = Assert.Single(result, item => item.ProductId == tomatoId);
+        ShoppingProjectionItem oil = Assert.Single(result, item => item.ProductId == oilId);
         Assert.Equal(250m, pasta.Grams);
         Assert.Equal(375m, tomato.Grams);
         Assert.Equal(75m, oil.Grams);

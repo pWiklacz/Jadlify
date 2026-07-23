@@ -703,14 +703,14 @@ Migrujemy shopping UI na trwałe kontrakty, budujemy dashboard na współdzielon
 
 #### Automated
 
-- [ ] 8.1 Domain aggregation, diff i bought rules testy przechodzą
-- [ ] 8.2 Persistence/API concurrency, ownership i rollback testy przechodzą
-- [ ] 8.3 Build rozwiązania przechodzi
+- [x] 8.1 Domain aggregation, diff i bought rules testy przechodzą
+- [x] 8.2 Persistence/API concurrency, ownership i rollback testy przechodzą
+- [x] 8.3 Build rozwiązania przechodzi
 
 #### Manual
 
-- [ ] 8.4 Active/history/toggle/complete przeżywają reload
-- [ ] 8.5 Diff preview, refresh i stale conflict zachowują postęp poprawnie
+- [x] 8.4 Active/history/toggle/complete przeżywają reload
+- [x] 8.5 Diff preview, refresh i stale conflict zachowują postęp poprawnie
 
 ### Phase 9: Lista UI, dashboard i integracja końcowa
 

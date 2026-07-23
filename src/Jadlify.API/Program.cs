@@ -22,6 +22,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
+// Injectable clock for handlers that stamp times (shopping-list created/completed). The system
+// provider in production; tests substitute a controllable one.
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.Configure<SupabaseJwtOptions>(
     builder.Configuration.GetSection(SupabaseJwtOptions.SectionName));
 builder.Services.AddScoped<ICurrentUser, HttpContextCurrentUser>();
@@ -129,6 +132,10 @@ app.MapMealPlanEndpoints();
 // Shopping list (S-06): read-only projection from the selected day's meal plan and
 // recipe ingredient snapshots. Inherits the global authenticated fallback policy.
 app.MapShoppingListEndpoints();
+
+// Persistent shopping lists: create from arbitrary days, tick items, preview/apply a plan-diff,
+// complete into history. Owner-scoped and authenticated like every other /api surface.
+app.MapShoppingListsEndpoints();
 
 // Client-side routing: serve index.html for non-API deep links. Must be
 // AllowAnonymous, otherwise the global fallback policy 401s the SPA entrypoint
