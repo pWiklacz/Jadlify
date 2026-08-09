@@ -44,6 +44,15 @@ jobs:
           cache: npm
           cache-dependency-path: ${{ env.REVIEWER_DIR }}/package-lock.json
 
+      # Node 22 ships npm 10, but package-lock.json is written by npm 11. The two
+      # disagree about optional peer dependencies: npm 11 omits the entry for
+      # mongodb's optional peer gcp-metadata@^7.0.1 (mongodb arrives through
+      # promptfoo), npm 10 insists the lockfile contain it and aborts `npm ci`
+      # with "Missing: gcp-metadata@7.0.1 from lock file". The lockfile is not
+      # broken — it is simply not portable across npm majors, so pin the major.
+      - name: Pin npm to the major that generated the lockfile
+        run: npm i -g npm@11
+
       - name: Install reviewer
         working-directory: ${{ env.REVIEWER_DIR }}
         run: npm ci
@@ -84,7 +93,16 @@ jobs:
         if: always() && github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr comment "${{ github.event.pull_request.number }}" --body-file review-comment.md
+        run: |
+          # always() means this step also runs when the job failed upstream of
+          # the review — in that case there is no comment to post, and treating
+          # the missing file as an error just adds a second red step that says
+          # nothing about the real failure.
+          if [ ! -f review-comment.md ]; then
+            echo "No review was produced — nothing to comment."
+            exit 0
+          fi
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file review-comment.md
 
       - name: Upload review artifact
         if: always()

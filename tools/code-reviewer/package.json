@@ -5,7 +5,8 @@
   "type": "module",
   "description": "AI code review agent for Jadlify pull requests (Vercel AI SDK + OpenRouter)",
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=20.19.0",
+    "npm": ">=11"
   },
   "scripts": {
     "review": "tsx src/review.ts",

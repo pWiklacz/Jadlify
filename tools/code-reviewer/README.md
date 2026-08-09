@@ -21,6 +21,12 @@ Needs one secret, `OPENROUTER_API_KEY`, in both places:
 cd tools/code-reviewer && npm ci
 ```
 
+**Use npm 11.** `package-lock.json` is written by npm 11, and npm 10 refuses it:
+the two disagree about optional peer dependencies, so npm 10 aborts with
+`Missing: gcp-metadata@7.0.1 from lock file` on a lockfile that is otherwise
+fine. Node 22 ships npm 10, which is why the workflow pins the major before
+installing. If you regenerate the lockfile, do it with npm 11 as well.
+
 ## Running it
 
 ```bash
