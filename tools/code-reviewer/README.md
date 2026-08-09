@@ -85,8 +85,10 @@ Three fixtures, deliberately one of each kind:
 - `evals/fixtures/user-scoping-leak.diff` — a shared-list endpoint that reads by
   id without scoping to the authenticated user. Must be caught and must fail.
 - `evals/fixtures/clean-change.diff` — a small, correctly layered, tested change.
-  Must pass. This one is the guard against a reviewer that just says "fail" to
-  everything.
+  Must pass: the guard against a reviewer that just says "fail" to everything.
+  It is not spotless, though — its XML doc claims the constant is shared with the
+  update validator, which the diff never touches — and the review must catch
+  that. See the note on flatness below for why that assertion exists.
 - `evals/fixtures/untested-new-logic.diff` — a non-trivial pure helper added with
   no test. `testCoverage` must drop below 5; the verdict is deliberately not
   asserted, because missing tests on a helper is a gap worth scoring, not a
@@ -110,6 +112,18 @@ Notes for whoever touches this next:
   had no anchor and defaulted to full marks, and nothing in the prompt said that
   an unevidenced criterion is not a 10. The prompt fix went in with the model
   change, and `untested-new-logic.diff` is the regression test for it.
+- **A threshold-only eval hides the failure it was built to catch.** The first
+  run of the four-model matrix was 100% green everywhere, which read as "no
+  difference between models" — but the assertions only checked floors (`verdict`,
+  `security <= 3`, `testCoverage >= 7`). Underneath, Haiku and DeepSeek were
+  returning straight 10/10 with an empty findings array on `clean-change.diff`,
+  while Opus and Sonnet found its real doc inconsistency. That flatness is
+  exactly what made Haiku useless on PR #19. If you add a case here, ask what its
+  assertion would let through, not just what it rejects.
+- **The fixtures are small; the failure that motivated Sonnet was not.** Haiku
+  passes every case in this set, because the fixtures are 1–1.3k tokens. It fell
+  apart on a real 46k-character branch diff. Nothing here reproduces that yet, so
+  do not read a green Haiku column as "Haiku is fine for CI".
 - **Scores vary between runs.** The same model on the same diff has produced
   `security` scores on both sides of the `<= 3` assertion. Before you change the
   default model on the strength of this matrix, run it a few times — a single

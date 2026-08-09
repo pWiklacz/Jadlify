@@ -72,7 +72,16 @@ tests:
           this as a data-isolation defect. Mentioning the missing RequireAuthorization or the
           absent tests is a bonus, not a requirement.
 
-  - description: A small, correctly layered, tested change must pass
+  # Not a spotless diff, on purpose. It is correct, layered and tested — so it
+  # must pass — but its XML doc claims the constant is "shared by the create and
+  # update validators" while the diff only touches the create validator. That
+  # one verifiable inconsistency is what separates a model that reads the diff
+  # from one that pattern-matches "small change with tests" and awards 10/10.
+  # The first run of this matrix had every model at 100%: the pass/fail column
+  # said nothing, while Haiku and DeepSeek were quietly returning straight tens
+  # with an empty findings array — the same flatness that produced a worthless
+  # review on PR #19. Requiring the finding is what turns this row into a signal.
+  - description: A correct, tested change must pass — and its doc/scope mismatch must still be caught
     vars:
       diff: file://evals/fixtures/clean-change.diff
     assert:
@@ -81,11 +90,21 @@ tests:
           const r = JSON.parse(output);
           if (r.verdict !== 'pass') throw new Error(`expected verdict=pass, got ${r.verdict}`);
           if (r.testCoverage < 7) throw new Error(`expected testCoverage>=7, got ${r.testCoverage}`);
+          if (!Array.isArray(r.findings) || r.findings.length < 1) {
+            throw new Error('expected at least one finding: the XML doc claims the constant is shared with the update validator, which this diff does not touch');
+          }
+          // A blocker here would contradict verdict=pass and means the model
+          // invented severity to look thorough.
+          const blockers = r.findings.filter((f) => f.severity === 'blocker');
+          if (blockers.length > 0) throw new Error(`expected no blockers on a passing change, got ${blockers.length}`);
           return true;
       - type: llm-rubric
         value: >
-          The review does not invent blocking defects. It recognises that the validator change
-          is covered by the two added xUnit tests and sits in the correct project.
+          The review recognises that the validator change is covered by the two added xUnit
+          tests and sits in the correct project, and does not invent blocking defects. It also
+          notes the documentation inconsistency on ProductNameBounds: the XML summary says the
+          constant is shared by the create and update validators, but only the create validator
+          is wired up in this diff.
 
   # Regression case for a real miss: on PR #19 the reviewer scored 10/10 across
   # every criterion, with no findings, on a diff that added ~1400 lines of
