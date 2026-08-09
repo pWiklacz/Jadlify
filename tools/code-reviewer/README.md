@@ -45,7 +45,7 @@ git diff main...HEAD | npm run --silent review > review.json
 | Environment variable | Effect |
 | --- | --- |
 | `OPENROUTER_API_KEY` | Required. |
-| `REVIEW_MODEL` | OpenRouter model id. Default: `anthropic/claude-haiku-4.5`. |
+| `REVIEW_MODEL` | OpenRouter model id. Default: `anthropic/claude-sonnet-5`. |
 | `REVIEW_MAX_DIFF_CHARS` | Size cap for the diff sent to the model. Default 100 000. |
 | `REVIEW_COMMENT_PATH` | Also write the rendered Markdown comment to this path. |
 | `REVIEW_FAIL_ON_VERDICT` | `true` makes a `fail` verdict exit 1. Off by default locally; the workflow sets it so a `fail` shows up as a red job. Red is a signal, not a lock — blocking the merge additionally requires a branch protection rule that marks this check required. |
@@ -80,13 +80,17 @@ npm run eval        # run the matrix
 npm run eval:view   # browse the results
 ```
 
-Two fixtures, deliberately one of each kind:
+Three fixtures, deliberately one of each kind:
 
 - `evals/fixtures/user-scoping-leak.diff` — a shared-list endpoint that reads by
   id without scoping to the authenticated user. Must be caught and must fail.
 - `evals/fixtures/clean-change.diff` — a small, correctly layered, tested change.
   Must pass. This one is the guard against a reviewer that just says "fail" to
   everything.
+- `evals/fixtures/untested-new-logic.diff` — a non-trivial pure helper added with
+  no test. `testCoverage` must drop below 5; the verdict is deliberately not
+  asserted, because missing tests on a helper is a gap worth scoring, not a
+  merge blocker. This one exists because of a real miss — see below.
 
 Notes for whoever touches this next:
 
@@ -99,6 +103,13 @@ Notes for whoever touches this next:
   >= 22.22.0. Raise the pin once the toolchain moves.
 - The `.ts` provider needs a TypeScript loader, which is why the npm script sets
   `NODE_OPTIONS="--import tsx"`.
+- **Why the default is Sonnet 5 and not Haiku 4.5.** On PR #19 Haiku returned
+  10/10 on every criterion with no findings, on a diff adding ~1400 lines of
+  logic with no tests for any of it. Two causes, both now addressed: the
+  `testCoverage` description enumerated product paths, so anything outside them
+  had no anchor and defaulted to full marks, and nothing in the prompt said that
+  an unevidenced criterion is not a 10. The prompt fix went in with the model
+  change, and `untested-new-logic.diff` is the regression test for it.
 - **Scores vary between runs.** The same model on the same diff has produced
   `security` scores on both sides of the `<= 3` assertion. Before you change the
   default model on the strength of this matrix, run it a few times — a single

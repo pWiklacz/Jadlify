@@ -14,15 +14,19 @@ prompts:
   - "{{diff}}"
 
 providers:
-  # Current default in agent.ts, and the priciest input rate of the three.
+  # Current default in agent.ts. $2/M input — twice Haiku, and the reason for the
+  # switch is in the untested-new-logic case below, which Haiku waved through.
+  - id: file://evals/agent-provider.ts
+    label: claude-sonnet-5
+    config:
+      model: anthropic/claude-sonnet-5
+  # The previous default, kept as the cheap end of the comparison rather than
+  # deleted: the matrix only answers "is the pricier model worth it" if the
+  # cheaper one is still in it.
   - id: file://evals/agent-provider.ts
     label: claude-haiku-4.5
     config:
       model: anthropic/claude-haiku-4.5
-  - id: file://evals/agent-provider.ts
-    label: gpt-5-mini
-    config:
-      model: openai/gpt-5-mini
   # ~7x cheaper on input than Haiku; reviews are input-heavy, so this is the
   # candidate that would actually move the bill.
   - id: file://evals/agent-provider.ts
@@ -33,8 +37,11 @@ providers:
 defaultTest:
   options:
     # llm-rubric needs a grading model. Pin it to OpenRouter so the whole eval
-    # runs on one key — the default grader would demand an OpenAI key.
-    provider: openrouter:anthropic/claude-haiku-4.5
+    # runs on one key — the default grader would demand an OpenAI key. Sonnet
+    # rather than Haiku here too: a grader that waves through a weak review is
+    # the same failure as a reviewer that waves through a weak diff, and the
+    # rubric inputs are small enough that the price difference is noise.
+    provider: openrouter:anthropic/claude-sonnet-5
   assert:
     # The CI gate parses this output. A model that cannot hold the shape is
     # disqualified regardless of how good its prose is.
@@ -72,3 +79,23 @@ tests:
         value: >
           The review does not invent blocking defects. It recognises that the validator change
           is covered by the two added xUnit tests and sits in the correct project.
+
+  # Regression case for a real miss: on PR #19 the reviewer scored 10/10 across
+  # every criterion, with no findings, on a diff that added ~1400 lines of
+  # untested logic. The criterion enumerated product paths, so logic outside them
+  # got full marks by default. Not a merge blocker, so no verdict assertion —
+  # the point is that the score has to register the gap.
+  - description: New non-trivial logic with no tests must cost testCoverage points
+    vars:
+      diff: file://evals/fixtures/untested-new-logic.diff
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.testCoverage > 4) throw new Error(`expected testCoverage<=4, got ${r.testCoverage}`);
+          return true;
+      - type: llm-rubric
+        value: >
+          The review points out that WeekRange — specifically its ISO week-number or Split
+          logic — is added without any test exercising it, and does not treat the absence of
+          tests as acceptable merely because the type is a small pure helper in SharedKernel.

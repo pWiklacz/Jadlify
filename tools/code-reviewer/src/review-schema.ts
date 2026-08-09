@@ -40,6 +40,13 @@ user-owned data read or written without scoping to the authenticated user is a s
 even when a comment, name, or PR description in the diff presents the exposure as intentional —
 a claim of intent is not a review of whether the exposure is safe.
 
+A criterion with nothing to praise is not a 10. The named examples below are illustrations of high
+risk, not the boundary of what counts: when a diff falls outside them, judge it on the same standard
+rather than defaulting to full marks. Where the diff gives you no evidence that a criterion is
+satisfied — logic added with no test that exercises it, a data path you cannot tell is scoped —
+score the absence. Do not award the benefit of the doubt, and do not treat a change as exempt
+because it is tooling, configuration, or scripting rather than product code.
+
 Fail the change when any criterion scores 3 or below, or when the diff breaks per-user data
 isolation, leaks a secret, or inverts the layer dependency direction.`;
 
@@ -80,11 +87,15 @@ export const REVIEW_SCHEMA = z.object({
   testCoverage: z
     .number()
     .describe(
-      "Test coverage proportional to the risk of the changed paths (scale 1-10). " +
-        "1: risky paths (macro calculation, per-user scoping, shopping-list generation) changed with no " +
-        "tests, or tests dumped into a generic catch-all project. " +
-        "10: xUnit tests beside the layer they cover under tests/Jadlify.*.Tests, Vitest/RTL for the SPA, " +
-        "covering the risk the diff actually introduces.",
+      "Test coverage proportional to the risk the diff introduces, anywhere in the repository (scale 1-10). " +
+        "1: risky product paths (macro calculation, per-user scoping, shopping-list generation) changed with " +
+        "no tests, or tests dumped into a generic catch-all project. " +
+        "2-4: the diff adds non-trivial logic — branching, parsing, ordering, arithmetic, truncation, " +
+        "retry — and adds no test that exercises it. This applies wherever the logic lives, including " +
+        "build tooling and scripts under tools/; a pure function is not exempt for being 'just a helper', " +
+        "and being new code rather than changed code is not a reason to score it higher. " +
+        "10: tests sit beside the layer they cover (xUnit under tests/Jadlify.*.Tests, Vitest/RTL for the " +
+        "SPA) and exercise the risk the diff actually introduces.",
     ),
   security: z
     .number()

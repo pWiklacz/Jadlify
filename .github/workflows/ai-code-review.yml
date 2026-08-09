@@ -9,7 +9,7 @@ on:
       model:
         description: OpenRouter model id to review with
         required: false
-        default: anthropic/claude-haiku-4.5
+        default: anthropic/claude-sonnet-5
 
 # The default GITHUB_TOKEN is read-only on pull_request; posting the review
 # comment needs pull-requests: write.
@@ -70,7 +70,7 @@ jobs:
         working-directory: ${{ env.REVIEWER_DIR }}
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          REVIEW_MODEL: ${{ inputs.model || 'anthropic/claude-haiku-4.5' }}
+          REVIEW_MODEL: ${{ inputs.model || 'anthropic/claude-sonnet-5' }}
           REVIEW_COMMENT_PATH: ${{ github.workspace }}/review-comment.md
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}

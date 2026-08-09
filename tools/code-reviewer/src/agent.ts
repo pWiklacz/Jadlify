@@ -10,8 +10,15 @@ import { REVIEW_SCHEMA, SYSTEM_PROMPT, type Review } from "./review-schema.js";
  * requests rather than a prose imitation of it.
  */
 
-/** Overridable because picking the model is what the promptfoo matrix decides. */
-export const DEFAULT_MODEL = "anthropic/claude-haiku-4.5";
+/**
+ * Overridable because picking the model is what the promptfoo matrix decides.
+ *
+ * Sonnet 5 rather than Haiku 4.5: Haiku returned straight 10/10 with no findings
+ * on a diff that added ~1400 lines of untested logic, which is not a review. At
+ * $2/M input it is twice Haiku's rate and still under Sonnet 4.6 — on a review
+ * that costs cents either way, the accuracy is worth more than the difference.
+ */
+export const DEFAULT_MODEL = "anthropic/claude-sonnet-5";
 
 export interface RunReviewOptions {
   diff: string;
