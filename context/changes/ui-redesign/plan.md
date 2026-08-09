@@ -703,22 +703,22 @@ Migrujemy shopping UI na trwałe kontrakty, budujemy dashboard na współdzielon
 
 #### Automated
 
-- [x] 8.1 Domain aggregation, diff i bought rules testy przechodzą
-- [x] 8.2 Persistence/API concurrency, ownership i rollback testy przechodzą
-- [x] 8.3 Build rozwiązania przechodzi
+- [x] 8.1 Domain aggregation, diff i bought rules testy przechodzą — de304f8
+- [x] 8.2 Persistence/API concurrency, ownership i rollback testy przechodzą — de304f8
+- [x] 8.3 Build rozwiązania przechodzi — de304f8
 
 #### Manual
 
-- [x] 8.4 Active/history/toggle/complete przeżywają reload
-- [x] 8.5 Diff preview, refresh i stale conflict zachowują postęp poprawnie
+- [x] 8.4 Active/history/toggle/complete przeżywają reload — de304f8
+- [x] 8.5 Diff preview, refresh i stale conflict zachowują postęp poprawnie — de304f8
 
 ### Phase 9: Lista UI, dashboard i integracja końcowa
 
 #### Automated
 
-- [ ] 9.1 Pełny frontend test/lint/build przechodzi
-- [ ] 9.2 Pełny backend verify-min przechodzi
-- [ ] 9.3 Krytyczne E2E product-planner-shopping przechodzi
+- [x] 9.1 Pełny frontend test/lint/build przechodzi
+- [x] 9.2 Pełny backend verify-min przechodzi
+- [x] 9.3 Krytyczne E2E product-planner-shopping przechodzi
 
 #### Manual
 

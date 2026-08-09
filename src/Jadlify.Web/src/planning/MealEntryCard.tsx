@@ -15,8 +15,10 @@ interface MealEntryCardProps {
   /** New quantity chosen with the stepper — portions for a recipe entry, grams for a product entry. */
   onQuantityChange: (value: number) => void
   onMealTypeChange: (mealType: MealType) => void
-  onMove: () => void
-  onCopy: () => void
+  /** Omitted where rescheduling is out of scope (the dashboard), which hides the action. */
+  onMove?: () => void
+  /** Omitted where copying is out of scope (the dashboard), which hides the action. */
+  onCopy?: () => void
   onDelete: () => void
 }
 
@@ -25,6 +27,10 @@ interface MealEntryCardProps {
  * per-entry macro line (words and numbers, never colour alone), a stepper for the
  * quantity, an inline meal-type switch, and the move / copy / delete actions. A
  * recipe entry links to its live recipe; a product entry shows its snapshot name.
+ *
+ * Move and copy are optional so the same card serves the planner (full batch
+ * operations) and the day dashboard (edit the day in front of you), rather than
+ * the dashboard growing a parallel near-copy that could drift.
  */
 export function MealEntryCard({
   entry,
@@ -115,22 +121,26 @@ export function MealEntryCard({
       </div>
 
       <div className="mt-1.5 flex flex-wrap gap-1">
-        <button
-          type="button"
-          onClick={onMove}
-          disabled={busy}
-          className="rounded-panel px-2 py-1.5 text-[12.5px] font-semibold text-mocha transition-colors hover:bg-cream-hover hover:text-terracotta disabled:opacity-60"
-        >
-          Przenieś
-        </button>
-        <button
-          type="button"
-          onClick={onCopy}
-          disabled={busy}
-          className="rounded-panel px-2 py-1.5 text-[12.5px] font-semibold text-mocha transition-colors hover:bg-cream-hover hover:text-terracotta disabled:opacity-60"
-        >
-          Kopiuj do innych dni
-        </button>
+        {onMove && (
+          <button
+            type="button"
+            onClick={onMove}
+            disabled={busy}
+            className="rounded-panel px-2 py-1.5 text-[12.5px] font-semibold text-mocha transition-colors hover:bg-cream-hover hover:text-terracotta disabled:opacity-60"
+          >
+            Przenieś
+          </button>
+        )}
+        {onCopy && (
+          <button
+            type="button"
+            onClick={onCopy}
+            disabled={busy}
+            className="rounded-panel px-2 py-1.5 text-[12.5px] font-semibold text-mocha transition-colors hover:bg-cream-hover hover:text-terracotta disabled:opacity-60"
+          >
+            Kopiuj do innych dni
+          </button>
+        )}
         <button
           type="button"
           onClick={onDelete}

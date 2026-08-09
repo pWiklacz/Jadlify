@@ -15,8 +15,10 @@ interface MealGroupProps {
   busy: boolean
   onQuantityChange: (entry: MealPlanEntry, value: number) => void
   onMealTypeChange: (entry: MealPlanEntry, mealType: MealType) => void
-  onMove: (entry: MealPlanEntry) => void
-  onCopy: (entry: MealPlanEntry) => void
+  /** Omitted on surfaces without batch rescheduling (the dashboard); hides the action. */
+  onMove?: (entry: MealPlanEntry) => void
+  /** Omitted on surfaces without batch copying (the dashboard); hides the action. */
+  onCopy?: (entry: MealPlanEntry) => void
   onDelete: (entry: MealPlanEntry) => void
   onAdd: (mealType: MealType) => void
 }
@@ -63,8 +65,8 @@ export function MealGroup({
             busy={busy}
             onQuantityChange={(value) => onQuantityChange(item.entry, value)}
             onMealTypeChange={(type) => onMealTypeChange(item.entry, type)}
-            onMove={() => onMove(item.entry)}
-            onCopy={() => onCopy(item.entry)}
+            onMove={onMove ? () => onMove(item.entry) : undefined}
+            onCopy={onCopy ? () => onCopy(item.entry) : undefined}
             onDelete={() => onDelete(item.entry)}
           />
         ))}

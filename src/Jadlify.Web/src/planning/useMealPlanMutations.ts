@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { apiClient } from '../api/apiClient'
+import { shoppingListsBaseKey } from '../shopping/useShoppingLists'
 import { mealPlanBaseKey } from './useMealPlanRange'
 import type {
   AddMealPlanEntryRequest,
@@ -13,15 +14,17 @@ import type {
 
 /**
  * Every planner mutation touches the same shared reads, so instead of each hook
- * hand-syncing a handful of keys they all invalidate two prefixes: the whole
+ * hand-syncing a handful of keys they all invalidate three prefixes: the whole
  * `meal-plan` tree (every cached range plus the legacy single-day summary) and
- * every shopping list (a plan change makes existing lists potentially stale). One
- * invalidation call keeps day / week / month and the shopping surface consistent.
+ * every shopping read (a plan change makes an existing list potentially stale, so
+ * its source-change state and any cached diff preview must be re-derived). One
+ * invalidation call keeps day / week / month, the dashboard and the shopping
+ * surface consistent.
  */
 function invalidatePlannerReads(queryClient: QueryClient) {
   void queryClient.invalidateQueries({ queryKey: mealPlanBaseKey })
   void queryClient.invalidateQueries({ queryKey: ['planning', 'meal-plan-summary'] })
-  void queryClient.invalidateQueries({ queryKey: ['shopping-list'] })
+  void queryClient.invalidateQueries({ queryKey: shoppingListsBaseKey })
 }
 
 /** Adds one entry (recipe + portions, or product + grams) and refreshes the planner. */

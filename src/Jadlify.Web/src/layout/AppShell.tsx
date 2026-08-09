@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { navItems } from './navItems'
 import { AccountMenu } from './AccountMenu'
@@ -14,6 +15,40 @@ import { BrandMark } from './BrandMark'
  * `aria-current="page"` automatically from `NavLink`.
  */
 export function AppShell() {
+  const headerRef = useRef<HTMLElement>(null)
+
+  /*
+   * Pages with their own pinned toolbars (the shopping list's shopping-mode bar)
+   * need to stick *below* this header while it is itself sticky — which it only is
+   * on mobile. Publishing the measured height as `--app-header-h` keeps that offset
+   * correct across breakpoints and header wrapping, with no magic number in pages.
+   */
+  useEffect(() => {
+    const header = headerRef.current
+    if (!header) {
+      return
+    }
+    const publish = () => {
+      const isSticky = window.getComputedStyle(header).position === 'sticky'
+      document.documentElement.style.setProperty(
+        '--app-header-h',
+        isSticky ? `${header.offsetHeight}px` : '0px',
+      )
+    }
+
+    publish()
+    window.addEventListener('resize', publish)
+    const observer =
+      typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(publish)
+    observer?.observe(header)
+
+    return () => {
+      window.removeEventListener('resize', publish)
+      observer?.disconnect()
+      document.documentElement.style.removeProperty('--app-header-h')
+    }
+  }, [])
+
   const pillClass = ({ isActive }: { isActive: boolean }) =>
     [
       'flex-none rounded-pill px-3.5 py-2 text-[13.5px] transition-colors',
@@ -24,7 +59,10 @@ export function AppShell() {
 
   return (
     <div className="flex min-h-screen flex-col text-parchment">
-      <header className="sticky top-0 z-30 border-b border-parchment/10 bg-ink/95 px-4 pt-3 backdrop-blur design:static design:bg-transparent design:px-[clamp(20px,4vw,52px)] design:pt-5 design:backdrop-blur-0">
+      <header
+        ref={headerRef}
+        className="sticky top-0 z-30 border-b border-parchment/10 bg-ink/95 px-4 pt-3 backdrop-blur design:static design:bg-transparent design:px-[clamp(20px,4vw,52px)] design:pt-5 design:backdrop-blur-0"
+      >
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 design:gap-4">
           {/* Left: contextual status pill (populated by pages in later phases). */}
           <div className="flex justify-start" />

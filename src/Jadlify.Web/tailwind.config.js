@@ -38,11 +38,17 @@ export default {
           track: '#EBE0CB',
           line: '#DCCFB2',
           border: '#EADFC8',
+          // Resting outline of a tickable box on cream (checkbox, day cell mark).
+          mark: '#C9BB9E',
         },
         // Text on cream.
         espresso: '#2A2018',
         mocha: '#8C7F6C',
         label: '#5C5040',
+        // De-emphasised text on cream: a ticked-off product line.
+        muted: '#A79A83',
+        // Tertiary text on cream: counts, leader lines, footnotes.
+        faint: '#B0A48C',
         // Terracotta accent / primary action.
         terracotta: {
           DEFAULT: '#D97E57',

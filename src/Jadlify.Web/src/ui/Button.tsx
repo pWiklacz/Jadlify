@@ -1,7 +1,7 @@
 import { forwardRef } from 'react'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'success'
 export type ButtonSize = 'md' | 'sm'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -20,6 +20,8 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   ghost:
     'border border-terracotta/55 bg-transparent text-terracotta hover:bg-terracotta/10',
   danger: 'bg-danger text-paper hover:bg-danger-ink',
+  // Confirms a positive outcome (e.g. closing a fully-bought shopping list).
+  success: 'bg-success text-paper hover:bg-success-ink',
 }
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
