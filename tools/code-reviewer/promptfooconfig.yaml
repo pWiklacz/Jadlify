@@ -1,0 +1,74 @@
+# Model comparison for the Jadlify code review agent.
+#
+#   npm run eval          # runs the matrix
+#   npm run eval:view     # opens the result matrix in a browser
+#
+# Needs OPENROUTER_API_KEY. Each provider runs the real agent from src/agent.ts
+# with a different model, so the matrix compares what CI actually executes —
+# including the Output.object schema enforcement the assertions depend on.
+description: Jadlify code review - cheaper vs pricier model
+
+prompts:
+  # The provider reads the diff from vars; this placeholder is only here because
+  # promptfoo requires a prompt entry.
+  - "{{diff}}"
+
+providers:
+  # Current default in agent.ts, and the priciest input rate of the three.
+  - id: file://evals/agent-provider.ts
+    label: claude-haiku-4.5
+    config:
+      model: anthropic/claude-haiku-4.5
+  - id: file://evals/agent-provider.ts
+    label: gpt-5-mini
+    config:
+      model: openai/gpt-5-mini
+  # ~7x cheaper on input than Haiku; reviews are input-heavy, so this is the
+  # candidate that would actually move the bill.
+  - id: file://evals/agent-provider.ts
+    label: deepseek-v4-flash
+    config:
+      model: deepseek/deepseek-v4-flash
+
+defaultTest:
+  options:
+    # llm-rubric needs a grading model. Pin it to OpenRouter so the whole eval
+    # runs on one key — the default grader would demand an OpenAI key.
+    provider: openrouter:anthropic/claude-haiku-4.5
+  assert:
+    # The CI gate parses this output. A model that cannot hold the shape is
+    # disqualified regardless of how good its prose is.
+    - type: is-json
+
+tests:
+  - description: Broken per-user isolation must be caught and must fail the change
+    vars:
+      diff: file://evals/fixtures/user-scoping-leak.diff
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.verdict !== 'fail') throw new Error(`expected verdict=fail, got ${r.verdict}`);
+          if (r.security > 3) throw new Error(`expected security<=3, got ${r.security}`);
+          return true;
+      - type: llm-rubric
+        value: >
+          The review identifies that the new shared shopping-list endpoint reads a list by id
+          without scoping it to the authenticated user (GetByIdWithoutOwnerAsync), and treats
+          this as a data-isolation defect. Mentioning the missing RequireAuthorization or the
+          absent tests is a bonus, not a requirement.
+
+  - description: A small, correctly layered, tested change must pass
+    vars:
+      diff: file://evals/fixtures/clean-change.diff
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.verdict !== 'pass') throw new Error(`expected verdict=pass, got ${r.verdict}`);
+          if (r.testCoverage < 7) throw new Error(`expected testCoverage>=7, got ${r.testCoverage}`);
+          return true;
+      - type: llm-rubric
+        value: >
+          The review does not invent blocking defects. It recognises that the validator change
+          is covered by the two added xUnit tests and sits in the correct project.

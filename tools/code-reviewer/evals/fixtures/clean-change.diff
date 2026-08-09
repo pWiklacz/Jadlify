@@ -1,0 +1,66 @@
+diff --git a/src/Jadlify.Application/Products/ProductNameBounds.cs b/src/Jadlify.Application/Products/ProductNameBounds.cs
+new file mode 100644
+index 0000000..4a1c8e7
+--- /dev/null
++++ b/src/Jadlify.Application/Products/ProductNameBounds.cs
+@@ -0,0 +1,9 @@
++namespace Jadlify.Application.Products;
++
++/// <summary>
++/// Length bounds for a product name, shared by the create and update validators.
++/// </summary>
++public static class ProductNameBounds
++{
++    public const int MaxLength = 120;
++}
+diff --git a/src/Jadlify.Application/Products/CreateProduct/CreateProductCommandValidator.cs b/src/Jadlify.Application/Products/CreateProduct/CreateProductCommandValidator.cs
+index 2b7f1a9..6d3e042 100644
+--- a/src/Jadlify.Application/Products/CreateProduct/CreateProductCommandValidator.cs
++++ b/src/Jadlify.Application/Products/CreateProduct/CreateProductCommandValidator.cs
+@@ -10,6 +10,10 @@ public sealed class CreateProductCommandValidator : AbstractValidator<CreateProdu
+     {
+         RuleFor(x => x.Name)
+             .NotEmpty()
+             .WithMessage("Name is required.");
+
++        RuleFor(x => x.Name)
++            .MaximumLength(ProductNameBounds.MaxLength)
++            .WithMessage($"Name must be at most {ProductNameBounds.MaxLength} characters.");
++
+         RuleFor(x => x.CaloriesPer100g)
+             .GreaterThanOrEqualTo(0)
+             .WithMessage("Calories per 100 g cannot be negative.");
+diff --git a/tests/Jadlify.Application.Tests/Products/CreateProductCommandValidatorTests.cs b/tests/Jadlify.Application.Tests/Products/CreateProductCommandValidatorTests.cs
+index 9c2a114..f7b8e35 100644
+--- a/tests/Jadlify.Application.Tests/Products/CreateProductCommandValidatorTests.cs
++++ b/tests/Jadlify.Application.Tests/Products/CreateProductCommandValidatorTests.cs
+@@ -31,4 +31,26 @@ public sealed class CreateProductCommandValidatorTests
+         Assert.False(result.IsValid);
+     }
+
++    [Fact]
++    public void Validate_NameAtMaxLength_Passes()
++    {
++        CreateProductCommand command = ValidCommand() with
++        {
++            Name = new string('a', ProductNameBounds.MaxLength),
++        };
++
++        ValidationResult result = _validator.Validate(command);
++
++        Assert.True(result.IsValid);
++    }
++
++    [Fact]
++    public void Validate_NameLongerThanMaxLength_Fails()
++    {
++        CreateProductCommand command = ValidCommand() with
++        {
++            Name = new string('a', ProductNameBounds.MaxLength + 1),
++        };
++
++        ValidationResult result = _validator.Validate(command);
++
++        Assert.False(result.IsValid);
++    }
+ }

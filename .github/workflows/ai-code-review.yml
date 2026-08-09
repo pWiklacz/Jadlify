@@ -1,0 +1,90 @@
+name: AI Code Review
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      model:
+        description: OpenRouter model id to review with
+        required: false
+        default: anthropic/claude-haiku-4.5
+
+# The default GITHUB_TOKEN is read-only on pull_request; posting the review
+# comment needs pull-requests: write.
+permissions:
+  contents: read
+  pull-requests: write
+
+# A new push to the PR makes the in-flight review obsolete — cancel it rather
+# than pay for a verdict on a diff nobody will read.
+concurrency:
+  group: ai-code-review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  REVIEWER_DIR: tools/code-reviewer
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Required: the default checkout is shallow and `git diff <base>...HEAD`
+          # would resolve against nothing and return an empty diff.
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ${{ env.REVIEWER_DIR }}/package-lock.json
+
+      - name: Install reviewer
+        working-directory: ${{ env.REVIEWER_DIR }}
+        run: npm ci
+
+      - name: Compute diff
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref || 'main' }}
+        run: |
+          # Written to a file rather than passed through $GITHUB_OUTPUT: a diff is
+          # multi-line and routinely larger than the 1 MB step-output limit.
+          git diff "origin/$BASE_REF...HEAD" > pr.diff
+          echo "Diff size: $(wc -c < pr.diff) bytes across $(grep -c '^diff --git ' pr.diff || true) files"
+
+      - name: Run review
+        working-directory: ${{ env.REVIEWER_DIR }}
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          REVIEW_MODEL: ${{ inputs.model || 'anthropic/claude-haiku-4.5' }}
+          REVIEW_COMMENT_PATH: ${{ github.workspace }}/review-comment.md
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        # --silent matters: without it npm prints its run banner to stdout and
+        # corrupts review.json.
+        run: npm run --silent review < "$GITHUB_WORKSPACE/pr.diff" > "$GITHUB_WORKSPACE/review.json"
+
+      - name: Publish to job summary
+        if: always()
+        run: cat review-comment.md >> "$GITHUB_STEP_SUMMARY" || echo "No review produced." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment on the pull request
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr comment "${{ github.event.pull_request.number }}" --body-file review-comment.md
+
+      - name: Upload review artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-code-review
+          path: |
+            review.json
+            review-comment.md
+          if-no-files-found: warn
