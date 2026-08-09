@@ -65,6 +65,10 @@ jobs:
           REVIEW_COMMENT_PATH: ${{ github.workspace }}/review-comment.md
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
+          # Turns a 'fail' verdict into a red job. This is a signal, not a lock:
+          # without a branch protection rule requiring this check, a red run
+          # still leaves the merge button available.
+          REVIEW_FAIL_ON_VERDICT: "true"
         # --silent matters: without it npm prints its run banner to stdout and
         # corrupts review.json.
         run: npm run --silent review < "$GITHUB_WORKSPACE/pr.diff" > "$GITHUB_WORKSPACE/review.json"
@@ -74,7 +78,10 @@ jobs:
         run: cat review-comment.md >> "$GITHUB_STEP_SUMMARY" || echo "No review produced." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Comment on the pull request
-        if: github.event_name == 'pull_request'
+        # always() is load-bearing: an `if:` without a status-check function gets
+        # an implicit success(), so a red review step would silently skip the
+        # comment — exactly the run where the comment matters most.
+        if: always() && github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh pr comment "${{ github.event.pull_request.number }}" --body-file review-comment.md

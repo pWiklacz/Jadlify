@@ -42,7 +42,7 @@ git diff main...HEAD | npm run --silent review > review.json
 | `REVIEW_MODEL` | OpenRouter model id. Default: `anthropic/claude-haiku-4.5`. |
 | `REVIEW_MAX_DIFF_CHARS` | Size cap for the diff sent to the model. Default 100 000. |
 | `REVIEW_COMMENT_PATH` | Also write the rendered Markdown comment to this path. |
-| `REVIEW_FAIL_ON_VERDICT` | `true` makes a `fail` verdict exit 1, turning the job into a merge gate. Off by default. |
+| `REVIEW_FAIL_ON_VERDICT` | `true` makes a `fail` verdict exit 1. Off by default locally; the workflow sets it so a `fail` shows up as a red job. Red is a signal, not a lock — blocking the merge additionally requires a branch protection rule that marks this check required. |
 | `PR_TITLE`, `PR_BODY` | Extra context; the workflow fills these from the PR payload. |
 
 ## Layout
