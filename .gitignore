@@ -6,6 +6,11 @@
 # dotenv files
 .env
 
+# Local tooling scratch space. Held the Azure CLI config directory (AZURE_CONFIG_DIR
+# pointed here), which put an account profile and an MSAL token cache into a public
+# repo. Nothing under here is build input — keep it out of git.
+.artifacts/
+
 # User-specific files
 *.rsuser
 *.suo
