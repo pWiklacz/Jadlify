@@ -20,6 +20,18 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <!--
+    SQLitePCLRaw.lib.e_sqlite3 2.1.11 arrives through Microsoft.EntityFrameworkCore.Sqlite
+    and carries GHSA-2m69-gcr7-jv3q (memory corruption in SQLite before 3.50.2). No patched
+    version has been published, so there is nothing to upgrade to. It is scoped to this test
+    project: production runs on Npgsql/Postgres and never ships the native SQLite library.
+    Suppressed by advisory URL rather than by silencing NU1903, so every other vulnerability
+    still breaks the build. Remove once SQLitePCLRaw ships a build on SQLite 3.50.2+.
+  -->
+  <ItemGroup>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Jadlify.API\Jadlify.API.csproj" />
   </ItemGroup>

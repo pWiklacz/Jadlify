@@ -18,9 +18,35 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    # Vite inlines these at BUILD time, so they must exist on the runner — setting
+    # them as Azure app settings does nothing, the bundle is already built by then.
+    # Repository variables rather than secrets: both are public browser-side values
+    # (the anon key is not a secret; the API enforces authorization server-side)
+    # and they end up verbatim in the shipped bundle either way.
+    env:
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # Without this the build still succeeds and ships a bundle whose Supabase
+      # client throws on load — a blank page with the failure only visible in the
+      # browser console. Fail here instead, where the message points at the cause.
+      - name: Verify SPA build configuration
+        run: |
+          missing=""
+          [ -z "$VITE_SUPABASE_URL" ] && missing="$missing VITE_SUPABASE_URL"
+          [ -z "$VITE_SUPABASE_ANON_KEY" ] && missing="$missing VITE_SUPABASE_ANON_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository variable(s):$missing — set them under" \
+                 "Settings → Secrets and variables → Actions → Variables." \
+                 "Vite inlines them at build time; without them the deployed SPA" \
+                 "throws 'Missing Supabase configuration' and renders nothing."
+            exit 1
+          fi
+          echo "SPA configuration present."
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4

@@ -13,6 +13,14 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
+    <!--
+      Transitive pin, not a direct dependency: Microsoft.AspNetCore.OpenApi 10.0.7
+      drags in Microsoft.OpenApi 2.0.0, which carries a high-severity advisory
+      (GHSA-v5pm-xwqc-g5wc, stack overflow on circular schema references). 2.7.5
+      is the first patched version. Drop this line once Microsoft.AspNetCore.OpenApi
+      ships a release that resolves a patched Microsoft.OpenApi on its own.
+    -->
+    <PackageReference Include="Microsoft.OpenApi" Version="2.7.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.4">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
