@@ -29,22 +29,14 @@ public sealed class GetDailyMacroSummaryQueryHandler : IQueryHandler<GetDailyMac
     {
         IReadOnlyList<MealPlanEntry> entries = await _mealPlans.ListByDateAsync(query.Date, cancellationToken);
 
-        Guid[] recipeIds = entries.Select(entry => entry.RecipeId).Distinct().ToArray();
-        IReadOnlyList<Recipe> recipes = await _recipes.ListByIdsWithIngredientsAsync(recipeIds, cancellationToken);
+        Guid[] recipeIds = MealPlanRecipeResolution.DistinctRecipeIds(entries);
+        IReadOnlyList<Recipe> recipes = recipeIds.Length == 0
+            ? []
+            : await _recipes.ListByIdsWithIngredientsAsync(recipeIds, cancellationToken);
         var recipesById = recipes.ToDictionary(recipe => recipe.Id);
 
-        IReadOnlyList<MealEntryMacroDto> entryMacros = entries
-            .Select(entry => new MealEntryMacroDto(
-                entry.Id,
-                RecipeMacroSummaryDto.FromDomain(GetEntryMacros(entry, recipesById))))
-            .ToList();
-
-        MacroNutrients total = MacroCalculator.DayTotal(
-            entries
-                .Select(entry => recipesById.TryGetValue(entry.RecipeId, out Recipe? recipe)
-                    ? (entry, recipe)
-                    : ((MealPlanEntry entry, Recipe recipe)?)null)
-                .OfType<(MealPlanEntry entry, Recipe recipe)>());
+        (IReadOnlyList<MealEntryMacroDto> entryMacros, MacroNutrients total) =
+            MealPlanDayProjection.Build(entries, recipesById);
 
         DailyMacroGoal? goal = await _goals.GetCurrentAsync(cancellationToken);
         PlanningMacroGoalDto? goalDto = goal is null ? null : PlanningMacroGoalDto.FromDomain(goal);
@@ -59,9 +51,4 @@ public sealed class GetDailyMacroSummaryQueryHandler : IQueryHandler<GetDailyMac
 
         return Result.Ok(dto);
     }
-
-    private static MacroNutrients GetEntryMacros(MealPlanEntry entry, IReadOnlyDictionary<Guid, Recipe> recipesById) =>
-        recipesById.TryGetValue(entry.RecipeId, out Recipe? recipe)
-            ? MacroCalculator.ForMealEntry(entry, recipe)
-            : MacroNutrients.Zero;
 }

@@ -9,9 +9,14 @@ public sealed record RecipeDto(
     int Portions,
     IReadOnlyList<RecipeIngredientDto> Ingredients,
     RecipeMacroSummaryDto TotalMacros,
-    RecipeMacroSummaryDto PerServingMacros)
+    RecipeMacroSummaryDto PerServingMacros,
+    bool IsInPlan)
 {
-    public static RecipeDto FromDomain(Recipe recipe)
+    /// <summary>
+    /// Projects the full recipe. <paramref name="isInPlan"/> comes from a batched
+    /// owner-scoped meal-plan usage read, never a per-recipe query.
+    /// </summary>
+    public static RecipeDto FromDomain(Recipe recipe, bool isInPlan)
     {
         MacroNutrients total = MacroCalculator.RecipeTotal(recipe);
         MacroNutrients perServing = MacroCalculator.RecipePerServing(recipe);
@@ -22,6 +27,7 @@ public sealed record RecipeDto(
             recipe.Portions,
             recipe.Ingredients.Select(RecipeIngredientDto.FromDomain).ToList(),
             RecipeMacroSummaryDto.FromDomain(total),
-            RecipeMacroSummaryDto.FromDomain(perServing));
+            RecipeMacroSummaryDto.FromDomain(perServing),
+            isInPlan);
     }
 }

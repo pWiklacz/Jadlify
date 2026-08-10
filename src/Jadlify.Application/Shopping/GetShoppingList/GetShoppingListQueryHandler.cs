@@ -28,16 +28,19 @@ public sealed class GetShoppingListQueryHandler : IQueryHandler<GetShoppingListQ
     {
         IReadOnlyList<MealPlanEntry> entries = await _mealPlans.ListByDateAsync(query.Date, cancellationToken);
 
-        Guid[] recipeIds = entries.Select(entry => entry.RecipeId).Distinct().ToArray();
-        IReadOnlyList<Recipe> recipes = await _recipes.ListByIdsWithIngredientsAsync(recipeIds, cancellationToken);
+        Guid[] recipeIds = MealPlanRecipeResolution.DistinctRecipeIds(entries);
+        IReadOnlyList<Recipe> recipes = recipeIds.Length == 0
+            ? []
+            : await _recipes.ListByIdsWithIngredientsAsync(recipeIds, cancellationToken);
         var recipesById = recipes.ToDictionary(recipe => recipe.Id);
 
-        List<(MealPlanEntry Entry, Recipe Recipe)> matchedEntries = [];
+        List<(MealPlanEntry Entry, Recipe? Recipe)> matchedEntries = [];
         List<ShoppingListWarningDto> warnings = [];
 
         foreach (MealPlanEntry entry in entries)
         {
-            if (recipesById.TryGetValue(entry.RecipeId, out Recipe? recipe))
+            // Product entries resolve with a null recipe: their own snapshot is the contribution.
+            if (MealPlanRecipeResolution.TryResolve(entry, recipesById, out Recipe? recipe))
             {
                 matchedEntries.Add((entry, recipe));
                 continue;
@@ -45,7 +48,7 @@ public sealed class GetShoppingListQueryHandler : IQueryHandler<GetShoppingListQ
 
             warnings.Add(new ShoppingListWarningDto(
                 entry.Id,
-                entry.RecipeId,
+                entry.RecipeId!.Value,
                 MissingRecipeWarningMessage));
         }
 

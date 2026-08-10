@@ -31,6 +31,7 @@ Open the URL Vite prints (default `http://127.0.0.1:5173`).
 | `npm run preview` | Serve the production build locally.                |
 | `npm run lint`    | ESLint.                                            |
 | `npm test`        | Vitest + React Testing Library (jsdom).            |
+| `npm run test:e2e` | Playwright E2E — needs the full local stack, see below. |
 
 ## Environment
 
@@ -84,6 +85,28 @@ curl -X POST http://127.0.0.1:54421/auth/v1/admin/users \
 
 Then run the two-process dev loop (backend + `npm run dev`), sign in, and the landing page renders the `/api/me` result — confirming the bearer token reaches the backend.
 
+## E2E tests (Playwright)
+
+E2E runs against the **real local stack** — there is no mock backend. Unlike `npm test`, it will not run out of the box; all four prerequisites must hold:
+
+1. **Supabase is up** (`supabase start` from the repo root) with a confirmed test user — see the section above.
+2. **The API backend is running** (`dotnet run --project src/Jadlify.API`).
+3. **`.env` points at the local Supabase stack**, so the SPA authenticates against the same issuer the API validates.
+4. **`playwright/.auth/auth.json` exists.** Playwright injects it as `storageState` so tests start signed in and never drive the login UI. It is gitignored and must be regenerated when the session expires — the procedure is in `playwright/.auth/README.md`.
+
+```bash
+npm run test:e2e
+```
+
+The Vite dev server is started automatically by the Playwright config (`reuseExistingServer: true`), so leaving `npm run dev` running is fine.
+
+Two specs:
+
+- `tests/e2e/seed.spec.ts` — the exemplar pattern (role locators, independence, wait-for-state, risk-tied name): a product survives a reload.
+- `tests/e2e/planner-shopping.spec.ts` — the critical cross-feature flow: product → recipe → daily goal → half-portion entry → persistent shopping list → tick bought → change the plan → confirm the diff → complete the list. It asserts the load-bearing rule that a plan change **never** rewrites a list until the diff is confirmed.
+
+Both create uniquely-named (timestamped) data and clean it up, so parallel and repeat runs do not collide. Open Food Facts stays stubbed at the boundary; E2E never calls the external service.
+
 ## Production build & deploy
 
 `dotnet publish src/Jadlify.API/Jadlify.API.csproj -c Release` runs an MSBuild target (`BuildSpa`) that executes `npm ci` + `npm run build` here and copies `dist/**` into the published `wwwroot/`. The app serves `index.html` for client-side deep links while `/api/*` and `/health` stay server endpoints. CI builds and quality-gates the frontend (`npm ci`, `npm run lint`, `npm test`) before the publish step.
@@ -91,6 +114,11 @@ Then run the two-process dev loop (backend + `npm run dev`), sign in, and the la
 ## Structure
 
 - `src/auth/` — Supabase session context + route guard (`RequireAuth`).
-- `src/api/` — Bearer-attaching API client, TanStack Query, `useMe`.
+- `src/api/` — Bearer-attaching API client (`get/post/put/patch/del`) and TanStack Query wiring.
+- `src/ui/` — the shared design-token primitives (`Button`, `Card`, `Dialog`, `Toast`, `QueryState`, `Field`, `Stepper`, formatters). Features compose these rather than repeating class strings.
 - `src/layout/` — responsive app shell (`AppShell`) and navigation.
-- `src/routes/` — pages: `LoginPage` (public placeholder), `LandingPage` (home), and `sections/` placeholders for the MVP sections.
+- `src/products/`, `src/recipes/`, `src/planning/`, `src/shopping/` — the feature folders: each owns its wire types, TanStack Query hooks and screens.
+- `src/dashboard/` — the day-dashboard pieces (balance ring, date nav, contextual next step, active-list card) consumed by `LandingPage`.
+- `src/routes/` — `LoginPage` (public), `LandingPage` (the day dashboard), and `sections/` route wrappers for the feature screens.
+
+Two conventions worth knowing before adding a screen: data fetching lives in hooks (never in JSX), and every mutation invalidates a shared query-key **prefix** rather than hand-syncing individual caches — planner writes invalidate both `meal-plan` and `shopping-lists`, which is what keeps the planner, dashboard and shopping surfaces from disagreeing.

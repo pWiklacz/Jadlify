@@ -4,6 +4,7 @@ using System.Text.Json;
 using Jadlify.API.Products;
 using Jadlify.API.Tests.Common;
 using Jadlify.Application.Products;
+using Jadlify.Domain.Products;
 
 namespace Jadlify.API.Tests.Products;
 
@@ -318,6 +319,181 @@ public class ProductEndpointsTests
         Assert.Equal(id, body.ExistingProductId);
         Assert.Equal("My Yogurt", body.Name);
         Assert.Equal(60m, body.Calories);
+    }
+
+    [Fact]
+    public async Task Create_RoundTripsBrandAndCategory()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+
+        CreateProductRequest request = new("Nutella", "3017624010701", 539m, 6.3m, 30.9m, 57.5m)
+        {
+            Brand = "Ferrero",
+            Category = "PantryAndDryGoods",
+        };
+
+        HttpResponseMessage create = await client.PostAsJsonAsync("/api/products", request);
+        Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+        ProductResponse created = (await create.Content.ReadFromJsonAsync<ProductResponse>())!;
+        Assert.Equal("Ferrero", created.Brand);
+        Assert.Equal("PantryAndDryGoods", created.Category);
+
+        ProductResponse? fetched = await client.GetFromJsonAsync<ProductResponse>($"/api/products/{created.Id}");
+        Assert.NotNull(fetched);
+        Assert.Equal("Ferrero", fetched!.Brand);
+        Assert.Equal("PantryAndDryGoods", fetched.Category);
+    }
+
+    [Fact]
+    public async Task Create_AllowsMissingCategory_AsUncategorized()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+
+        // No brand, no category — a valid "Bez kategorii" product.
+        Guid id = await CreateProductAsync(client, new CreateProductRequest("Plain", null, 10m, 1m, 1m, 1m));
+
+        ProductResponse? fetched = await client.GetFromJsonAsync<ProductResponse>($"/api/products/{id}");
+        Assert.NotNull(fetched);
+        Assert.Null(fetched!.Brand);
+        Assert.Null(fetched.Category);
+    }
+
+    [Fact]
+    public async Task Update_ChangesBrandAndCategory()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+        Guid id = await CreateProductAsync(
+            client,
+            new CreateProductRequest("Milk", null, 64m, 3.3m, 3.6m, 4.8m) { Category = "Dairy" });
+
+        HttpResponseMessage put = await client.PutAsJsonAsync(
+            $"/api/products/{id}",
+            new UpdateProductRequest("Milk", null, 64m, 3.3m, 3.6m, 4.8m) { Brand = "Łaciate", Category = "Dairy" });
+        Assert.Equal(HttpStatusCode.NoContent, put.StatusCode);
+
+        ProductResponse? fetched = await client.GetFromJsonAsync<ProductResponse>($"/api/products/{id}");
+        Assert.Equal("Łaciate", fetched!.Brand);
+        Assert.Equal("Dairy", fetched.Category);
+    }
+
+    [Fact]
+    public async Task Create_ReturnsBadRequest_ForUnknownCategory()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+
+        CreateProductRequest request = new("Odd", null, 10m, 1m, 1m, 1m) { Category = "NotACategory" };
+
+        HttpResponseMessage response = await client.PostAsJsonAsync("/api/products", request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Catalog_ReturnsPage_WithTotalAndItems()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+
+        await CreateProductAsync(client, new CreateProductRequest("Apple", null, 52m, 0m, 0m, 14m) { Category = "Fruits" });
+        await CreateProductAsync(client, new CreateProductRequest("Banana", null, 89m, 1m, 0m, 23m) { Category = "Fruits" });
+        await CreateProductAsync(client, new CreateProductRequest("Carrot", null, 41m, 1m, 0m, 10m) { Category = "Vegetables" });
+
+        ProductCatalogResponse? page =
+            await client.GetFromJsonAsync<ProductCatalogResponse>("/api/products/catalog?skip=0&take=2");
+
+        Assert.NotNull(page);
+        Assert.Equal(3, page!.Total);
+        Assert.Equal(2, page.Items.Count);
+        Assert.Equal(0, page.Skip);
+        Assert.Equal(2, page.Take);
+        // Default sort is alphabetical.
+        Assert.Equal(new[] { "Apple", "Banana" }, page.Items.Select(p => p.Name).ToArray());
+    }
+
+    [Fact]
+    public async Task Catalog_FiltersByCategory()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+
+        await CreateProductAsync(client, new CreateProductRequest("Apple", null, 52m, 0m, 0m, 14m) { Category = "Fruits" });
+        await CreateProductAsync(client, new CreateProductRequest("Carrot", null, 41m, 1m, 0m, 10m) { Category = "Vegetables" });
+
+        ProductCatalogResponse? page =
+            await client.GetFromJsonAsync<ProductCatalogResponse>("/api/products/catalog?category=Fruits");
+
+        Assert.NotNull(page);
+        Assert.Equal(1, page!.Total);
+        ProductResponse only = Assert.Single(page.Items);
+        Assert.Equal("Apple", only.Name);
+    }
+
+    [Fact]
+    public async Task Catalog_FiltersUncategorized_WithNoneSentinel()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+
+        await CreateProductAsync(client, new CreateProductRequest("Apple", null, 52m, 0m, 0m, 14m) { Category = "Fruits" });
+        await CreateProductAsync(client, new CreateProductRequest("Mystery", null, 10m, 1m, 1m, 1m));
+
+        ProductCatalogResponse? page =
+            await client.GetFromJsonAsync<ProductCatalogResponse>("/api/products/catalog?category=None");
+
+        Assert.NotNull(page);
+        ProductResponse only = Assert.Single(page!.Items);
+        Assert.Equal("Mystery", only.Name);
+        Assert.Null(only.Category);
+    }
+
+    [Fact]
+    public async Task Catalog_ReturnsBadRequest_ForUnknownSort()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient client = factory.CreateClientAs(UserA);
+
+        HttpResponseMessage response = await client.GetAsync("/api/products/catalog?sort=bogus");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Catalog_IsOwnerScoped()
+    {
+        using TestApiFactory factory = new();
+        using HttpClient clientA = factory.CreateClientAs(UserA);
+        using HttpClient clientB = factory.CreateClientAs(UserB);
+
+        await CreateProductAsync(clientA, new CreateProductRequest("A-only", null, 1m, 1m, 1m, 1m) { Category = "Fruits" });
+
+        ProductCatalogResponse? page =
+            await clientB.GetFromJsonAsync<ProductCatalogResponse>("/api/products/catalog");
+
+        Assert.NotNull(page);
+        Assert.Equal(0, page!.Total);
+        Assert.Empty(page.Items);
+    }
+
+    [Fact]
+    public async Task BarcodeLookup_SurfacesCategorySuggestion_WhenStubHasData()
+    {
+        using TestApiFactory factory = new();
+        factory.BarcodeLookup.OnLookup = _ => new BarcodeProductData(
+            Name: "Sok",
+            Calories: 45m,
+            Category: ProductCategory.Beverages);
+        using HttpClient client = factory.CreateClientAs(UserA);
+
+        BarcodeLookupResponse? body =
+            await client.GetFromJsonAsync<BarcodeLookupResponse>("/api/products/barcode/5901234123457");
+
+        Assert.NotNull(body);
+        Assert.Equal("Found", body!.Outcome);
+        Assert.Equal("Beverages", body.Category);
     }
 
     private static async Task<Guid> CreateProductAsync(HttpClient client, CreateProductRequest request)

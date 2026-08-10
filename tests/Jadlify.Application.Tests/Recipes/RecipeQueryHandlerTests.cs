@@ -1,6 +1,7 @@
 using Jadlify.Application.Recipes;
 using Jadlify.Application.Recipes.GetRecipe;
 using Jadlify.Application.Recipes.ListRecipes;
+using Jadlify.Application.Tests.Planning;
 using Jadlify.Domain.Nutrition;
 using Jadlify.Domain.Recipes;
 using Jadlify.SharedKernel;
@@ -13,7 +14,7 @@ public class RecipeQueryHandlerTests
     public async Task GetRecipe_ReturnsDtoWithTotalAndPerServingMacros()
     {
         Recipe recipe = BuildRecipe();
-        var handler = new GetRecipeQueryHandler(new FakeRecipeRepository(recipe));
+        var handler = new GetRecipeQueryHandler(new FakeRecipeRepository(recipe), new FakeMealPlanRepository());
 
         Result<RecipeDto> result = await handler.HandleAsync(new GetRecipeQuery(recipe.Id), CancellationToken.None);
 
@@ -27,7 +28,8 @@ public class RecipeQueryHandlerTests
     [Fact]
     public async Task GetRecipe_ReturnsNotFound_WhenRecipeMissing()
     {
-        var handler = new GetRecipeQueryHandler(new FakeRecipeRepository());
+        var handler = new GetRecipeQueryHandler(
+            new FakeRecipeRepository(), new FakeMealPlanRepository());
 
         Result<RecipeDto> result = await handler.HandleAsync(new GetRecipeQuery(Guid.NewGuid()), CancellationToken.None);
 
@@ -40,7 +42,7 @@ public class RecipeQueryHandlerTests
     public async Task ListRecipes_ReturnsRecipeDtos()
     {
         Recipe recipe = BuildRecipe();
-        var handler = new ListRecipesQueryHandler(new FakeRecipeRepository(recipe));
+        var handler = new ListRecipesQueryHandler(new FakeRecipeRepository(recipe), new FakeMealPlanRepository());
 
         Result<IReadOnlyList<RecipeDto>> result = await handler.HandleAsync(new ListRecipesQuery(), CancellationToken.None);
 

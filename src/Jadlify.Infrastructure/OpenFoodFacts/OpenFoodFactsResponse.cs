@@ -17,6 +17,7 @@ internal sealed record OpenFoodFactsProduct(
     [property: JsonPropertyName("brands")] string? Brands,
     [property: JsonPropertyName("quantity")] string? Quantity,
     [property: JsonPropertyName("product_quantity")] decimal? ProductQuantity,
+    [property: JsonPropertyName("categories_tags")] IReadOnlyList<string>? CategoriesTags,
     [property: JsonPropertyName("nutriments")] OpenFoodFactsNutriments? Nutriments);
 
 /// <summary>

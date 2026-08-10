@@ -29,14 +29,19 @@ public sealed class ListMealPlanEntriesQueryHandler
         }
 
         // Resolve current recipe display data in one owner-scoped batch rather than per entry.
-        Guid[] recipeIds = entries.Select(entry => entry.RecipeId).Distinct().ToArray();
-        IReadOnlyList<Recipe> recipes = await _recipes.ListByIdsAsync(recipeIds, cancellationToken);
+        // Product entries carry their own snapshot and contribute no ids to this read.
+        Guid[] recipeIds = MealPlanRecipeResolution.DistinctRecipeIds(entries);
+        IReadOnlyList<Recipe> recipes = recipeIds.Length == 0
+            ? []
+            : await _recipes.ListByIdsAsync(recipeIds, cancellationToken);
         var recipeNamesById = recipes.ToDictionary(recipe => recipe.Id, recipe => recipe.Name);
 
         IReadOnlyList<MealPlanEntryDto> dtos = entries
             .Select(entry => MealPlanEntryDto.FromDomain(
                 entry,
-                recipeNamesById.GetValueOrDefault(entry.RecipeId, string.Empty)))
+                entry.RecipeId is { } recipeId
+                    ? recipeNamesById.GetValueOrDefault(recipeId, string.Empty)
+                    : null))
             .ToList();
 
         return Result.Ok(dtos);

@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Archivo:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: #1F1712; }
+  button, select, input { font: inherit; }
+  a { color: #D97E57; }
+  a:hover { color: #C75B38; }
+  @keyframes jd-pulse { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+  @keyframes jd-spin { to { transform: rotate(360deg); } }
+  @keyframes jd-toast { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  @keyframes jd-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes jd-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+</style>
+</helmet>
+<div data-screen-label="Plan posiłków" style="min-height:100vh;background:radial-gradient(1100px 500px at 50% -120px,#2C2015 0%,#1F1712 70%);font-family:'Archivo',system-ui,sans-serif;color:#F2E9D8;display:flex;flex-direction:column">
+
+  <!-- ── Nagłówek ─────────────────────────────────────── -->
+  <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+    <header style="border-bottom:1px solid rgba(242,233,216,0.08);padding:20px clamp(20px,4vw,52px) 0">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px">
+        <div style="display:flex;justify-content:flex-start">
+          <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;border:1px solid rgba(242,233,216,0.16);font-size:11px;font-weight:700;letter-spacing:0.12em;color:rgba(242,233,216,0.7)"><span style="width:7px;height:7px;border-radius:50%;background:#5F7C4E"></span>ZALOGOWANO · ANIA</span>
+        </div>
+        <a href="Jadlify - Strona główna v5.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;color:#F2E9D8">
+          <svg width="34" height="34" viewBox="0 0 32 32" fill="none" stroke="#D97E57" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="16" cy="16" r="8.2"></circle><circle cx="16" cy="16" r="3.4"></circle>
+            <path d="M4.4 10.5v4a1.6 1.6 0 0 0 3.2 0v-4"></path><path d="M6 10.5V25"></path><path d="M26.6 10.5c-1.7 1.9-1.7 5 0 6.6V25"></path>
+          </svg>
+          <span style="font-family:'Instrument Serif',serif;font-size:26px;line-height:1;letter-spacing:0.01em">Jadlify</span>
+          <span style="font-size:9px;font-weight:700;letter-spacing:0.26em;color:rgba(242,233,216,0.45)">PLANER POSIŁKÓW I MAKRO</span>
+        </a>
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px">
+          <a href="Jadlify - Logowanie i konto.dc.html" aria-label="Moje konto" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid rgba(242,233,216,0.16);color:rgba(242,233,216,0.75);text-decoration:none" style-hover="background:rgba(242,233,216,0.08);color:#F2E9D8">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"></circle><path d="M4.5 17c0-3 2.5-4.6 5.5-4.6s5.5 1.6 5.5 4.6"></path></svg></a>
+          <a href="Jadlify - Logowanie i konto.dc.html" style="font-size:13px;font-weight:600;color:rgba(242,233,216,0.55);text-decoration:none;padding:8px 4px" style-hover="color:#F2E9D8">Wyloguj</a>
+        </div>
+      </div>
+      <nav style="display:flex;justify-content:center;align-items:center;gap:4px;padding:14px 0 16px;flex-wrap:wrap">
+        <a href="Jadlify - Strona główna v5.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Strona główna</a>
+        <a href="Jadlify - Produkty.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Produkty</a>
+        <a href="Jadlify - Przepisy.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Przepisy</a>
+        <a href="#" onClick="{{ noop }}" aria-current="page" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:600;color:#F2E9D8;background:rgba(242,233,216,0.1);text-decoration:none">Plan posiłków</a>
+        <a href="Jadlify - Dzienne cele.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Dzienne cele</a>
+        <a href="Jadlify - Lista zakupów.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Lista zakupów</a>
+      </nav>
+    </header>
+  </sc-if>
+
+  <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+    <header style="position:sticky;top:0;z-index:30;background:#1F1712;border-bottom:1px solid rgba(242,233,216,0.08)">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:12px 16px 6px">
+        <div></div>
+        <a href="Jadlify - Strona główna v5.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;color:#F2E9D8">
+          <svg width="26" height="26" viewBox="0 0 32 32" fill="none" stroke="#D97E57" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="16" cy="16" r="8.2"></circle><circle cx="16" cy="16" r="3.4"></circle>
+            <path d="M4.4 10.5v4a1.6 1.6 0 0 0 3.2 0v-4"></path><path d="M6 10.5V25"></path><path d="M26.6 10.5c-1.7 1.9-1.7 5 0 6.6V25"></path>
+          </svg>
+          <span style="font-family:'Instrument Serif',serif;font-size:20px;line-height:1">Jadlify</span>
+        </a>
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:6px">
+          <a href="Jadlify - Logowanie i konto.dc.html" aria-label="Moje konto" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid rgba(242,233,216,0.16);color:rgba(242,233,216,0.75);text-decoration:none">
+            <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"></circle><path d="M4.5 17c0-3 2.5-4.6 5.5-4.6s5.5 1.6 5.5 4.6"></path></svg></a>
+          <a href="Jadlify - Logowanie i konto.dc.html" style="font-size:12.5px;font-weight:600;color:rgba(242,233,216,0.55);text-decoration:none;padding:8px 2px">Wyloguj</a>
+        </div>
+      </div>
+      <nav style="display:flex;gap:6px;overflow-x:auto;padding:6px 16px 12px">
+        <a href="Jadlify - Strona główna v5.dc.html" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Strona główna</a>
+        <a href="Jadlify - Produkty.dc.html" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Produkty</a>
+        <a href="Jadlify - Przepisy.dc.html" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Przepisy</a>
+        <a href="#" onClick="{{ noop }}" aria-current="page" style="flex:none;padding:7px 13px;border-radius:999px;background:rgba(242,233,216,0.12);color:#F2E9D8;text-decoration:none;font-size:13px;font-weight:600">Plan posiłków</a>
+        <a href="Jadlify - Dzienne cele.dc.html" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Dzienne cele</a>
+        <a href="Jadlify - Lista zakupów.dc.html" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Lista zakupów</a>
+      </nav>
+    </header>
+  </sc-if>
+
+  <main style="width:100%;max-width:1240px;margin:0 auto;padding:clamp(18px,3vw,32px) clamp(16px,3.4vw,44px) 110px">
+
+    <!-- ── Tytuł + nawigacja po datach ──────────────────── -->
+    <section aria-label="Zakres planowania" style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 20px;margin:0 0 20px">
+      <div style="min-width:230px">
+        <h1 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(30px,3.4vw,40px);line-height:1.05">Plan posiłków</h1>
+        <div style="margin-top:5px;font-size:14px;color:rgba(242,233,216,0.55)">{{ rangeLabel }}</div>
+      </div>
+      <div style="flex:1"></div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+        <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+          <div role="group" aria-label="Przełącz widok" style="display:flex;gap:2px;border:1px solid rgba(242,233,216,0.16);border-radius:999px;padding:3px">
+            <button onClick="{{ setDayView }}" aria-pressed="{{ isDayView }}" style="border:none;border-radius:999px;padding:7px 15px;font-size:13px;font-weight:600;cursor:pointer;background:{{ dayBtnBg }};color:{{ dayBtnFg }}">Dzień</button>
+            <button onClick="{{ setWeekView }}" aria-pressed="{{ isWeekView }}" style="border:none;border-radius:999px;padding:7px 15px;font-size:13px;font-weight:600;cursor:pointer;background:{{ weekBtnBg }};color:{{ weekBtnFg }}">Tydzień</button>
+            <button onClick="{{ setMonthView }}" aria-pressed="{{ isMonthView }}" style="border:none;border-radius:999px;padding:7px 15px;font-size:13px;font-weight:600;cursor:pointer;background:{{ monthBtnBg }};color:{{ monthBtnFg }}">Miesiąc</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+          <div role="group" aria-label="Przełącz widok" style="display:flex;gap:2px;border:1px solid rgba(242,233,216,0.16);border-radius:999px;padding:3px">
+            <button onClick="{{ setDayView }}" aria-pressed="{{ isDayView }}" style="border:none;border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;background:{{ dayBtnBg }};color:{{ dayBtnFg }}">Dzień</button>
+            <button onClick="{{ setWeekView }}" aria-pressed="{{ isWeekView }}" style="border:none;border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;background:{{ weekBtnBg }};color:{{ weekBtnFg }}">Tydzień</button>
+            <button onClick="{{ setMonthView }}" aria-pressed="{{ isMonthView }}" style="border:none;border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;background:{{ monthBtnBg }};color:{{ monthBtnFg }}">Miesiąc</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showBackToday }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ goToday }}" style="border:1px solid rgba(217,126,87,0.55);background:transparent;color:#D97E57;font-weight:600;font-size:13px;padding:9px 16px;border-radius:999px;cursor:pointer" style-hover="background:rgba(217,126,87,0.12)">Wróć do dzisiaj</button>
+        </sc-if>
+        <div style="display:flex;align-items:center;gap:2px;border:1px solid rgba(242,233,216,0.16);border-radius:999px;padding:4px 6px">
+          <button onClick="{{ prevPeriod }}" aria-label="{{ prevAria }}" style="width:32px;height:32px;border:none;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#F2E9D8" style-hover="background:rgba(242,233,216,0.1)">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 4 6.5 10l6 6"></path></svg></button>
+          <button onClick="{{ openMainPicker }}" aria-label="Wybierz datę z kalendarza" style="display:flex;align-items:center;gap:7px;border:none;background:transparent;font-size:13.5px;font-weight:600;color:#F2E9D8;padding:5px 9px;border-radius:999px;cursor:pointer;font-variant-numeric:tabular-nums" style-hover="background:rgba(242,233,216,0.1)">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="14" height="13" rx="2.5"></rect><path d="M3 8.5h14M7 2.5v3M13 2.5v3"></path></svg>
+            {{ dateBtnLabel }}</button>
+          <button onClick="{{ nextPeriod }}" aria-label="{{ nextAria }}" style="width:32px;height:32px;border:none;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#F2E9D8" style-hover="background:rgba(242,233,216,0.1)">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 4l6 6-6 6"></path></svg></button>
+        </div>
+        <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ openAddToolbar }}" style="display:flex;align-items:center;gap:7px;border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:13.5px;padding:10px 18px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 4v12M4 10h12"></path></svg>Dodaj posiłek</button>
+        </sc-if>
+      </div>
+    </section>
+
+    <!-- ── Odświeżanie w tle ────────────────────────────── -->
+    <sc-if value="{{ bgRefresh }}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="display:flex;align-items:center;gap:9px;background:rgba(242,233,216,0.06);border:1px solid rgba(242,233,216,0.12);border-radius:12px;padding:9px 14px;margin:0 0 16px;font-size:13px;color:rgba(242,233,216,0.65)">
+        <span style="flex:none;width:13px;height:13px;border:2px solid rgba(242,233,216,0.25);border-top-color:#D97E57;border-radius:50%;animation:jd-spin 0.8s linear infinite"></span>
+        Odświeżamy plan w tle — Twoje zaplanowane posiłki pozostają widoczne.
+      </div>
+    </sc-if>
+
+    <!-- ── Ładowanie ────────────────────────────────────── -->
+    <sc-if value="{{ showLoading }}" hint-placeholder-val="{{ false }}">
+      <div aria-label="Wczytywanie planu">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
+          <div style="height:132px;border-radius:16px;background:rgba(242,233,216,0.07);animation:jd-pulse 1.4s ease-in-out infinite"></div>
+          <div style="height:132px;border-radius:16px;background:rgba(242,233,216,0.06);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.1s"></div>
+          <div style="height:132px;border-radius:16px;background:rgba(242,233,216,0.07);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.2s"></div>
+          <div style="height:132px;border-radius:16px;background:rgba(242,233,216,0.06);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.3s"></div>
+          <div style="height:132px;border-radius:16px;background:rgba(242,233,216,0.07);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.4s"></div>
+          <div style="height:132px;border-radius:16px;background:rgba(242,233,216,0.06);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.5s"></div>
+          <div style="height:132px;border-radius:16px;background:rgba(242,233,216,0.07);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.6s"></div>
+        </div>
+        <div style="height:340px;border-radius:20px;background:rgba(242,233,216,0.06);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.2s;margin-top:18px"></div>
+        <div style="margin-top:16px;font-size:13.5px;color:rgba(242,233,216,0.5);display:flex;align-items:center;gap:9px">
+          <span style="width:14px;height:14px;border:2px solid rgba(242,233,216,0.25);border-top-color:#D97E57;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span>
+          Wczytujemy Twój plan posiłków…
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ── Błąd pobierania ──────────────────────────────── -->
+    <sc-if value="{{ showLoadError }}" hint-placeholder-val="{{ false }}">
+      <div style="max-width:520px;margin:40px auto;background:#F8F1E3;border-radius:20px;padding:32px;text-align:center;color:#2A2018;animation:jd-rise 0.4s ease-out">
+        <div style="width:46px;height:46px;margin:0 auto 14px;border-radius:50%;background:rgba(179,64,46,0.1);display:flex;align-items:center;justify-content:center;color:#B3402E">
+          <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 18 17H2z"></path><path d="M10 8.5v3.5"></path><circle cx="10" cy="14.4" r="0.5" fill="currentColor"></circle></svg>
+        </div>
+        <h2 style="margin:0 0 6px;font-family:'Instrument Serif',serif;font-weight:400;font-size:24px">Nie udało się pobrać planu</h2>
+        <p style="margin:0 0 20px;font-size:14.5px;line-height:1.55;color:#8C7F6C">Wystąpił problem z połączeniem. Twoje przepisy i wcześniejsze plany są bezpieczne — spróbuj ponownie.</p>
+        <button onClick="{{ retryLoad }}" style="border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:14.5px;padding:12px 24px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">Wczytaj ponownie</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showContent }}" hint-placeholder-val="{{ true }}">
+
+      <!-- ── Podsumowanie tygodnia ──────────────────────── -->
+      <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+        <section aria-label="Podsumowanie tygodnia" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin:0 0 16px;font-size:13px;color:rgba(242,233,216,0.6)">
+          <sc-for list="{{ summaryChips }}" as="ch" hint-placeholder-count="4">
+            <span style="display:inline-flex;align-items:center;gap:7px;font-variant-numeric:tabular-nums"><span style="width:6px;height:6px;border-radius:50%;background:{{ ch.dot }}"></span>{{ ch.label }}</span>
+          </sc-for>
+          <div style="flex:1"></div>
+          <sc-if value="{{ hasAnyMeals }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ openShop }}" style="display:flex;align-items:center;gap:8px;border:none;background:#2A2018;color:#F8F1E3;font-weight:600;font-size:13px;padding:10px 18px;border-radius:999px;cursor:pointer;box-shadow:0 0 0 1px rgba(242,233,216,0.14)" style-hover="background:#3A2C1F">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2 9.5h8L17 7H6"></path><circle cx="8" cy="16.4" r="1.1"></circle><circle cx="14" cy="16.4" r="1.1"></circle></svg>
+              Utwórz listę zakupów</button>
+          </sc-if>
+        </section>
+      </sc-if>
+
+      <!-- ── Pasek dat (mobile) ─────────────────────────── -->
+      <sc-if value="{{ showStrip }}" hint-placeholder-val="{{ false }}">
+        <nav aria-label="Dni tygodnia" style="display:flex;align-items:stretch;gap:6px;overflow-x:auto;margin:0 0 16px;padding:2px">
+          <sc-for list="{{ days }}" as="d" hint-placeholder-count="7">
+            <button onClick="{{ d.select }}" aria-pressed="{{ d.isSel }}" aria-label="{{ d.aria }}" style="flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:56px;padding:9px 8px;border-radius:14px;cursor:pointer;border:{{ d.stripBorder }};background:{{ d.stripBg }};color:{{ d.stripFg }}">
+              <span style="font-size:10px;font-weight:700;letter-spacing:0.1em">{{ d.wd }}</span>
+              <span style="font-family:'Instrument Serif',serif;font-size:19px;line-height:1;font-variant-numeric:tabular-nums">{{ d.num }}</span>
+              <span style="width:5px;height:5px;border-radius:50%;background:{{ d.dotColor }}"></span>
+            </button>
+          </sc-for>
+        </nav>
+      </sc-if>
+
+      <!-- ── Tydzień: karty dni ─────────────────────────── -->
+      <sc-if value="{{ showCards }}" hint-placeholder-val="{{ true }}">
+        <section aria-label="Przegląd tygodnia" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin:0 0 20px">
+          <sc-for list="{{ days }}" as="d" hint-placeholder-count="7">
+            <div role="button" tabindex="0" onClick="{{ d.select }}" onKeyDown="{{ d.keySelect }}" aria-pressed="{{ d.isSel }}" aria-label="{{ d.aria }}" style="display:flex;flex-direction:column;gap:8px;border-radius:16px;padding:13px 13px 12px;cursor:pointer;min-height:150px;background:{{ d.cardBg }};color:{{ d.cardFg }};border:{{ d.cardBorder }};animation:jd-rise 0.4s ease-out" style-hover="transform:translateY(-2px)">
+              <div style="display:flex;align-items:baseline;gap:6px">
+                <span style="font-size:10.5px;font-weight:700;letter-spacing:0.12em;color:{{ d.wdColor }}">{{ d.wd }}</span>
+                <span style="font-family:'Instrument Serif',serif;font-size:20px;line-height:1;font-variant-numeric:tabular-nums">{{ d.num }}</span>
+                <div style="flex:1"></div>
+                <sc-if value="{{ d.isToday }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:9px;font-weight:700;letter-spacing:0.14em;padding:3px 8px;border-radius:999px;background:rgba(217,126,87,0.16);color:#D97E57;border:1px solid rgba(217,126,87,0.45)">DZIŚ</span>
+                </sc-if>
+              </div>
+              <sc-if value="{{ d.hasMeals }}" hint-placeholder-val="{{ true }}">
+                <div style="font-size:12px;color:{{ d.mutedColor }};font-variant-numeric:tabular-nums">{{ d.mealsLabel }}</div>
+                <div style="font-variant-numeric:tabular-nums;line-height:1.15"><span style="font-family:'Instrument Serif',serif;font-size:22px">{{ d.kcalLabel }}</span><span style="font-size:11.5px;color:{{ d.mutedColor }}"> {{ d.kcalSuffix }}</span></div>
+                <sc-if value="{{ d.hasGoal }}" hint-placeholder-val="{{ true }}">
+                  <div style="height:5px;border-radius:999px;background:{{ d.trackBg }};overflow:hidden"><div style="height:100%;border-radius:999px;width:{{ d.pct }}%;background:{{ d.statusColor }}"></div></div>
+                </sc-if>
+                <div style="font-size:11.5px;font-weight:600;color:{{ d.statusColor }}">{{ d.statusLabel }}</div>
+                <div style="display:flex;gap:8px;font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:auto">
+                  <span style="color:#C75B38">B {{ d.b }}</span><span style="color:#A8861B">W {{ d.w }}</span><span style="color:#5F7C4E">T {{ d.t }}</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{ d.noMeals }}" hint-placeholder-val="{{ false }}">
+                <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px">
+                  <div style="font-size:12px;color:{{ d.mutedColor }}">Brak posiłków</div>
+                  <button onClick="{{ d.addFirst }}" style="border:1.5px dashed {{ d.dashColor }};background:transparent;border-radius:11px;padding:9px 8px;font-size:11.5px;font-weight:600;color:{{ d.dashFg }};cursor:pointer;line-height:1.3" style-hover="border-color:#C75B38;color:#C75B38">+ Dodaj pierwszy posiłek</button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </section>
+      </sc-if>
+
+      <!-- ── Miesiąc: kalendarz ─────────────────────────── -->
+      <sc-if value="{{ showMonthCal }}" hint-placeholder-val="{{ false }}">
+        <section aria-label="Kalendarz miesiąca" style="margin:0 0 20px">
+          <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:0 0 8px">
+            <sc-for list="{{ monthWeekdays }}" as="wd" hint-placeholder-count="7">
+              <div style="text-align:center;font-size:10.5px;font-weight:700;letter-spacing:0.1em;color:rgba(242,233,216,0.45)">{{ wd }}</div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">
+            <sc-for list="{{ monthDays }}" as="d" hint-placeholder-count="42">
+              <div role="button" tabindex="0" onClick="{{ d.select }}" onKeyDown="{{ d.keySelect }}" aria-pressed="{{ d.isSel }}" aria-label="{{ d.aria }}" style="display:flex;flex-direction:column;gap:3px;min-height:clamp(58px,8vw,148px);border-radius:12px;padding:7px 9px;cursor:pointer;background:{{ d.cellBg }};border:{{ d.cellBorder }}" style-hover="transform:translateY(-1px)">
+                <div style="display:flex;align-items:center;gap:5px">
+                  <span style="font-family:'Instrument Serif',serif;font-size:clamp(15px,1.6vw,18px);line-height:1;font-variant-numeric:tabular-nums;color:{{ d.numColor }}">{{ d.num }}</span>
+                  <div style="flex:1"></div>
+                  <span style="flex:none;width:6px;height:6px;border-radius:50%;background:{{ d.dotColor }}"></span>
+                </div>
+                <div style="font-size:10.5px;line-height:1.1;color:{{ d.mutedColor }};font-variant-numeric:tabular-nums">{{ d.mealsLabelM }}</div>
+                <div style="line-height:1.1;font-variant-numeric:tabular-nums;margin-top:1px"><span style="font-size:15px;font-weight:700;color:{{ d.numColor }}">{{ d.kcalNum }}</span> <span style="font-size:9.5px;font-weight:500;color:{{ d.mutedColor }}">{{ d.kcalSuffix }}</span></div>
+                <div style="height:4px;border-radius:999px;background:{{ d.trackBg }};overflow:hidden;margin-top:1px"><div style="height:100%;border-radius:999px;width:{{ d.pctW }};background:{{ d.statusColor }}"></div></div>
+                <div style="font-size:9.5px;font-weight:600;line-height:1.1;color:{{ d.statusColor }}">{{ d.statusLabel }}</div>
+                <div style="display:flex;gap:6px;font-size:9.5px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:auto;padding-top:2px"><span style="color:#C75B38">{{ d.bStr }}</span><span style="color:#A8861B">{{ d.wStr }}</span><span style="color:#5F7C4E">{{ d.tStr }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- ── Brak przepisów ─────────────────────────────── -->
+      <sc-if value="{{ noRecipes }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:560px;margin:10px auto 0;background:#F8F1E3;border-radius:22px;padding:clamp(26px,4vw,38px);text-align:center;color:#2A2018;animation:jd-rise 0.4s ease-out">
+          <svg width="34" height="34" viewBox="0 0 32 32" fill="none" stroke="#C75B38" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="margin:0 0 10px" aria-hidden="true">
+            <circle cx="16" cy="16" r="8.2"></circle><circle cx="16" cy="16" r="3.4"></circle>
+            <path d="M4.4 10.5v4a1.6 1.6 0 0 0 3.2 0v-4"></path><path d="M6 10.5V25"></path><path d="M26.6 10.5c-1.7 1.9-1.7 5 0 6.6V25"></path>
+          </svg>
+          <h2 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:26px">Najpierw utwórz przepis</h2>
+          <p style="margin:0 auto 20px;max-width:420px;font-size:14.5px;line-height:1.6;color:#8C7F6C">Plan posiłków buduje się z Twoich przepisów. Utwórz pierwszy przepis, a wrócisz tutaj i dodasz go do wybranego dnia — {{ selDayShort }}.</p>
+          <a href="Jadlify - Przepisy.dc.html" style="display:inline-block;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:14.5px;padding:13px 26px;border-radius:999px;text-decoration:none" style-hover="background:#B04E2E">Przejdź do przepisów</a>
+        </div>
+      </sc-if>
+
+      <!-- ── Panel wybranego dnia ───────────────────────── -->
+      <sc-if value="{{ showDayPanel }}" hint-placeholder-val="{{ true }}">
+        <section aria-label="Szczegóły wybranego dnia" data-screen-label="Szczegóły dnia" style="background:#F8F1E3;border-radius:22px;padding:clamp(18px,3vw,28px);color:#2A2018;box-shadow:0 20px 50px rgba(0,0,0,0.25);border:1px solid rgba(0,0,0,0.05);animation:jd-rise 0.4s ease-out">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:0 0 18px">
+            <h2 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(23px,2.6vw,28px)">{{ selDayLabel }}</h2>
+            <sc-if value="{{ selIsToday }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:10px;font-weight:700;letter-spacing:0.14em;padding:4px 10px;border-radius:999px;background:rgba(217,126,87,0.14);color:#C75B38;border:1px solid rgba(199,91,56,0.35)">DZIŚ</span>
+            </sc-if>
+            <div style="flex:1"></div>
+            <sc-if value="{{ selHasMeals }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ openCopyDay }}" style="border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:13px;min-height:40px;padding:8px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Kopiuj dzień</button>
+            </sc-if>
+            <button onClick="{{ openAddSel }}" style="display:flex;align-items:center;gap:7px;border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:13.5px;min-height:40px;padding:9px 17px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">
+              <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 4v12M4 10h12"></path></svg>Dodaj posiłek</button>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+
+            <!-- Posiłki wg typu -->
+            <div style="flex:2 1 440px;min-width:0;display:flex;flex-direction:column;gap:14px">
+              <sc-if value="{{ selNoMeals }}" hint-placeholder-val="{{ false }}">
+                <div style="border:1.5px dashed #DCCFB2;border-radius:16px;padding:30px 24px;text-align:center">
+                  <div style="font-family:'Instrument Serif',serif;font-size:21px;margin:0 0 6px">Ten dzień jest jeszcze pusty</div>
+                  <p style="margin:0 auto 16px;max-width:380px;font-size:13.5px;line-height:1.55;color:#8C7F6C">Dodaj pierwszy posiłek albo skopiuj cały dzień z innej daty — to najszybszy sposób na meal prep.</p>
+                  <button onClick="{{ openAddSel }}" style="border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:14px;padding:11px 22px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">Dodaj pierwszy posiłek</button>
+                </div>
+              </sc-if>
+              <sc-for list="{{ mealGroups }}" as="g" hint-placeholder-count="4">
+                <div style="border:1px solid #EADFC8;background:#FCF7EC;border-radius:16px;padding:14px 18px">
+                  <div style="display:flex;align-items:baseline;gap:10px">
+                    <h3 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:20px">{{ g.label }}</h3>
+                    <div style="flex:1;border-bottom:2px dotted #DCCFB2;align-self:center;min-width:24px"></div>
+                    <span style="font-family:'Instrument Serif',serif;font-size:18px;font-variant-numeric:tabular-nums">{{ g.kcal }}</span>
+                    <span style="font-size:10.5px;font-weight:600;letter-spacing:0.1em;color:#8C7F6C">KCAL</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column">
+                    <sc-for list="{{ g.entries }}" as="e" hint-placeholder-count="1">
+                      <sc-if value="{{ e.ok }}" hint-placeholder-val="{{ true }}">
+                        <div style="padding:11px 0;border-top:1px dotted #DCCFB2;margin-top:10px">
+                          <div style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center">
+                            <div style="flex:1 1 160px;min-width:0">
+                              <a href="Jadlify - Przepisy.dc.html" style="font-weight:600;font-size:14.5px;line-height:1.3;color:#2A2018;text-decoration:none" style-hover="color:#C75B38;text-decoration:underline;text-underline-offset:3px">{{ e.name }}</a>
+                              <div style="margin-top:2px;font-size:12.5px;color:#8C7F6C;font-variant-numeric:tabular-nums">{{ e.porLabel }}</div>
+                            </div>
+                            <div style="flex:none;display:flex;align-items:baseline;gap:9px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums">
+                              <span style="color:#C75B38">{{ e.b }}B</span><span style="color:#A8861B">{{ e.w }}W</span><span style="color:#5F7C4E">{{ e.t }}T</span>
+                            </div>
+                            <span style="flex:none;font-family:'Instrument Serif',serif;font-size:19px;min-width:44px;text-align:right;font-variant-numeric:tabular-nums">{{ e.kcal }}</span>
+                            <div style="flex:none;display:flex;align-items:center;border:1px solid #E5DAC3;border-radius:999px;padding:1px">
+                              <button onClick="{{ e.dec }}" aria-label="{{ e.decAria }}" style="width:30px;height:30px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:15px;font-weight:700;color:#C75B38" style-hover="background:#EFE5D2">−</button>
+                              <span style="min-width:34px;text-align:center;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">{{ e.porNum }}</span>
+                              <button onClick="{{ e.inc }}" aria-label="{{ e.incAria }}" style="width:30px;height:30px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:15px;font-weight:700;color:#C75B38" style-hover="background:#EFE5D2">+</button>
+                            </div>
+                            <select value="{{ e.typeVal }}" onChange="{{ e.onType }}" aria-label="{{ e.typeAria }}" style="flex:none;border:1px solid #E5DAC3;background:transparent;border-radius:999px;padding:6px 8px;font-size:12.5px;font-weight:600;color:#2A2018;cursor:pointer;min-height:32px">
+                              <option value="sniadanie">Śniadanie</option><option value="obiad">Obiad</option><option value="kolacja">Kolacja</option><option value="przekaska">Przekąska</option>
+                            </select>
+                          </div>
+                          <div style="display:flex;flex-wrap:wrap;gap:2px 4px;margin-top:5px">
+                            <button onClick="{{ e.openMove }}" style="border:none;background:transparent;font-size:12.5px;font-weight:600;color:#8C7F6C;padding:6px 8px;border-radius:8px;cursor:pointer" style-hover="background:#EFE5D2;color:#C75B38">Przenieś</button>
+                            <button onClick="{{ e.openCopy }}" style="border:none;background:transparent;font-size:12.5px;font-weight:600;color:#8C7F6C;padding:6px 8px;border-radius:8px;cursor:pointer" style-hover="background:#EFE5D2;color:#C75B38">Kopiuj do innych dni</button>
+                            <button onClick="{{ e.remove }}" style="border:none;background:transparent;font-size:12.5px;font-weight:600;color:#8C7F6C;padding:6px 8px;border-radius:8px;cursor:pointer" style-hover="background:rgba(179,64,46,0.1);color:#B3402E">Usuń posiłek</button>
+                          </div>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ e.gone }}" hint-placeholder-val="{{ false }}">
+                        <div role="alert" style="margin-top:10px;border:1px solid rgba(179,64,46,0.35);background:rgba(179,64,46,0.06);border-radius:13px;padding:12px 14px">
+                          <div style="display:flex;gap:9px;align-items:flex-start">
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#B3402E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><path d="M10 3 18 17H2z"></path><path d="M10 8.5v3.5"></path><circle cx="10" cy="14.4" r="0.5" fill="#B3402E"></circle></svg>
+                            <div style="min-width:0">
+                              <div style="font-weight:700;font-size:13.5px;color:#8F3222">Przepis niedostępny — {{ e.goneWhere }}</div>
+                              <div style="margin-top:3px;font-size:12.5px;line-height:1.5;color:#6E6250">Przepis „{{ e.name }}” został usunięty lub nie można go wczytać. Wpis pozostaje w planie z zapisanymi wartościami: <b style="font-variant-numeric:tabular-nums;color:#2A2018">{{ e.snapLine }}</b></div>
+                              <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:9px">
+                                <button onClick="{{ e.replace }}" style="border:none;background:#2A2018;color:#F8F1E3;font-weight:600;font-size:12.5px;padding:8px 14px;border-radius:999px;cursor:pointer" style-hover="background:#1F1712">Zastąp innym przepisem</button>
+                                <button onClick="{{ e.remove }}" style="border:1px solid rgba(179,64,46,0.4);background:transparent;color:#B3402E;font-weight:600;font-size:12.5px;padding:8px 14px;border-radius:999px;cursor:pointer" style-hover="background:rgba(179,64,46,0.08)">Usuń wpis</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </sc-if>
+                    </sc-for>
+                    <button onClick="{{ g.addThis }}" style="margin-top:10px;border:1.5px dashed #E5DAC3;background:transparent;border-radius:11px;padding:9px 16px;text-align:center;font-size:12.5px;font-weight:600;color:#B0A48C;cursor:pointer" style-hover="border-color:#C75B38;color:#C75B38;background:rgba(199,91,56,0.05)">+ {{ g.addLabel }}</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <!-- Bilans dnia -->
+            <aside aria-label="Bilans wybranego dnia" style="flex:1 1 290px;min-width:0;display:flex;flex-direction:column;gap:14px">
+              <sc-if value="{{ hasGoal }}" hint-placeholder-val="{{ true }}">
+                <div style="border:1px solid #EADFC8;background:#FCF7EC;border-radius:16px;padding:16px 18px">
+                  <div style="display:flex;align-items:baseline;gap:10px;margin:0 0 14px">
+                    <h3 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:20px">Bilans dnia</h3>
+                    <div style="flex:1;border-bottom:2px dotted #DCCFB2;align-self:center"></div>
+                    <span style="font-size:12px;color:#8C7F6C;font-variant-numeric:tabular-nums">{{ selPctLabel }}</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:13px">
+                    <sc-for list="{{ balanceRows }}" as="row" hint-placeholder-count="4">
+                      <div>
+                        <div style="display:flex;align-items:baseline;gap:7px;font-size:13px;flex-wrap:wrap">
+                          <span style="font-weight:600">{{ row.label }}</span>
+                          <div style="flex:1;border-bottom:2px dotted #DCCFB2;align-self:center;min-width:14px"></div>
+                          <span style="font-variant-numeric:tabular-nums"><b>{{ row.val }}</b> <span style="color:#8C7F6C">/ {{ row.goal }}</span></span>
+                        </div>
+                        <div style="margin-top:5px;height:6px;border-radius:999px;background:#EBE0CB;overflow:hidden">
+                          <div style="height:100%;border-radius:999px;width:{{ row.pct }}%;background:{{ row.color }};transform-origin:left;animation:jd-bar 0.7s ease-out"></div>
+                        </div>
+                        <div style="margin-top:4px;font-size:12px;font-weight:600;color:{{ row.color }}">{{ row.status }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ noGoal }}" hint-placeholder-val="{{ false }}">
+                <div style="border:1px solid #EADFC8;background:#FCF7EC;border-radius:16px;padding:16px 18px">
+                  <h3 style="margin:0 0 6px;font-family:'Instrument Serif',serif;font-weight:400;font-size:20px">Brak dziennych celów</h3>
+                  <p style="margin:0 0 10px;font-size:13px;line-height:1.55;color:#8C7F6C">Zaplanowany dzień to: <b style="color:#2A2018;font-variant-numeric:tabular-nums">{{ noGoalTotals }}</b></p>
+                  <p style="margin:0 0 14px;font-size:13px;line-height:1.55;color:#8C7F6C">Ustaw cel kalorii i makro, aby zobaczyć, ile zostało do celu w każdym dniu. Planowanie działa też bez celu.</p>
+                  <a href="Jadlify - Dzienne cele.dc.html" style="display:inline-block;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:13px;padding:10px 18px;border-radius:999px;text-decoration:none" style-hover="background:#B04E2E">Ustaw dzienne cele</a>
+                </div>
+              </sc-if>
+              <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+                <sc-if value="{{ hasAnyMeals }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ openShop }}" style="display:flex;align-items:center;justify-content:center;gap:8px;border:none;background:#2A2018;color:#F8F1E3;font-weight:600;font-size:13.5px;min-height:48px;padding:12px 18px;border-radius:999px;cursor:pointer" style-hover="background:#1F1712">
+                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2 9.5h8L17 7H6"></path><circle cx="8" cy="16.4" r="1.1"></circle><circle cx="14" cy="16.4" r="1.1"></circle></svg>
+                    Utwórz listę zakupów</button>
+                </sc-if>
+              </sc-if>
+              <div style="border:1px solid #EADFC8;background:#FCF7EC;border-radius:16px;padding:13px 16px;font-size:12.5px;line-height:1.55;color:#8C7F6C">Zmiany w planie nie zmieniają już utworzonych list zakupów — dotknięte listy dostaną ostrzeżenie o nieaktualności.</div>
+            </aside>
+          </div>
+        </section>
+      </sc-if>
+    </sc-if>
+  </main>
+
+  <!-- ── Przycisk mobilny ─────────────────────────────── -->
+  <sc-if value="{{ showMobileFab }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:16px;left:16px;right:16px;z-index:35;display:flex;justify-content:center;pointer-events:none">
+      <button onClick="{{ openAddSel }}" style="pointer-events:auto;display:flex;align-items:center;gap:8px;border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:15px;min-height:52px;padding:14px 28px;border-radius:999px;cursor:pointer;box-shadow:0 14px 34px rgba(0,0,0,0.45)" style-hover="background:#B04E2E">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 4v12M4 10h12"></path></svg>Dodaj posiłek</button>
+    </div>
+  </sc-if>
+
+  <!-- ── Modal: dodaj / zastąp posiłek ────────────────── -->
+  <sc-if value="{{ addOpen }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Modal dodawania posiłku" style="{{ ovlStyle }}" onClick="{{ closeAddBg }}">
+      <div role="dialog" aria-modal="true" aria-label="{{ addTitle }}" style="{{ panelStyle }}" onClick="{{ stopClick }}">
+        <div style="flex:none;padding:18px 24px 14px;border-bottom:1px solid #EADFC8">
+          <sc-if value="{{ addIsPick }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:10px">
+              <h2 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:26px">{{ addTitle }}</h2>
+              <div style="flex:1"></div>
+              <button onClick="{{ closeAdd }}" aria-label="Zamknij" style="flex:none;width:44px;height:44px;border:none;background:#EFE5D2;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#2A2018" style-hover="background:#E5DAC3">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"></path></svg></button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:13.5px;color:#6E6250;margin-top:4px">
+              <span>Do planu:</span>
+              <button onClick="{{ openAddPicker }}" aria-label="Zmień datę posiłku" style="display:inline-flex;align-items:center;gap:6px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:999px;padding:5px 12px;font-size:13px;font-weight:700;color:#C75B38;cursor:pointer;font-variant-numeric:tabular-nums" style-hover="background:#EFE5D2"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="14" height="13" rx="2.5"></rect><path d="M3 8.5h14M7 2.5v3M13 2.5v3"></path></svg>{{ addDateName }}</button>
+            </div>
+            <sc-if value="{{ addIsReplace }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:8px;font-size:12.5px;line-height:1.5;color:#8F3222;background:rgba(179,64,46,0.07);border:1px solid rgba(179,64,46,0.3);border-radius:10px;padding:8px 11px">Zastępujesz niedostępny wpis ({{ replaceInfo }}). Po zapisaniu stary wpis zostanie usunięty.</div>
+            </sc-if>
+          </sc-if>
+          <sc-if value="{{ addIsCreate }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:10px">
+              <button onClick="{{ cancelCreate }}" aria-label="Wróć do dodawania posiłku" style="flex:none;width:44px;height:44px;border:none;background:#EFE5D2;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#2A2018" style-hover="background:#E5DAC3">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6"></path></svg></button>
+              <h2 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:26px">{{ createTitle }}</h2>
+              <div style="flex:1"></div>
+              <button onClick="{{ closeAdd }}" aria-label="Zamknij" style="flex:none;width:44px;height:44px;border:none;background:#EFE5D2;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#2A2018" style-hover="background:#E5DAC3">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"></path></svg></button>
+            </div>
+            <div style="font-size:13px;color:#6E6250;margin-top:4px;line-height:1.5">{{ createSubtitle }}</div>
+          </sc-if>
+        </div>
+
+        <div style="flex:1 1 auto;min-height:0;overflow:auto;padding:16px 24px 20px">
+          <sc-if value="{{ addIsPick }}" hint-placeholder-val="{{ true }}">
+            <div role="group" aria-label="Rodzaj wpisu" style="display:flex;gap:4px;background:#EFE5D2;border-radius:999px;padding:4px;margin:0 0 16px">
+              <button onClick="{{ setModeRecipe }}" aria-pressed="{{ addModeRecipe }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;border:none;border-radius:999px;padding:10px 12px;font-size:13.5px;font-weight:700;cursor:pointer;background:{{ modeRecipeBg }};color:{{ modeRecipeFg }}"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 3h8l3 3v11h-11z"></path><path d="M7.5 8h5M7.5 11h5M7.5 14h3.5"></path></svg>Przepis</button>
+              <button onClick="{{ setModeProduct }}" aria-pressed="{{ addModeProduct }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;border:none;border-radius:999px;padding:10px 12px;font-size:13.5px;font-weight:700;cursor:pointer;background:{{ modeProductBg }};color:{{ modeProductFg }}"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3.5 16 6.5 10 9.5 4 6.5z"></path><path d="M4 6.5v7l6 3 6-3v-7"></path><path d="M10 9.5v7"></path></svg>Produkt</button>
+            </div>
+            <sc-if value="{{ addModeRecipe }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">PRZEPIS</div>
+            <div style="position:relative;margin:0 0 10px">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#8C7F6C" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="position:absolute;left:15px;top:50%;transform:translateY(-50%);pointer-events:none"><circle cx="9" cy="9" r="5.5"></circle><path d="m13.5 13.5 3.5 3.5"></path></svg>
+              <input type="text" value="{{ searchVal }}" onChange="{{ onSearch }}" placeholder="Szukaj przepisu po nazwie…" aria-label="Szukaj przepisu po nazwie" style="width:100%;min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:999px;padding:10px 18px 10px 40px;font-size:14px;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+            </div>
+            <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:7px;max-height:min(260px,34vh);overflow:auto;padding:2px;overscroll-behavior:contain">
+                <sc-for list="{{ recipeOptions }}" as="r" hint-placeholder-count="5">
+                  <button onClick="{{ r.pick }}" aria-pressed="{{ r.pressed }}" style="flex:none;display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:{{ r.border }};background:{{ r.bg }};border-radius:13px;padding:11px 14px;min-height:56px;cursor:pointer">
+                    <span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;line-height:1;background:{{ r.markBg }};border:{{ r.markBorder }};color:#FFF8EC">{{ r.mark }}</span>
+                    <span style="flex:1 1 auto;min-width:0">
+                      <span style="display:block;font-size:14px;font-weight:600;color:#2A2018;line-height:1.35">{{ r.name }}</span>
+                      <span style="display:block;margin-top:3px;font-size:12.5px;color:#5C5140;font-variant-numeric:tabular-nums"><b style="color:#2A2018">{{ r.kcalLabel }}</b> · {{ r.macroLabel }} <span style="color:#8C7F6C">/ porcja</span></span>
+                    </span>
+                  </button>
+                </sc-for>
+              </div>
+              <div style="margin-top:10px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;font-size:13px;color:#6E6250">
+                Nie widzisz odpowiedniego przepisu?
+                <button onClick="{{ goCreate }}" style="border:none;background:transparent;padding:10px 4px;margin:-8px 0;font-size:13px;font-weight:700;color:#C75B38;cursor:pointer;text-decoration:underline;text-underline-offset:3px" style-hover="color:#B04E2E">Utwórz nowy przepis</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#FCF7EC;border:1.5px dashed #DCCFB2;border-radius:14px;padding:22px 18px;text-align:center">
+                <div style="font-weight:700;font-size:14.5px">Brak przepisów dla „{{ searchVal }}”</div>
+                <p style="margin:4px auto 14px;max-width:360px;font-size:13px;line-height:1.5;color:#6E6250">Sprawdź pisownię albo utwórz nowy przepis — wrócisz tu z gotowym wyborem.</p>
+                <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px">
+                  <button onClick="{{ clearSearch }}" style="border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:13.5px;min-height:44px;padding:10px 18px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Wyczyść wyszukiwanie</button>
+                  <button onClick="{{ goCreate }}" style="border:none;background:#2A2018;color:#F8F1E3;font-weight:600;font-size:13.5px;min-height:44px;padding:10px 20px;border-radius:999px;cursor:pointer" style-hover="background:#1F1712">Utwórz nowy przepis</button>
+                </div>
+              </div>
+            </sc-if>
+            </sc-if>
+            <sc-if value="{{ addModeProduct }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">PRODUKT</div>
+              <div style="position:relative;margin:0 0 10px">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#8C7F6C" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="position:absolute;left:15px;top:50%;transform:translateY(-50%);pointer-events:none"><circle cx="9" cy="9" r="5.5"></circle><path d="m13.5 13.5 3.5 3.5"></path></svg>
+                <input type="text" value="{{ psearchVal }}" onChange="{{ onPSearch }}" placeholder="Szukaj produktu po nazwie…" aria-label="Szukaj produktu po nazwie" style="width:100%;min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:999px;padding:10px 18px 10px 40px;font-size:14px;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+              </div>
+              <sc-if value="{{ prodHasResults }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:7px;max-height:min(260px,34vh);overflow:auto;padding:2px;overscroll-behavior:contain">
+                  <sc-for list="{{ productOptions }}" as="p" hint-placeholder-count="5">
+                    <button onClick="{{ p.pick }}" aria-pressed="{{ p.pressed }}" style="flex:none;display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:{{ p.border }};background:{{ p.bg }};border-radius:13px;padding:11px 14px;min-height:56px;cursor:pointer">
+                      <span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;line-height:1;background:{{ p.markBg }};border:{{ p.markBorder }};color:#FFF8EC">{{ p.mark }}</span>
+                      <span style="flex:1 1 auto;min-width:0">
+                        <span style="display:block;font-size:14px;font-weight:600;color:#2A2018;line-height:1.35">{{ p.name }}</span>
+                        <span style="display:block;margin-top:3px;font-size:12.5px;color:#5C5140;font-variant-numeric:tabular-nums"><b style="color:#2A2018">{{ p.kcalLabel }}</b> · {{ p.macroLabel }}</span>
+                      </span>
+                    </button>
+                  </sc-for>
+                </div>
+                <div style="margin-top:10px;font-size:12.5px;line-height:1.5;color:#6E6250">Dodajesz pojedynczy produkt — np. serek czy jogurt — bez tworzenia przepisu. Makra przeliczymy z gramatury.</div>
+                <div style="margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;font-size:13px;color:#6E6250">
+                  Nie widzisz odpowiedniego produktu?
+                  <button onClick="{{ goCreateProd }}" style="border:none;background:transparent;padding:10px 4px;margin:-8px 0;font-size:13px;font-weight:700;color:#C75B38;cursor:pointer;text-decoration:underline;text-underline-offset:3px" style-hover="color:#B04E2E">Utwórz nowy produkt</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ prodNoResults }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#FCF7EC;border:1.5px dashed #DCCFB2;border-radius:14px;padding:22px 18px;text-align:center">
+                  <div style="font-weight:700;font-size:14.5px">Brak produktów dla „{{ psearchVal }}”</div>
+                  <p style="margin:4px auto 14px;max-width:360px;font-size:13px;line-height:1.5;color:#6E6250">Sprawdź pisownię albo utwórz nowy produkt — wrócisz tu z gotowym wyborem.</p>
+                  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px">
+                    <button onClick="{{ clearPSearch }}" style="border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:13.5px;min-height:44px;padding:10px 18px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Wyczyść wyszukiwanie</button>
+                    <button onClick="{{ goCreateProd }}" style="border:none;background:#2A2018;color:#F8F1E3;font-weight:600;font-size:13.5px;min-height:44px;padding:10px 20px;border-radius:999px;cursor:pointer" style-hover="background:#1F1712">Utwórz nowy produkt</button>
+                  </div>
+                </div>
+              </sc-if>
+            </sc-if>
+            <div style="display:flex;flex-wrap:wrap;gap:16px 24px;margin-top:20px">
+              <div style="flex:1 1 100%">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">TYP POSIŁKU</div>
+                <div style="display:flex;flex-wrap:nowrap;gap:6px">
+                  <sc-for list="{{ typeOptions }}" as="t" hint-placeholder-count="4">
+                    <button onClick="{{ t.on }}" aria-pressed="{{ t.pressed }}" style="flex:1 1 0;min-width:0;white-space:nowrap;text-align:center;border:{{ t.border }};background:{{ t.bg }};color:{{ t.fg }};font-weight:{{ t.weight }};font-size:13px;min-height:44px;padding:9px 10px;border-radius:999px;cursor:pointer">{{ t.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+              <sc-if value="{{ addModeRecipe }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:none">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">PORCJE</div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="display:flex;align-items:center;gap:2px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:999px;padding:3px 5px">
+                    <button onClick="{{ decAdd }}" aria-label="Mniej porcji" style="width:44px;height:44px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:17px;font-weight:700;color:#C75B38" style-hover="background:#EFE5D2">−</button>
+                    <input type="text" inputmode="decimal" value="{{ porText }}" onChange="{{ onPor }}" aria-label="Liczba porcji" style="width:56px;text-align:center;border:none;background:transparent;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:#2A2018;outline:none">
+                    <button onClick="{{ incAdd }}" aria-label="Więcej porcji" style="width:44px;height:44px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:17px;font-weight:700;color:#C75B38" style-hover="background:#EFE5D2">+</button>
+                  </div>
+                </div>
+                <sc-if value="{{ porInvalid }}" hint-placeholder-val="{{ false }}">
+                  <div role="alert" style="margin-top:7px;font-size:12.5px;font-weight:600;color:#B3402E;max-width:230px;line-height:1.45">▲ Liczba porcji musi być większa od zera — np. 0,5 lub 1,5.</div>
+                </sc-if>
+              </div>
+              </sc-if>
+              <sc-if value="{{ addModeProduct }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:none">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">GRAMATURA</div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="display:flex;align-items:center;gap:2px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:999px;padding:3px 5px">
+                    <button onClick="{{ decGrams }}" aria-label="Mniej gramów" style="width:44px;height:44px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:17px;font-weight:700;color:#C75B38" style-hover="background:#EFE5D2">−</button>
+                    <input type="text" inputmode="decimal" value="{{ gramsText }}" onChange="{{ onGrams }}" aria-label="Gramatura w gramach" style="width:64px;text-align:center;border:none;background:transparent;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:#2A2018;outline:none">
+                    <button onClick="{{ incGrams }}" aria-label="Więcej gramów" style="width:44px;height:44px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:17px;font-weight:700;color:#C75B38" style-hover="background:#EFE5D2">+</button>
+                  </div>
+                  <span style="font-size:14px;font-weight:600;color:#6E6250">g</span>
+                </div>
+                <sc-if value="{{ gramsInvalid }}" hint-placeholder-val="{{ false }}">
+                  <div role="alert" style="margin-top:7px;font-size:12.5px;font-weight:600;color:#B3402E;max-width:230px;line-height:1.45">▲ Podaj gramaturę większą od zera — np. 100 lub 250.</div>
+                </sc-if>
+              </div>
+              </sc-if>
+            </div>
+            <sc-if value="{{ previewShow }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:20px;background:#FCF7EC;border:1px solid #EADFC8;border-radius:14px;padding:14px 16px">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 12px">PO DODANIU DO PLANU — {{ addDateName }}</div>
+                <div style="display:flex;flex-direction:column;gap:11px">
+                  <sc-for list="{{ previewRows }}" as="pr" hint-placeholder-count="4">
+                    <div>
+                      <div style="display:flex;align-items:baseline;gap:7px;font-size:13px;flex-wrap:wrap">
+                        <span style="font-weight:600">{{ pr.label }}</span>
+                        <span style="font-size:12px;font-weight:600;color:{{ pr.deltaColor }}">· {{ pr.deltaLabel }}</span>
+                        <div style="flex:1;border-bottom:2px dotted #DCCFB2;align-self:center;min-width:16px"></div>
+                        <span style="font-variant-numeric:tabular-nums"><b>{{ pr.afterLabel }}</b> <span style="color:#6E6250">/ {{ pr.goalLabel }}</span></span>
+                      </div>
+                      <div style="margin-top:5px;height:5px;border-radius:999px;background:#EBE0CB;overflow:hidden">
+                        <div style="height:100%;border-radius:999px;width:{{ pr.pct }}%;background:{{ pr.barColor }}"></div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ previewNoGoal }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:20px;background:#FCF7EC;border:1px solid #EADFC8;border-radius:14px;padding:14px 16px">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">TEN POSIŁEK DODA</div>
+                <div style="font-size:13.5px;color:#2A2018;font-weight:700;font-variant-numeric:tabular-nums">{{ addedLine }}</div>
+                <div style="margin-top:6px;font-size:12.5px;line-height:1.5;color:#6E6250">Porównanie z bilansem dnia będzie dostępne po ustawieniu dziennych celów.</div>
+              </div>
+            </sc-if>
+          </sc-if>
+
+          <sc-if value="{{ addIsCreate }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ createIsRecipe }}" hint-placeholder-val="{{ true }}">
+            <div data-screen-label="Kreator nowego przepisu">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">NAZWA PRZEPISU</div>
+              <input type="text" value="{{ newNameVal }}" onChange="{{ onNewName }}" placeholder="{{ newNamePlaceholder }}" aria-label="Nazwa przepisu" style="width:100%;min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:12px;padding:10px 14px;font-size:14px;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:18px 0 8px">SKŁADNIKI I GRAMATURY</div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ ingRows }}" as="row" hint-placeholder-count="1">
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <select value="{{ row.pid }}" onChange="{{ row.onProd }}" aria-label="Produkt" style="flex:1 1 auto;min-width:0;min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:12px;padding:8px 10px;font-size:13.5px;color:#2A2018;cursor:pointer">
+                      <option value="">Wybierz produkt…</option>
+                      <sc-for list="{{ prodOpts }}" as="p" hint-placeholder-count="3"><option value="{{ p.id }}">{{ p.name }}</option></sc-for>
+                    </select>
+                    <div style="flex:none;display:flex;align-items:center;gap:6px">
+                      <input type="text" inputmode="decimal" value="{{ row.grams }}" onChange="{{ row.onGrams }}" aria-label="Gramatura w gramach" placeholder="0" style="width:72px;min-height:46px;text-align:right;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:12px;padding:8px 10px;font-size:13.5px;font-variant-numeric:tabular-nums;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+                      <span style="font-size:13px;color:#6E6250">g</span>
+                    </div>
+                    <button onClick="{{ row.rm }}" aria-label="Usuń składnik" style="flex:none;width:44px;height:44px;border:none;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#B0A48C" style-hover="background:rgba(179,64,46,0.1);color:#B3402E">
+                      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"></path></svg></button>
+                  </div>
+                </sc-for>
+              </div>
+              <button onClick="{{ addIng }}" style="margin-top:8px;width:100%;border:1.5px dashed #DCCFB2;background:transparent;border-radius:12px;min-height:44px;padding:10px 16px;text-align:center;font-size:13px;font-weight:600;color:#A79A83;cursor:pointer" style-hover="border-color:#C75B38;color:#C75B38;background:rgba(199,91,56,0.05)">+ Dodaj składnik</button>
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-top:18px">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250">LICZBA PORCJI PRZEPISU</div>
+                <div style="display:flex;align-items:center;gap:2px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:999px;padding:3px 5px">
+                  <button onClick="{{ decNewPor }}" aria-label="Mniej porcji" style="width:44px;height:44px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:17px;font-weight:700;color:#C75B38" style-hover="background:#EFE5D2">−</button>
+                  <span style="min-width:74px;text-align:center;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums">{{ newPorLabel }}</span>
+                  <button onClick="{{ incNewPor }}" aria-label="Więcej porcji" style="width:44px;height:44px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:17px;font-weight:700;color:#C75B38" style-hover="background:#EFE5D2">+</button>
+                </div>
+              </div>
+              <sc-if value="{{ newMacroShow }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:16px;background:#FCF7EC;border:1px solid #EADFC8;border-radius:14px;padding:12px 15px;font-size:13px;color:#6E6250;font-variant-numeric:tabular-nums">Na porcję: <b style="color:#2A2018">{{ newMacroLine }}</b></div>
+              </sc-if>
+            </div>
+            </sc-if>
+            <sc-if value="{{ createIsProduct }}" hint-placeholder-val="{{ false }}">
+            <div data-screen-label="Kreator nowego produktu">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">NAZWA PRODUKTU</div>
+              <input type="text" value="{{ newNameVal }}" onChange="{{ onNewName }}" placeholder="{{ newNamePlaceholder }}" aria-label="Nazwa produktu" style="width:100%;min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:12px;padding:10px 14px;font-size:14px;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:18px 0 8px">WARTOŚCI NA 100 G</div>
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+                <div>
+                  <div style="font-size:12px;font-weight:600;color:#6E6250;margin:0 0 6px">Kalorie</div>
+                  <div style="position:relative">
+                    <input type="text" inputmode="decimal" value="{{ pKcalVal }}" onChange="{{ onPKcal }}" placeholder="0" aria-label="Kalorie na 100 g" style="width:100%;min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:12px;padding:10px 46px 10px 14px;font-size:14px;font-variant-numeric:tabular-nums;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+                    <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12.5px;color:#8C7F6C;pointer-events:none">kcal</span>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:12px;font-weight:600;color:#6E6250;margin:0 0 6px">Białko</div>
+                  <div style="position:relative">
+                    <input type="text" inputmode="decimal" value="{{ pBVal }}" onChange="{{ onPB }}" placeholder="0" aria-label="Białko na 100 g" style="width:100%;min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:12px;padding:10px 34px 10px 14px;font-size:14px;font-variant-numeric:tabular-nums;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+                    <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12.5px;color:#8C7F6C;pointer-events:none">g</span>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:12px;font-weight:600;color:#6E6250;margin:0 0 6px">Tłuszcz</div>
+                  <div style="position:relative">
+                    <input type="text" inputmode="decimal" value="{{ pTVal }}" onChange="{{ onPT }}" placeholder="0" aria-label="Tłuszcz na 100 g" style="width:100%;min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:12px;padding:10px 34px 10px 14px;font-size:14px;font-variant-numeric:tabular-nums;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+                    <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12.5px;color:#8C7F6C;pointer-events:none">g</span>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:12px;font-weight:600;color:#6E6250;margin:0 0 6px">Węglowodany</div>
+                  <div style="position:relative">
+                    <input type="text" inputmode="decimal" value="{{ pWVal }}" onChange="{{ onPW }}" placeholder="0" aria-label="Węglowodany na 100 g" style="width:100%;min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:12px;padding:10px 34px 10px 14px;font-size:14px;font-variant-numeric:tabular-nums;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+                    <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12.5px;color:#8C7F6C;pointer-events:none">g</span>
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top:14px;background:#FCF7EC;border:1px solid #EADFC8;border-radius:12px;padding:10px 13px;font-size:12.5px;line-height:1.5;color:#6E6250">Produkt zapiszemy w Twojej bazie — przy dodawaniu podasz tylko gramaturę, a makra przeliczymy automatycznie.</div>
+            </div>
+            </sc-if>
+          </sc-if>
+        </div>
+
+        <div style="flex:none;padding:14px 24px 18px;border-top:1px solid #EADFC8;background:#F8F1E3">
+          <sc-if value="{{ addErrShow }}" hint-placeholder-val="{{ false }}">
+            <div role="alert" style="display:flex;gap:9px;align-items:flex-start;background:rgba(179,64,46,0.08);border:1px solid rgba(179,64,46,0.4);border-radius:12px;padding:10px 13px;margin:0 0 12px;font-size:13px;line-height:1.5;color:#8F3222">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:2px"><path d="M10 3 18 17H2z"></path><path d="M10 8.5v3.5"></path><circle cx="10" cy="14.4" r="0.5" fill="currentColor"></circle></svg>
+              <span><b>Nie udało się zapisać posiłku.</b> Twoje wybory zostały zachowane — sprawdź połączenie i spróbuj ponownie.</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ addIsPick }}" hint-placeholder-val="{{ true }}">
+            <sc-if value="{{ confirmHintShow }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:12.5px;color:#6E6250;margin:0 0 10px">{{ confirmHint }}</div>
+            </sc-if>
+            <div style="display:flex;gap:10px">
+              <button onClick="{{ closeAdd }}" disabled="{{ addSaving }}" style="flex:1;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Anuluj</button>
+              <button onClick="{{ confirmAdd }}" disabled="{{ confirmDisabled }}" aria-disabled="{{ confirmAria }}" style="flex:2;display:flex;align-items:center;justify-content:center;gap:9px;border:none;background:{{ confirmBg }};color:{{ confirmFg }};font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:{{ confirmCursor }}">
+                <sc-if value="{{ addSaving }}" hint-placeholder-val="{{ false }}">
+                  <span aria-hidden="true" style="flex:none;width:14px;height:14px;border:2px solid rgba(255,248,236,0.35);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span><span>Zapisywanie…</span>
+                </sc-if>
+                <sc-if value="{{ addNotSaving }}" hint-placeholder-val="{{ true }}"><span>{{ confirmLabel }}</span></sc-if>
+              </button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ addIsCreate }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ createHintShow }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:12.5px;color:#6E6250;margin:0 0 10px">{{ createHint }}</div>
+            </sc-if>
+            <div style="display:flex;gap:10px">
+              <button onClick="{{ cancelCreate }}" style="flex:1;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Wróć bez zapisywania</button>
+              <button onClick="{{ saveNew }}" disabled="{{ saveNewDisabled }}" aria-disabled="{{ saveNewAria }}" style="flex:1;border:none;background:{{ saveNewBg }};color:{{ saveNewFg }};font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:{{ saveNewCursor }}">{{ saveNewLabel }}</button>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ── Modal: przenieś posiłek ──────────────────────── -->
+  <sc-if value="{{ moveOpen }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Modal przenoszenia posiłku" style="{{ ovlStyle }}" onClick="{{ closeMoveBg }}">
+      <div role="dialog" aria-modal="true" aria-label="Przenieś posiłek" style="{{ panelSmStyle }}" onClick="{{ stopClick }}">
+        <div style="flex:none;padding:18px 24px 14px;border-bottom:1px solid #EADFC8">
+          <div style="display:flex;align-items:center;gap:10px">
+            <h2 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:24px">Przenieś posiłek</h2>
+            <div style="flex:1"></div>
+            <button onClick="{{ closeMove }}" aria-label="Zamknij" style="flex:none;width:44px;height:44px;border:none;background:#EFE5D2;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#2A2018" style-hover="background:#E5DAC3">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"></path></svg></button>
+          </div>
+          <div style="font-size:13.5px;color:#6E6250;margin-top:2px">{{ moveEntryLabel }}</div>
+        </div>
+        <div style="flex:1 1 auto;min-height:0;overflow:auto;padding:16px 24px 20px">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">DZIEŃ DOCELOWY</div>
+          <button onClick="{{ openMovePicker }}" aria-label="Wybierz dzień docelowy" style="display:inline-flex;align-items:center;gap:9px;min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:600;color:#2A2018;cursor:pointer;font-variant-numeric:tabular-nums" style-hover="border-color:#C75B38"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#C75B38" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="14" height="13" rx="2.5"></rect><path d="M3 8.5h14M7 2.5v3M13 2.5v3"></path></svg>{{ moveDateName }}</button>
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:18px 0 8px">TYP POSIŁKU</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <sc-for list="{{ moveTypeOptions }}" as="t" hint-placeholder-count="4">
+              <button onClick="{{ t.on }}" aria-pressed="{{ t.pressed }}" style="border:{{ t.border }};background:{{ t.bg }};color:{{ t.fg }};font-weight:{{ t.weight }};font-size:13px;min-height:44px;padding:9px 16px;border-radius:999px;cursor:pointer">{{ t.label }}</button>
+            </sc-for>
+          </div>
+          <div style="margin-top:18px;background:#FCF7EC;border:1px solid #EADFC8;border-radius:13px;padding:12px 15px;font-size:13px;line-height:1.55;color:#6E6250">Posiłek zostanie przeniesiony na: <b style="color:#2A2018">{{ moveDestLabel }}</b>. Zniknie z pierwotnego dnia dopiero po udanym zapisie.</div>
+        </div>
+        <div style="flex:none;padding:14px 24px 18px;border-top:1px solid #EADFC8">
+          <sc-if value="{{ moveErrShow }}" hint-placeholder-val="{{ false }}">
+            <div role="alert" style="background:rgba(179,64,46,0.08);border:1px solid rgba(179,64,46,0.4);border-radius:12px;padding:10px 13px;margin:0 0 12px;font-size:13px;line-height:1.5;color:#8F3222"><b>Nie udało się przenieść posiłku.</b> Wpis pozostał w pierwotnym dniu — spróbuj ponownie.</div>
+          </sc-if>
+          <div style="display:flex;gap:10px">
+            <button onClick="{{ closeMove }}" style="flex:1;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Anuluj</button>
+            <button onClick="{{ confirmMove }}" disabled="{{ moveSaving }}" style="flex:2;display:flex;align-items:center;justify-content:center;gap:9px;border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">
+              <sc-if value="{{ moveSaving }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="flex:none;width:14px;height:14px;border:2px solid rgba(255,248,236,0.35);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span><span>Przenoszenie…</span></sc-if>
+              <sc-if value="{{ moveNotSaving }}" hint-placeholder-val="{{ true }}"><span>Przenieś posiłek</span></sc-if>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ── Modal: kopiuj posiłek ────────────────────────── -->
+  <sc-if value="{{ copyOpen }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Modal kopiowania posiłku" style="{{ ovlStyle }}" onClick="{{ closeCopyBg }}">
+      <div role="dialog" aria-modal="true" aria-label="Kopiuj posiłek do innych dni" style="{{ panelStyle }}" onClick="{{ stopClick }}">
+        <div style="flex:none;padding:18px 24px 14px;border-bottom:1px solid #EADFC8">
+          <div style="display:flex;align-items:center;gap:10px">
+            <h2 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:24px">Kopiuj do innych dni</h2>
+            <div style="flex:1"></div>
+            <button onClick="{{ closeCopy }}" aria-label="Zamknij" style="flex:none;width:44px;height:44px;border:none;background:#EFE5D2;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#2A2018" style-hover="background:#E5DAC3">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"></path></svg></button>
+          </div>
+          <div style="font-size:13.5px;color:#6E6250;margin-top:2px">{{ copyEntryLabel }} — idealne do meal prepu.</div>
+        </div>
+        <div style="flex:1 1 auto;min-height:0;overflow:auto;padding:16px 24px 20px">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">DNI DOCELOWE</div>
+          <div style="display:flex;flex-direction:column;gap:6px;max-height:min(250px,34vh);overflow:auto;padding:2px;overscroll-behavior:contain">
+            <sc-for list="{{ copyDates }}" as="cd" hint-placeholder-count="7">
+              <button onClick="{{ cd.toggle }}" aria-pressed="{{ cd.checked }}" style="flex:none;display:flex;align-items:center;gap:11px;width:100%;text-align:left;border:{{ cd.border }};background:{{ cd.bg }};border-radius:12px;padding:10px 13px;min-height:48px;cursor:pointer">
+                <span aria-hidden="true" style="flex:none;width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:{{ cd.markBg }};border:{{ cd.markBorder }};color:#FFF8EC">{{ cd.mark }}</span>
+                <span style="flex:1;font-size:13.5px;font-weight:600;color:#2A2018">{{ cd.label }}</span>
+                <span style="font-size:12px;color:{{ cd.noteColor }}">{{ cd.note }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:16px 24px;margin-top:18px">
+            <div style="flex:1 1 240px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">TYP POSIŁKU W DNIACH DOCELOWYCH</div>
+              <select value="{{ copyTypeVal }}" onChange="{{ onCopyType }}" aria-label="Typ posiłku w dniach docelowych" style="min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:12px;padding:8px 12px;font-size:13.5px;font-weight:600;color:#2A2018;cursor:pointer">
+                <option value="keep">Taki sam jak w oryginale</option>
+                <option value="sniadanie">Śniadanie</option><option value="obiad">Obiad</option><option value="kolacja">Kolacja</option><option value="przekaska">Przekąska</option>
+              </select>
+            </div>
+            <div style="flex:none">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">PORCJE W KOPII</div>
+              <div style="display:flex;align-items:center;gap:2px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:999px;padding:3px 5px">
+                <button onClick="{{ decCopyPor }}" aria-label="Mniej porcji" style="width:44px;height:44px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:17px;font-weight:700;color:#C75B38" style-hover="background:#EFE5D2">−</button>
+                <span style="min-width:56px;text-align:center;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums">{{ copyPorLabel }}</span>
+                <button onClick="{{ incCopyPor }}" aria-label="Więcej porcji" style="width:44px;height:44px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:17px;font-weight:700;color:#C75B38" style-hover="background:#EFE5D2">+</button>
+              </div>
+            </div>
+          </div>
+          <sc-if value="{{ copyDupShow }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:14px;background:#FCF7EC;border:1px solid #EADFC8;border-radius:12px;padding:10px 13px;font-size:12.5px;line-height:1.5;color:#6E6250">W zaznaczonych dniach ten przepis już występuje — istniejące posiłki zostaną zachowane, a kopia dodana jako kolejny wpis.</div>
+          </sc-if>
+        </div>
+        <div style="flex:none;padding:14px 24px 18px;border-top:1px solid #EADFC8">
+          <div style="display:flex;gap:10px">
+            <button onClick="{{ closeCopy }}" style="flex:1;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Anuluj</button>
+            <button onClick="{{ confirmCopy }}" disabled="{{ copyDisabled }}" aria-disabled="{{ copyAria }}" style="flex:2;display:flex;align-items:center;justify-content:center;gap:9px;border:none;background:{{ copyBg }};color:{{ copyFg }};font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:{{ copyCursor }}">
+              <sc-if value="{{ copySaving }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="flex:none;width:14px;height:14px;border:2px solid rgba(255,248,236,0.35);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span><span>Kopiowanie…</span></sc-if>
+              <sc-if value="{{ copyNotSaving }}" hint-placeholder-val="{{ true }}"><span>{{ copyCtaLabel }}</span></sc-if>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ── Modal: kopiuj dzień ──────────────────────────── -->
+  <sc-if value="{{ cdayOpen }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Modal kopiowania dnia" style="{{ ovlStyle }}" onClick="{{ closeCdayBg }}">
+      <div role="dialog" aria-modal="true" aria-label="Kopiuj dzień" style="{{ panelStyle }}" onClick="{{ stopClick }}">
+        <div style="flex:none;padding:18px 24px 14px;border-bottom:1px solid #EADFC8">
+          <div style="display:flex;align-items:center;gap:10px">
+            <h2 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:24px">Kopiuj dzień</h2>
+            <div style="flex:1"></div>
+            <button onClick="{{ closeCday }}" aria-label="Zamknij" style="flex:none;width:44px;height:44px;border:none;background:#EFE5D2;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#2A2018" style-hover="background:#E5DAC3">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"></path></svg></button>
+          </div>
+          <div style="font-size:13.5px;color:#6E6250;margin-top:2px">Źródło: <b style="color:#2A2018">{{ cdaySrcLabel }}</b> · {{ cdayMealsLabel }}</div>
+        </div>
+        <div style="flex:1 1 auto;min-height:0;overflow:auto;padding:16px 24px 20px">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">POSIŁKI DO SKOPIOWANIA</div>
+          <div style="background:#FCF7EC;border:1px solid #EADFC8;border-radius:13px;padding:11px 14px;display:flex;flex-direction:column;gap:5px">
+            <sc-for list="{{ cdayMeals }}" as="m" hint-placeholder-count="3">
+              <div style="display:flex;align-items:baseline;gap:8px;font-size:13px">
+                <b style="flex:none;font-size:10px;font-weight:700;letter-spacing:0.08em;color:#C75B38;min-width:76px">{{ m.type }}</b>
+                <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.name }}</span>
+                <span style="flex:none;font-variant-numeric:tabular-nums;color:#6E6250">{{ m.info }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:18px 0 8px">DNI DOCELOWE</div>
+          <sc-if value="{{ cdayIsMonth }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:8px;margin:0 0 12px">
+              <div style="font-family:'Instrument Serif',serif;font-size:20px;color:#2A2018">{{ cdayMonthLabel }}</div>
+              <div style="flex:1"></div>
+              <button onClick="{{ cdayClear }}" style="border:none;background:transparent;color:#8C7F6C;font-weight:600;font-size:12.5px;padding:7px 6px;border-radius:999px;cursor:pointer" style-hover="color:#C75B38">Wyczyść</button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin:0 0 6px">
+              <sc-for list="{{ cdayMonthWeekdays }}" as="wd" hint-placeholder-count="7">
+                <div style="text-align:center;font-size:10px;font-weight:700;letter-spacing:0.08em;color:#8C7F6C">{{ wd }}</div>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px">
+              <sc-for list="{{ cdayMonthCells }}" as="c" hint-placeholder-count="42">
+                <button onClick="{{ c.toggle }}" aria-pressed="{{ c.checked }}" aria-label="{{ c.aria }}" style="position:relative;display:flex;align-items:center;justify-content:center;min-height:44px;border-radius:10px;border:{{ c.border }};outline:{{ c.ring }};outline-offset:-3px;background:{{ c.bg }};color:{{ c.fg }};font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums;cursor:{{ c.cursor }}">{{ c.num }}<span aria-hidden="true" style="position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:{{ c.dot }}"></span></button>
+              </sc-for>
+            </div>
+            <div style="margin-top:12px;font-size:12.5px;line-height:1.5;color:#6E6250">Dotknij dni, do których skopiujesz ten dzień. Kropka oznacza dzień z zaplanowanymi posiłkami.</div>
+          </sc-if>
+          <sc-if value="{{ cdayIsWeek }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:6px;max-height:min(220px,30vh);overflow:auto;padding:2px;overscroll-behavior:contain">
+            <sc-for list="{{ cdayDates }}" as="cd" hint-placeholder-count="7">
+              <button onClick="{{ cd.toggle }}" aria-pressed="{{ cd.checked }}" style="flex:none;display:flex;align-items:center;gap:11px;width:100%;text-align:left;border:{{ cd.border }};background:{{ cd.bg }};border-radius:12px;padding:10px 13px;min-height:48px;cursor:pointer">
+                <span aria-hidden="true" style="flex:none;width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:{{ cd.markBg }};border:{{ cd.markBorder }};color:#FFF8EC">{{ cd.mark }}</span>
+                <span style="flex:1;font-size:13.5px;font-weight:600;color:#2A2018">{{ cd.label }}</span>
+                <span style="font-size:12px;color:{{ cd.noteColor }}">{{ cd.note }}</span>
+              </button>
+            </sc-for>
+          </div>
+          </sc-if>
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:18px 0 8px">ISTNIEJĄCE POSIŁKI W DNIACH DOCELOWYCH</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <button onClick="{{ cdayModeAdd }}" aria-pressed="{{ cdayIsAdd }}" style="display:flex;align-items:flex-start;gap:10px;text-align:left;border:{{ cdayAddBorder }};background:{{ cdayAddBg }};border-radius:12px;padding:11px 13px;cursor:pointer">
+              <span aria-hidden="true" style="flex:none;width:18px;height:18px;border-radius:50%;margin-top:1px;border:{{ cdayAddRadio }};background:{{ cdayAddRadioBg }};box-shadow:{{ cdayAddRadioShadow }}"></span>
+              <span><b style="display:block;font-size:13.5px;color:#2A2018">Zachowaj istniejące posiłki</b><span style="display:block;margin-top:2px;font-size:12.5px;line-height:1.45;color:#6E6250">Skopiowane wpisy zostaną dodane obok już zaplanowanych.</span></span>
+            </button>
+            <button onClick="{{ cdayModeReplace }}" aria-pressed="{{ cdayIsReplace }}" style="display:flex;align-items:flex-start;gap:10px;text-align:left;border:{{ cdayRepBorder }};background:{{ cdayRepBg }};border-radius:12px;padding:11px 13px;cursor:pointer">
+              <span aria-hidden="true" style="flex:none;width:18px;height:18px;border-radius:50%;margin-top:1px;border:{{ cdayRepRadio }};background:{{ cdayRepRadioBg }};box-shadow:{{ cdayRepRadioShadow }}"></span>
+              <span><b style="display:block;font-size:13.5px;color:#B3402E">Zastąp posiłki w dniach docelowych</b><span style="display:block;margin-top:2px;font-size:12.5px;line-height:1.45;color:#6E6250">Istniejące wpisy w zaznaczonych dniach zostaną usunięte. Tej operacji nie można cofnąć.</span></span>
+            </button>
+          </div>
+          <sc-if value="{{ cdayIsReplace }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ cdayToggleAck }}" aria-pressed="{{ cdayAck }}" style="margin-top:10px;display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid rgba(179,64,46,0.4);background:rgba(179,64,46,0.05);border-radius:12px;padding:10px 13px;cursor:pointer;min-height:48px">
+              <span aria-hidden="true" style="flex:none;width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:{{ cdayAckBg }};border:{{ cdayAckBorder }};color:#FFF8EC">{{ cdayAckMark }}</span>
+              <span style="font-size:13px;font-weight:600;color:#8F3222">Rozumiem — istniejące posiłki w dniach docelowych zostaną usunięte.</span>
+            </button>
+          </sc-if>
+        </div>
+        <div style="flex:none;padding:14px 24px 18px;border-top:1px solid #EADFC8">
+          <div style="display:flex;gap:10px">
+            <button onClick="{{ closeCday }}" style="flex:1;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Anuluj</button>
+            <button onClick="{{ confirmCday }}" disabled="{{ cdayDisabled }}" aria-disabled="{{ cdayAria }}" style="flex:2;display:flex;align-items:center;justify-content:center;gap:9px;border:none;background:{{ cdayBg }};color:{{ cdayFg }};font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:{{ cdayCursor }}">
+              <sc-if value="{{ cdaySaving }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="flex:none;width:14px;height:14px;border:2px solid rgba(255,248,236,0.35);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span><span>Kopiowanie…</span></sc-if>
+              <sc-if value="{{ cdayNotSaving }}" hint-placeholder-val="{{ true }}"><span>{{ cdayCtaLabel }}</span></sc-if>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ── Modal: lista zakupów ─────────────────────────── -->
+  <sc-if value="{{ shopOpen }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Modal listy zakupów" style="{{ ovlStyle }}" onClick="{{ closeShopBg }}">
+      <div role="dialog" aria-modal="true" aria-label="Utwórz listę zakupów" style="{{ panelSmStyle }}" onClick="{{ stopClick }}">
+        <div style="flex:none;padding:18px 24px 14px;border-bottom:1px solid #EADFC8">
+          <div style="display:flex;align-items:center;gap:10px">
+            <h2 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:24px">Utwórz listę zakupów</h2>
+            <div style="flex:1"></div>
+            <button onClick="{{ closeShop }}" aria-label="Zamknij" style="flex:none;width:44px;height:44px;border:none;background:#EFE5D2;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#2A2018" style-hover="background:#E5DAC3">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"></path></svg></button>
+          </div>
+          <div style="font-size:13.5px;color:#6E6250;margin-top:2px">{{ shopSubtitle }}</div>
+        </div>
+        <div style="flex:1 1 auto;min-height:0;overflow:auto;padding:16px 24px 20px">
+          <sc-if value="{{ shopIsWeek }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <sc-for list="{{ shopDates }}" as="cd" hint-placeholder-count="7">
+              <button onClick="{{ cd.toggle }}" aria-pressed="{{ cd.checked }}" disabled="{{ cd.disabled }}" style="flex:none;display:flex;align-items:center;gap:11px;width:100%;text-align:left;border:{{ cd.border }};background:{{ cd.bg }};border-radius:12px;padding:10px 13px;min-height:48px;cursor:{{ cd.cursor }};opacity:{{ cd.opacity }}">
+                <span aria-hidden="true" style="flex:none;width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:{{ cd.markBg }};border:{{ cd.markBorder }};color:#FFF8EC">{{ cd.mark }}</span>
+                <span style="flex:1;font-size:13.5px;font-weight:600;color:#2A2018">{{ cd.label }}</span>
+                <span style="font-size:12px;color:{{ cd.noteColor }}">{{ cd.note }}</span>
+              </button>
+            </sc-for>
+          </div>
+          </sc-if>
+          <sc-if value="{{ shopIsMonth }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:8px;margin:0 0 12px">
+              <div style="font-family:'Instrument Serif',serif;font-size:20px;color:#2A2018">{{ shopMonthLabel }}</div>
+              <div style="flex:1"></div>
+              <button onClick="{{ shopAllOn }}" style="border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:12.5px;padding:7px 12px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Zaznacz zaplanowane</button>
+              <button onClick="{{ shopAllOff }}" style="border:none;background:transparent;color:#8C7F6C;font-weight:600;font-size:12.5px;padding:7px 6px;border-radius:999px;cursor:pointer" style-hover="color:#C75B38">Wyczyść</button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin:0 0 6px">
+              <sc-for list="{{ shopMonthWeekdays }}" as="wd" hint-placeholder-count="7">
+                <div style="text-align:center;font-size:10px;font-weight:700;letter-spacing:0.08em;color:#8C7F6C">{{ wd }}</div>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px">
+              <sc-for list="{{ shopMonthCells }}" as="c" hint-placeholder-count="42">
+                <button onClick="{{ c.toggle }}" aria-pressed="{{ c.checked }}" aria-label="{{ c.aria }}" style="position:relative;display:flex;align-items:center;justify-content:center;min-height:44px;border-radius:10px;border:{{ c.border }};outline:{{ c.ring }};outline-offset:-3px;background:{{ c.bg }};color:{{ c.fg }};font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums;cursor:{{ c.cursor }}">{{ c.num }}<span aria-hidden="true" style="position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:{{ c.dot }}"></span></button>
+              </sc-for>
+            </div>
+            <div style="margin-top:12px;font-size:12.5px;line-height:1.5;color:#6E6250">Dotknij dni z zaplanowanymi posiłkami, aby dodać je do listy. Puste dni są nieaktywne.</div>
+          </sc-if>
+          <div style="margin-top:14px;background:#FCF7EC;border:1px solid #EADFC8;border-radius:12px;padding:10px 13px;font-size:12.5px;line-height:1.5;color:#6E6250">Lista będzie zapisem stanu planu — późniejsze zmiany w planie jej nie zmienią, a dotknięte listy dostaną ostrzeżenie.</div>
+        </div>
+        <div style="flex:none;padding:14px 24px 18px;border-top:1px solid #EADFC8">
+          <div style="display:flex;gap:10px">
+            <button onClick="{{ closeShop }}" style="flex:1;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Anuluj</button>
+            <a href="Jadlify - Lista zakupów.dc.html" aria-disabled="{{ shopAria }}" style="flex:2;display:flex;align-items:center;justify-content:center;gap:8px;border:none;background:{{ shopBg }};color:{{ shopFg }};font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;text-decoration:none;pointer-events:{{ shopPointer }}">{{ shopCtaLabel }}
+              <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h12M11 5l5 5-5 5"></path></svg></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ── Kalendarz: wybór daty ────────────────────────── -->
+  <sc-if value="{{ pickerOpen }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Kalendarz wyboru daty" style="position:fixed;inset:0;z-index:70;background:rgba(31,23,18,0.6);display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closePicker }}">
+      <div role="dialog" aria-modal="true" aria-label="Wybór daty" style="background:#F8F1E3;color:#2A2018;width:min(360px,100%);border-radius:20px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,0.5);animation:jd-rise 0.2s ease-out" onClick="{{ stopClick }}">
+        <div style="display:flex;align-items:center;gap:6px;margin:0 0 12px">
+          <button onClick="{{ pickerPrev }}" aria-label="Poprzedni miesiąc" style="flex:none;width:38px;height:38px;border:1px solid #E5DAC3;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#2A2018" style-hover="background:#EFE5D2">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6"></path></svg></button>
+          <div style="flex:1;text-align:center;font-family:'Instrument Serif',serif;font-size:20px">{{ pickerMonthLabel }}</div>
+          <button onClick="{{ pickerNext }}" aria-label="Następny miesiąc" style="flex:none;width:38px;height:38px;border:1px solid #E5DAC3;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#2A2018" style-hover="background:#EFE5D2">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 4l6 6-6 6"></path></svg></button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin:0 0 4px">
+          <sc-for list="{{ pickerWeekdays }}" as="wd" hint-placeholder-count="7">
+            <div style="text-align:center;font-size:10.5px;font-weight:700;letter-spacing:0.06em;color:#8C7F6C;padding:4px 0">{{ wd }}</div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">
+          <sc-for list="{{ pickerCells }}" as="c" hint-placeholder-count="42">
+            <button onClick="{{ c.pick }}" aria-label="{{ c.aria }}" style="height:40px;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-variant-numeric:tabular-nums;background:{{ c.bg }};color:{{ c.fg }};font-weight:{{ c.weight }};outline:{{ c.ring }};outline-offset:-3px" style-hover="background:rgba(199,91,56,0.14)">{{ c.num }}</button>
+          </sc-for>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:14px">
+          <button onClick="{{ pickerJumpToday }}" style="border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:13px;padding:9px 15px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Dziś</button>
+          <div style="flex:1"></div>
+          <button onClick="{{ closePicker }}" style="border:none;background:transparent;color:#8C7F6C;font-weight:600;font-size:13px;padding:9px 12px;border-radius:999px;cursor:pointer" style-hover="color:#C75B38">Zamknij</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ── Toast ────────────────────────────────────────── -->
+  <sc-if value="{{ toastShow }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;background:{{ toastBg }};color:#FFF8EC;border-radius:999px;padding:11px 18px;font-size:13.5px;font-weight:500;box-shadow:0 12px 32px rgba(0,0,0,0.4);animation:jd-toast 0.22s ease-out;max-width:calc(100vw - 32px)">
+      <sc-if value="{{ toastIsSaving }}" hint-placeholder-val="{{ false }}">
+        <span style="flex:none;width:14px;height:14px;border:2px solid rgba(255,248,236,0.35);border-top-color:#FFF8EC;border-radius:50%;animation:jd-spin 0.8s linear infinite"></span>
+      </sc-if>
+      <sc-if value="{{ toastIsOk }}" hint-placeholder-val="{{ false }}">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M4 10.5l4 4L16 5.5"></path></svg>
+      </sc-if>
+      <sc-if value="{{ toastIsErr }}" hint-placeholder-val="{{ false }}">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M10 3 18 17H2z"></path><path d="M10 8.5v3.5"></path><circle cx="10" cy="14.4" r="0.5" fill="currentColor"></circle></svg>
+      </sc-if>
+      <span>{{ toastMsg }}</span>
+      <sc-if value="{{ toastHasUndo }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ undoDelete }}" style="flex:none;border:1px solid rgba(255,248,236,0.5);background:transparent;color:#FFF8EC;font-weight:700;font-size:12.5px;padding:6px 14px;border-radius:999px;cursor:pointer" style-hover="background:rgba(255,248,236,0.12)">Cofnij</button>
+      </sc-if>
+      <sc-if value="{{ toastIsErr }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ retryToast }}" style="flex:none;border:1px solid rgba(255,248,236,0.5);background:transparent;color:#FFF8EC;font-weight:600;font-size:12.5px;padding:6px 12px;border-radius:999px;cursor:pointer" style-hover="background:rgba(255,248,236,0.12)">Spróbuj ponownie</button>
+        <button onClick="{{ closeToast }}" aria-label="Zamknij komunikat" style="flex:none;border:none;background:transparent;color:rgba(255,248,236,0.7);cursor:pointer;padding:4px;display:flex" style-hover="color:#FFF8EC">
+          <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5 5 15"></path></svg></button>
+      </sc-if>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;scenariusz&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Tydzień mieszany&quot;,&quot;Tydzień zaplanowany&quot;,&quot;Pusty tydzień&quot;,&quot;Brak celów&quot;,&quot;Brak przepisów&quot;,&quot;Niedostępny przepis&quot;],&quot;default&quot;:&quot;Tydzień mieszany&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Scenariusz demo&quot;},&quot;stanSystemu&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Normalny&quot;,&quot;Ładowanie&quot;,&quot;Odświeżanie w tle&quot;,&quot;Błąd pobierania&quot;],&quot;default&quot;:&quot;Normalny&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Scenariusz demo&quot;},&quot;bladZapisu&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Scenariusz demo&quot;},&quot;trybMobilny&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Układ&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const pad = (n) => String(n).padStart(2, '0');
+    this.iso = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    this.todayISO = this.iso(new Date());
+    const mon = new Date(); mon.setDate(mon.getDate() - ((mon.getDay() + 6) % 7));
+    this.thisMonISO = this.iso(mon);
+    this._nid = 500;
+    this.state = Object.assign({
+      isMobileAuto: typeof window !== 'undefined' && window.innerWidth <= 940,
+      weekStart: this.thisMonISO, selectedDate: this.todayISO, view: 'week',
+      toast: null, loadFixed: false,
+      add: null, create: null, move: null, copy: null, cday: null, shop: null, customProducts: []
+    }, this.seed(this.scen(props)));
+  }
+  scen(p) { return ((p || this.props).scenariusz) || 'Tydzień mieszany'; }
+  handoffToPage(url, add) {
+    try { localStorage.setItem('jadlify.planAddCtx', JSON.stringify({ date: add.date, type: add.type, mode: add.mode, por: add.por, grams: add.grams, replaceId: add.replaceId || null })); } catch (e) {}
+    window.location.href = url;
+  }
+  consumeReturnParams() {
+    let q;
+    try { q = new URLSearchParams(window.location.search); } catch (e) { return; }
+    const nrName = q.get('nowyPrzepis'), npName = q.get('nowyProdukt');
+    if (!nrName && !npName) return;
+    let ctx = null;
+    try { ctx = JSON.parse(localStorage.getItem('jadlify.planAddCtx') || 'null'); localStorage.removeItem('jadlify.planAddCtx'); } catch (e) {}
+    try { const u = new URL(window.location.href); ['nowyPrzepis', 'nowyProdukt', 'kcal', 'b', 't', 'w'].forEach(k => u.searchParams.delete(k)); window.history.replaceState(null, '', u.toString()); } catch (e) {}
+    const num = (k) => { const n = parseFloat(q.get(k)); return isNaN(n) ? 0 : n; };
+    const date = (ctx && ctx.date) || this.state.selectedDate;
+    const d = this.fromISO(date); const mon = new Date(d); mon.setDate(mon.getDate() - ((mon.getDay() + 6) % 7));
+    const add = { view: 'pick', mode: nrName ? 'recipe' : 'product', date, type: (ctx && ctx.type) || 'obiad', rid: null, por: (ctx && ctx.por) || '1', search: '', pid: null, grams: (ctx && ctx.grams) || '100', psearch: '', saving: false, err: false, replaceId: (ctx && ctx.replaceId) || null };
+    if (nrName) {
+      const rec = { id: 'nr' + (++this._nid), name: nrName, kcal: num('kcal'), b: num('b'), t: num('t'), w: num('w') };
+      add.rid = rec.id;
+      this.setState({ recipes: [...this.state.recipes, rec], selectedDate: date, weekStart: this.iso(mon), add });
+      this.toast({ kind: 'ok', msg: 'Zapisano przepis „' + rec.name + '” — potwierdź dodanie do planu.' });
+    } else {
+      const prod = { id: 'cp' + (++this._nid), name: npName, kcal: num('kcal'), b: num('b'), t: num('t'), w: num('w') };
+      add.pid = prod.id;
+      this.setState({ customProducts: [...(this.state.customProducts || []), prod], selectedDate: date, weekStart: this.iso(mon), add });
+      this.toast({ kind: 'ok', msg: 'Zapisano produkt „' + prod.name + '” — potwierdź dodanie do planu.' });
+    }
+  }
+  componentDidMount() {
+    this._onResize = () => {
+      const m = window.innerWidth <= 940;
+      if (m !== this.state.isMobileAuto) this.setState({ isMobileAuto: m });
+    };
+    window.addEventListener('resize', this._onResize);
+    this.consumeReturnParams();
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this._onResize); clearTimeout(this._tt); clearTimeout(this._ts); }
+  componentDidUpdate(pp) {
+    if (pp.scenariusz !== this.props.scenariusz || pp.stanSystemu !== this.props.stanSystemu) {
+      clearTimeout(this._tt); clearTimeout(this._ts);
+      this.setState(Object.assign({ weekStart: this.thisMonISO, selectedDate: this.todayISO, toast: null, loadFixed: false, add: null, create: null, move: null, copy: null, cday: null, shop: null }, this.seed(this.scen())));
+    }
+  }
+
+  baseRecipes() {
+    return [
+      { id: 'r1', name: 'Owsianka z malinami i orzechami', kcal: 420, b: 16, t: 14, w: 58 },
+      { id: 'r2', name: 'Kurczak w curry z ryżem basmati', kcal: 610, b: 42, t: 18, w: 66 },
+      { id: 'r3', name: 'Makaron pełnoziarnisty z tuńczykiem', kcal: 560, b: 38, t: 12, w: 72 },
+      { id: 'r4', name: 'Skyr z granolą i borówkami', kcal: 280, b: 22, t: 6, w: 34 },
+      { id: 'r5', name: 'Tofu stir-fry z warzywami', kcal: 480, b: 28, t: 20, w: 44 },
+      { id: 'r6', name: 'Omlet z warzywami', kcal: 390, b: 27, t: 24, w: 12 },
+      { id: 'r7', name: 'Zupa krem z dyni', kcal: 260, b: 8, t: 12, w: 30 },
+      { id: 'r8', name: 'Kanapki z pastą jajeczną', kcal: 350, b: 18, t: 16, w: 34 }
+    ];
+  }
+  products() {
+    return [
+      ['p1', 'Płatki owsiane', 372, 13.5, 7, 59], ['p2', 'Pierś z kurczaka', 110, 23, 1.5, 0],
+      ['p3', 'Ryż basmati', 350, 8, 1, 78], ['p4', 'Jajko', 143, 12.5, 10, 1],
+      ['p5', 'Jogurt skyr naturalny', 63, 11, 0.2, 4], ['p6', 'Tofu naturalne', 120, 12, 7, 2],
+      ['p7', 'Pomidor', 18, 0.9, 0.2, 3.5], ['p8', 'Oliwa z oliwek', 884, 0, 100, 0]
+    ].map(a => ({ id: a[0], name: a[1], kcal: a[2], b: a[3], t: a[4], w: a[5] })).concat(this.state && this.state.customProducts ? this.state.customProducts : []);
+  }
+  seed(scen) {
+    const W = (n) => { const d = new Date(this.thisMonISO.split('-')[0], this.thisMonISO.split('-')[1] - 1, this.thisMonISO.split('-')[2]); d.setDate(d.getDate() + n); return this.iso(d); };
+    let id = 0; const E = (day, rid, meal, por) => ({ id: 'e' + (++id), date: W(day), rid, meal, por });
+    const near = (d) => [E(d, 'r1', 'sniadanie', 1), E(d, 'r2', 'obiad', 1), E(d, 'r3', 'kolacja', 1), E(d, 'r4', 'przekaska', 1), E(d, 'r8', 'przekaska', 1)];
+    const below = (d) => [E(d, 'r4', 'sniadanie', 1), E(d, 'r7', 'obiad', 1), E(d, 'r6', 'kolacja', 1)];
+    const over = (d) => [E(d, 'r1', 'sniadanie', 1), E(d, 'r2', 'obiad', 2), E(d, 'r3', 'kolacja', 1), E(d, 'r4', 'przekaska', 1)];
+    const partial = (d) => [E(d, 'r1', 'sniadanie', 1), E(d, 'r2', 'obiad', 1)];
+    const mid = (d) => [E(d, 'r6', 'sniadanie', 1), E(d, 'r5', 'obiad', 1), E(d, 'r3', 'kolacja', 1)];
+    let entries = [], recipes = this.baseRecipes(), goal = { kcal: 2200, b: 150, t: 70, w: 240 };
+    if (scen === 'Tydzień zaplanowany') entries = [...near(0), ...below(1), ...over(2), ...near(3), ...mid(4), ...partial(5), ...mid(6)];
+    else if (scen === 'Tydzień mieszany') entries = [...near(0), ...below(1), ...over(2), ...partial(3), ...mid(5)];
+    else if (scen === 'Pusty tydzień') entries = [];
+    else if (scen === 'Brak celów') { entries = [...near(0), ...partial(2), ...mid(3)]; goal = null; }
+    else if (scen === 'Brak przepisów') { entries = []; recipes = []; }
+    else if (scen === 'Niedostępny przepis') {
+      entries = [...near(0), ...below(1), ...partial(3)];
+      entries.push({ id: 'e' + (++id), date: W(3), rid: 'gone', meal: 'kolacja', por: 1, snap: { name: 'Gulasz warzywny z kaszą', kcal: 540, b: 24, t: 16, w: 70 } });
+    }
+    return { entries, recipes, goal };
+  }
+
+  // ── helpers ──
+  fromISO(s) { const a = s.split('-'); return new Date(+a[0], +a[1] - 1, +a[2]); }
+  addISO(s, n) { const d = this.fromISO(s); d.setDate(d.getDate() + n); return this.iso(d); }
+  fmt(n) { return Math.round(n).toLocaleString('pl-PL'); }
+  cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  dayName(iso) { return this.cap(new Intl.DateTimeFormat('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' }).format(this.fromISO(iso))); }
+  dayShort(iso) { return new Intl.DateTimeFormat('pl-PL', { weekday: 'short', day: 'numeric', month: 'numeric' }).format(this.fromISO(iso)); }
+  typeLabel(t) { return { sniadanie: 'Śniadanie', obiad: 'Obiad', kolacja: 'Kolacja', przekaska: 'Przekąska' }[t] || t; }
+  porLabel(p) { const s = String(p).replace('.', ','); return s + (p === 1 ? ' porcja' : (p < 5 && p % 1 === 0 && p > 1 ? ' porcje' : ' porcji')); }
+  recipeOf(e) { return this.state.recipes.find(r => r.id === e.rid) || null; }
+  productOf(e) { return e.pid ? (this.products().find(p => p.id === e.pid) || null) : null; }
+  isProduct(e) { return !!e.pid; }
+  entryName(e) { if (e.pid) { const p = this.productOf(e); return p ? p.name + ' · ' + this.fmt(e.grams) + ' g' : 'Produkt niedostępny'; } return (this.recipeOf(e) || e.snap || { name: 'Przepis niedostępny' }).name; }
+  gramLabel(g) { return this.fmt(g) + ' g'; }
+  macros(e) {
+    if (e.pid) { const p = this.productOf(e), g = e.grams || 0, src = p || { kcal: 0, b: 0, t: 0, w: 0 }; const f = g / 100; return { kcal: src.kcal * f, b: src.b * f, t: src.t * f, w: src.w * f }; }
+    const r = this.recipeOf(e); const src = r || e.snap || { kcal: 0, b: 0, t: 0, w: 0 }; return { kcal: src.kcal * e.por, b: src.b * e.por, t: src.t * e.por, w: src.w * e.por };
+  }
+  dayEntries(iso) { return this.state.entries.filter(e => e.date === iso); }
+  dayTotals(iso) { return this.dayEntries(iso).reduce((a, e) => { const m = this.macros(e); a.kcal += m.kcal; a.b += m.b; a.t += m.t; a.w += m.w; return a; }, { kcal: 0, b: 0, t: 0, w: 0 }); }
+  kcalStatus(tot) {
+    const g = this.state.goal; if (!g) return null;
+    const rem = g.kcal - tot;
+    if (tot === 0) return { label: 'brak posiłków', color: '#8C7F6C' };
+    if (rem >= g.kcal * 0.05) return { label: 'zostało ' + this.fmt(rem) + ' kcal', color: '#A8861B' };
+    if (rem <= -g.kcal * 0.05) return { label: 'przekroczono o ' + this.fmt(-rem) + ' kcal', color: '#B3402E' };
+    return { label: 'cel osiągnięty', color: '#5F7C4E' };
+  }
+  toast(t, autohide) {
+    clearTimeout(this._tt);
+    this.setState({ toast: t });
+    if (autohide !== false) this._tt = setTimeout(() => this.setState({ toast: null }), 5200);
+  }
+  // generic simulated save: applies fn on success, error toast (retryable) on failure
+  save(fn, okMsg, extra) {
+    this.toast({ kind: 'saving', msg: 'Zapisywanie…' }, false);
+    clearTimeout(this._ts);
+    this._ts = setTimeout(() => {
+      if (this.props.bladZapisu) { this._retry = () => this.save(fn, okMsg, extra); this.toast({ kind: 'err', msg: 'Nie udało się zapisać zmian. Plan pozostał bez zmian.' }, false); }
+      else { fn(); this.toast(Object.assign({ kind: 'ok', msg: okMsg }, extra || {})); }
+    }, 550);
+  }
+
+  openAdd(date, type, replaceId) {
+    this.setState({ add: { view: 'pick', mode: 'recipe', date, type: type || 'obiad', rid: null, por: '1', search: '', pid: null, grams: '100', psearch: '', saving: false, err: false, replaceId: replaceId || null }, create: null });
+  }
+  restoreEntry() { const e = this._deleted; if (e) { this._deleted = null; this.setState({ entries: [...this.state.entries, e], toast: null }); } }
+  openPicker(target, valueISO) { const d = this.fromISO(valueISO); this.setState({ picker: { target, month: this.iso(new Date(d.getFullYear(), d.getMonth(), 1)), value: valueISO } }); }
+
+  renderVals() {
+    const st = this.state, P = this.props;
+    const isMobile = (P.trybMobilny === true) || st.isMobileAuto;
+    const sysState = P.stanSystemu || 'Normalny';
+    const showLoading = sysState === 'Ładowanie' && !st.loadFixed;
+    const showLoadError = sysState === 'Błąd pobierania' && !st.loadFixed;
+    const bgRefresh = sysState === 'Odświeżanie w tle';
+    const showContent = !showLoading && !showLoadError;
+    const goal = st.goal, hasGoal = !!goal;
+    const noRecipes = st.recipes.length === 0;
+    const isWeekView = st.view === 'week';
+    const isMonthView = st.view === 'month';
+    const set = (o) => this.setState(o);
+    const stop = (ev) => { ev.stopPropagation(); };
+    const prevent = (ev) => { if (ev && ev.preventDefault) ev.preventDefault(); };
+
+    // ── days ──
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const iso = this.addISO(st.weekStart, i);
+      const ents = this.dayEntries(iso);
+      const tot = this.dayTotals(iso);
+      const stx = this.kcalStatus(tot.kcal);
+      const isSel = iso === st.selectedDate, isToday = iso === this.todayISO;
+      const select = () => set({ selectedDate: iso });
+      const wd = ['PON', 'WT', 'ŚR', 'CZW', 'PT', 'SOB', 'NIE'][i];
+      const chips = ents.slice(0, 4).map(e => ({ type: this.typeLabel(e.meal).toUpperCase().slice(0, 3), name: this.entryName(e) }));
+      if (ents.length > 4) chips.push({ type: '', name: '+ ' + (ents.length - 4) + ' więcej' });
+      days.push({
+        iso, wd, num: String(this.fromISO(iso).getDate()), isToday, isSel,
+        aria: this.dayName(iso) + (isToday ? ', dziś' : '') + ', ' + (ents.length === 0 ? 'brak posiłków' : ents.length + ' posiłki, ' + this.fmt(tot.kcal) + ' kcal' + (stx ? ', ' + stx.label : '')),
+        select, keySelect: (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { prevent(ev); select(); } },
+        hasMeals: ents.length > 0, noMeals: ents.length === 0, hasGoal,
+        mealsLabel: ents.length + (ents.length === 1 ? ' posiłek' : (ents.length < 5 ? ' posiłki' : ' posiłków')),
+        kcalLabel: this.fmt(tot.kcal), kcalSuffix: hasGoal ? '/ ' + this.fmt(goal.kcal) + ' kcal' : 'kcal',
+        pct: hasGoal ? Math.min(100, Math.round(tot.kcal / goal.kcal * 100)) : 0,
+        statusColor: stx ? stx.color : '#8C7F6C', statusLabel: stx ? stx.label : 'bez celu dziennego',
+        b: this.fmt(tot.b), w: this.fmt(tot.w), t: this.fmt(tot.t),
+        cardBg: isSel ? '#F8F1E3' : 'rgba(242,233,216,0.05)', cardFg: isSel ? '#2A2018' : '#F2E9D8',
+        cardBorder: isToday ? '1.5px solid #D97E57' : (isSel ? '1.5px solid #F8F1E3' : '1px solid rgba(242,233,216,0.12)'),
+        wdColor: isSel ? '#8C7F6C' : 'rgba(242,233,216,0.5)', mutedColor: isSel ? '#8C7F6C' : 'rgba(242,233,216,0.5)',
+        trackBg: isSel ? '#EBE0CB' : 'rgba(242,233,216,0.14)',
+        dashColor: isSel ? '#DCCFB2' : 'rgba(242,233,216,0.3)', dashFg: isSel ? '#A79A83' : 'rgba(242,233,216,0.55)',
+        chipBg: isSel ? '#FCF7EC' : 'rgba(242,233,216,0.07)', chipBorder: isSel ? '#EADFC8' : 'rgba(242,233,216,0.14)', chipTypeFg: isSel ? '#C75B38' : '#D97E57',
+        addFirst: (ev) => { stop(ev); set({ selectedDate: iso }); this.openAdd(iso, 'sniadanie'); },
+        chips,
+        stripBg: isSel ? '#F8F1E3' : 'rgba(242,233,216,0.05)', stripFg: isSel ? '#2A2018' : '#F2E9D8',
+        stripBorder: isToday ? '1.5px solid #D97E57' : '1px solid rgba(242,233,216,0.12)',
+        dotColor: ents.length === 0 ? 'transparent' : (stx ? stx.color : '#D97E57')
+      });
+    }
+
+    // ── weekly summary ──
+    const planned = days.filter(d => d.hasMeals);
+    const mealsN = this.state.entries.filter(e => { const d = this.fromISO(e.date), a = this.fromISO(st.weekStart); const diff = (d - a) / 86400000; return diff >= 0 && diff < 7; }).length;
+    const nearN = days.filter(d => d.hasMeals && d.statusLabel === 'cel osiągnięty').length;
+    const overN = days.filter(d => d.statusLabel.indexOf('przekroczono') === 0).length;
+    const belowN = days.filter(d => d.hasMeals && d.statusLabel.indexOf('zostało') === 0).length;
+    const summaryChips = [
+      { dot: '#D97E57', label: 'Zaplanowane dni: ' + planned.length + ' z 7 · posiłki: ' + mealsN }
+    ];
+    if (hasGoal && planned.length) {
+      summaryChips.push({ dot: '#5F7C4E', label: 'Cel osiągnięty: ' + nearN });
+      summaryChips.push({ dot: '#A8861B', label: 'Poniżej celu: ' + belowN });
+      summaryChips.push({ dot: '#B3402E', label: 'Powyżej celu: ' + overN });
+    }
+    if (!hasGoal) summaryChips.push({ dot: '#8C7F6C', label: 'Brak dziennych celów — sumy bez porównania' });
+    if (!planned.length) summaryChips.push({ dot: '#8C7F6C', label: 'Ten tydzień jest jeszcze pusty' });
+
+    // ── month grid ──
+    const mondayOf = (iso) => { const m = this.fromISO(iso); m.setDate(m.getDate() - ((m.getDay() + 6) % 7)); return this.iso(m); };
+    const monthDays = [];
+    { const anchor = this.fromISO(st.selectedDate), yy = anchor.getFullYear(), mm = anchor.getMonth();
+      const first = new Date(yy, mm, 1), off = (first.getDay() + 6) % 7, gStart = new Date(yy, mm, 1 - off);
+      for (let i = 0; i < 42; i++) {
+        const d = new Date(gStart); d.setDate(gStart.getDate() + i); const iso = this.iso(d);
+        const inMonth = d.getMonth() === mm, ents = this.dayEntries(iso), tot = this.dayTotals(iso), stx = this.kcalStatus(tot.kcal);
+        const isSel = iso === st.selectedDate, isToday = iso === this.todayISO;
+        const TI = { sniadanie: 'Ś', obiad: 'O', kolacja: 'K', przekaska: 'P' };
+        const present = ['sniadanie', 'obiad', 'kolacja', 'przekaska'].filter(t => ents.some(e => e.meal === t));
+        const showInfo = ents.length > 0 && !isMobile;
+        monthDays.push({
+          iso, num: String(d.getDate()), inMonth, isSel, isToday,
+          hasMeals: ents.length > 0, mealsN: ents.length, showInfo,
+          mealsLabelM: showInfo ? (ents.length + (ents.length === 1 ? ' posiłek' : (ents.length < 5 ? ' posiłki' : ' posiłków'))) : '',
+          kcalNum: showInfo ? this.fmt(tot.kcal) : '',
+          kcalSuffix: showInfo ? (hasGoal ? '/ ' + this.fmt(goal.kcal) + ' kcal' : 'kcal') : '',
+          pctW: (showInfo && hasGoal) ? Math.min(100, Math.round(tot.kcal / goal.kcal * 100)) + '%' : '0%',
+          trackBg: (showInfo && hasGoal) ? (isSel ? '#EBE0CB' : 'rgba(242,233,216,0.14)') : 'transparent',
+          statusColor: showInfo ? (stx ? stx.color : '#8C7F6C') : 'transparent',
+          statusLabel: showInfo ? (hasGoal ? (stx ? stx.label : '') : 'bez celu dziennego') : '',
+          bStr: showInfo ? 'B ' + this.fmt(tot.b) : '', wStr: showInfo ? 'W ' + this.fmt(tot.w) : '', tStr: showInfo ? 'T ' + this.fmt(tot.t) : '',
+          dotColor: ents.length === 0 ? 'transparent' : (stx ? stx.color : '#D97E57'),
+          aria: this.dayName(iso) + (isToday ? ', dziś' : '') + (ents.length ? ', ' + ents.length + ' posiłki, ' + this.fmt(tot.kcal) + ' kcal' : ', brak posiłków'),
+          select: () => set({ selectedDate: iso, weekStart: mondayOf(iso) }),
+          keySelect: (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { prevent(ev); set({ selectedDate: iso, weekStart: mondayOf(iso) }); } },
+          cellBg: isSel ? '#F8F1E3' : (inMonth ? 'rgba(242,233,216,0.05)' : 'transparent'),
+          cellBorder: isToday ? '1.5px solid #D97E57' : (isSel ? '1.5px solid #F8F1E3' : (inMonth ? '1px solid rgba(242,233,216,0.1)' : '1px solid transparent')),
+          numColor: isSel ? '#2A2018' : (inMonth ? '#F2E9D8' : 'rgba(242,233,216,0.3)'),
+          mutedColor: isSel ? '#8C7F6C' : 'rgba(242,233,216,0.5)'
+        });
+      }
+    }
+    const monthWeekdays = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
+    const monthLabel = this.cap(new Intl.DateTimeFormat('pl-PL', { month: 'long', year: 'numeric' }).format(this.fromISO(st.selectedDate)));
+
+    // ── selected day ──
+    const selISO = st.selectedDate;
+    const selEnts = this.dayEntries(selISO);
+    const selTot = this.dayTotals(selISO);
+    const types = ['sniadanie', 'obiad', 'kolacja', 'przekaska'];
+    const mealGroups = types.map(tp => {
+      const ents = selEnts.filter(e => e.meal === tp);
+      const kcal = ents.reduce((a, e) => a + this.macros(e).kcal, 0);
+      return {
+        label: this.typeLabel(tp), kcal: this.fmt(kcal),
+        addLabel: 'Dodaj — ' + this.typeLabel(tp).toLowerCase(),
+        addThis: () => this.openAdd(selISO, tp),
+        entries: ents.map(e => {
+          const isProd = this.isProduct(e);
+          const r = this.recipeOf(e), m = this.macros(e), gone = !isProd && !r;
+          const name = this.entryName(e);
+          const changePor = (np) => { if (np < 0.5) return; this.save(() => set({ entries: st.entries.map(x => x.id === e.id ? Object.assign({}, x, { por: np }) : x) }), 'Zapisano — ' + this.porLabel(np) + '.'); };
+          const changeGrams = (ng) => { if (ng < 10) return; this.save(() => set({ entries: st.entries.map(x => x.id === e.id ? Object.assign({}, x, { grams: ng }) : x) }), 'Zapisano — ' + this.gramLabel(ng) + '.'); };
+          return {
+            ok: !gone, gone, name,
+            porLabel: isProd ? this.gramLabel(e.grams) : this.porLabel(e.por), porNum: isProd ? this.fmt(e.grams) : String(e.por).replace('.', ','),
+            b: this.fmt(m.b), w: this.fmt(m.w), t: this.fmt(m.t), kcal: this.fmt(m.kcal),
+            decAria: (isProd ? 'Mniej — ' : 'Mniej porcji — ') + name, incAria: (isProd ? 'Więcej — ' : 'Więcej porcji — ') + name, typeAria: 'Typ posiłku — ' + name,
+            dec: () => isProd ? changeGrams((e.grams || 0) - 10) : changePor(e.por - 0.5), inc: () => isProd ? changeGrams((e.grams || 0) + 10) : changePor(e.por + 0.5),
+            typeVal: e.meal,
+            onType: (ev) => { const nt = ev.target.value; this.save(() => set({ entries: st.entries.map(x => x.id === e.id ? Object.assign({}, x, { meal: nt }) : x) }), 'Przeniesiono do: ' + this.typeLabel(nt) + '.'); },
+            openMove: () => set({ move: { id: e.id, date: this.addISO(e.date, 1), type: e.meal, saving: false, err: false } }),
+            openCopy: () => set({ copy: { id: e.id, dates: {}, type: 'keep', por: e.por, grams: e.grams, saving: false } }),
+            remove: () => { this._deleted = e; set({ entries: st.entries.filter(x => x.id !== e.id) }); this.toast({ kind: 'ok', msg: 'Usunięto posiłek z planu.', undo: true }); },
+            replace: () => this.openAdd(e.date, e.meal, e.id),
+            goneWhere: this.dayName(e.date) + ' · ' + this.typeLabel(e.meal),
+            snapLine: e.snap ? this.fmt(m.kcal) + ' kcal · ' + this.fmt(m.b) + 'B · ' + this.fmt(m.w) + 'W · ' + this.fmt(m.t) + 'T' : 'brak'
+          };
+        })
+      };
+    });
+
+    // ── balance rows ──
+    const mkRow = (label, val, goalV, unit) => {
+      const rem = goalV - val;
+      let color = '#5F7C4E', status = 'cel osiągnięty';
+      if (val === 0) { color = '#8C7F6C'; status = 'nic nie zaplanowano'; }
+      else if (rem >= goalV * 0.05) { color = '#A8861B'; status = 'zostało ' + this.fmt(rem) + ' ' + unit; }
+      else if (rem <= -goalV * 0.05) { color = '#B3402E'; status = 'przekroczono o ' + this.fmt(-rem) + ' ' + unit; }
+      return { label, val: this.fmt(val), goal: this.fmt(goalV) + ' ' + unit, pct: Math.min(100, Math.round(val / goalV * 100)), color, status };
+    };
+    const balanceRows = hasGoal ? [
+      mkRow('Kalorie', selTot.kcal, goal.kcal, 'kcal'),
+      mkRow('Białko', selTot.b, goal.b, 'g'),
+      mkRow('Tłuszcz', selTot.t, goal.t, 'g'),
+      mkRow('Węglowodany', selTot.w, goal.w, 'g')
+    ] : [];
+
+    // ── add modal ──
+    const add = st.add, create = st.create;
+    let addVals = {};
+    if (add) {
+      const isProdMode = add.mode === 'product';
+      const por = parseFloat(String(add.por).replace(',', '.'));
+      const porValid = !isNaN(por) && por > 0;
+      const grams = parseFloat(String(add.grams).replace(',', '.'));
+      const gramsValid = !isNaN(grams) && grams > 0;
+      const q = (add.search || '').toLowerCase();
+      const list = st.recipes.filter(r => r.name.toLowerCase().indexOf(q) >= 0);
+      const pq = (add.psearch || '').toLowerCase();
+      const prodList = this.products().filter(p => p.name.toLowerCase().indexOf(pq) >= 0);
+      const chosen = st.recipes.find(r => r.id === add.rid) || null;
+      const chosenProd = this.products().find(p => p.id === add.pid) || null;
+      let addM = null;
+      if (isProdMode) { if (chosenProd && gramsValid) { const f = grams / 100; addM = { kcal: chosenProd.kcal * f, b: chosenProd.b * f, t: chosenProd.t * f, w: chosenProd.w * f }; } }
+      else if (chosen && porValid) addM = { kcal: chosen.kcal * por, b: chosen.b * por, t: chosen.t * por, w: chosen.w * por };
+      const canConfirm = !!addM && !add.saving;
+      const upd = (o) => set({ add: Object.assign({}, add, o) });
+      const dayTot = this.dayTotals(add.date);
+      const previewShow = !!addM && hasGoal;
+      const mkPrev = (label, cur, delta, goalV, unit) => {
+        const after = cur + delta;
+        const over = after > goalV * 1.05;
+        return { label, deltaLabel: '+' + this.fmt(delta) + ' ' + unit, deltaColor: over ? '#B3402E' : '#5F7C4E', afterLabel: this.fmt(after), goalLabel: this.fmt(goalV) + ' ' + unit, pct: Math.min(100, Math.round(after / goalV * 100)), barColor: over ? '#B3402E' : '#5F7C4E' };
+      };
+      addVals = {
+        addOpen: true,
+        addTitle: add.replaceId ? 'Zastąp posiłek' : 'Dodaj posiłek',
+        addIsPick: !create, addIsCreate: !!create,
+        addIsReplace: !!add.replaceId,
+        replaceInfo: this.dayName(add.date) + ' · ' + this.typeLabel(add.type),
+        addDateVal: add.date, addDateName: this.dayName(add.date),
+        onAddDate: (ev) => { if (ev.target.value) upd({ date: ev.target.value }); },
+        openAddPicker: () => this.openPicker('add', add.date),
+        closeAdd: () => set({ add: null, create: null }),
+        closeAddBg: () => set({ add: null, create: null }),
+        searchVal: add.search, onSearch: (ev) => upd({ search: ev.target.value }),
+        clearSearch: () => upd({ search: '' }),
+        hasResults: list.length > 0, noResults: list.length === 0,
+        recipeOptions: list.map(r => {
+          const sel = r.id === add.rid;
+          return {
+            name: r.name, kcalLabel: this.fmt(r.kcal) + ' kcal', macroLabel: this.fmt(r.b) + 'B · ' + this.fmt(r.w) + 'W · ' + this.fmt(r.t) + 'T',
+            pressed: sel, pick: () => upd({ rid: r.id }),
+            border: sel ? '1.5px solid #C75B38' : '1px solid #E5DAC3', bg: sel ? 'rgba(199,91,56,0.07)' : '#FCF7EC',
+            mark: sel ? '✓' : '', markBg: sel ? '#C75B38' : 'transparent', markBorder: sel ? '1px solid #C75B38' : '1.5px solid #CDбир'.length ? (sel ? '1px solid #C75B38' : '1.5px solid #CDC0A6') : ''
+          };
+        }),
+        goCreate: () => this.handoffToPage('Jadlify - Przepisy.dc.html?utworz=przepis&powrot=plan', add),
+        goCreateProd: () => this.handoffToPage('Jadlify - Produkty.dc.html?utworz=produkt&powrot=plan', add),
+        typeOptions: types.map(tp => {
+          const sel = tp === add.type;
+          return { label: this.typeLabel(tp), pressed: sel, on: () => upd({ type: tp }), border: sel ? '1.5px solid #C75B38' : '1px solid #E5DAC3', bg: sel ? 'rgba(199,91,56,0.09)' : 'transparent', fg: sel ? '#C75B38' : '#6E6250', weight: sel ? 700 : 600 };
+        }),
+        porText: String(add.por).replace('.', ','), onPor: (ev) => upd({ por: ev.target.value }),
+        decAdd: () => { if (porValid && por > 0.5) upd({ por: String(por - 0.5).replace('.', ',') }); },
+        incAdd: () => upd({ por: String((porValid ? por : 0) + 0.5).replace('.', ',') }),
+        porInvalid: !porValid && String(add.por).trim() !== '',
+        previewShow,
+        previewRows: previewShow ? [
+          mkPrev('Kalorie', dayTot.kcal, addM.kcal, goal.kcal, 'kcal'),
+          mkPrev('Białko', dayTot.b, addM.b, goal.b, 'g'),
+          mkPrev('Tłuszcz', dayTot.t, addM.t, goal.t, 'g'),
+          mkPrev('Węglowodany', dayTot.w, addM.w, goal.w, 'g')
+        ] : [],
+        previewNoGoal: !!addM && !hasGoal,
+        addedLine: addM ? this.fmt(addM.kcal) + ' kcal · ' + this.fmt(addM.b) + 'g białka · ' + this.fmt(addM.w) + 'g węgli · ' + this.fmt(addM.t) + 'g tłuszczu' : '',
+        addErrShow: add.err,
+        confirmHintShow: isProdMode ? !chosenProd : !chosen, confirmHint: isProdMode ? 'Wybierz produkt z listy, aby dodać go do planu.' : 'Wybierz przepis z listy, aby dodać go do planu.',
+        addModeRecipe: !isProdMode, addModeProduct: isProdMode,
+        setModeRecipe: () => upd({ mode: 'recipe' }), setModeProduct: () => upd({ mode: 'product' }),
+        modeRecipeBg: !isProdMode ? '#C75B38' : 'transparent', modeRecipeFg: !isProdMode ? '#FFF8EC' : '#6E6250',
+        modeProductBg: isProdMode ? '#C75B38' : 'transparent', modeProductFg: isProdMode ? '#FFF8EC' : '#6E6250',
+        psearchVal: add.psearch, onPSearch: (ev) => upd({ psearch: ev.target.value }), clearPSearch: () => upd({ psearch: '' }),
+        prodHasResults: prodList.length > 0, prodNoResults: prodList.length === 0,
+        productOptions: prodList.map(p => { const sel = p.id === add.pid; return { name: p.name, kcalLabel: this.fmt(p.kcal) + ' kcal / 100 g', macroLabel: this.fmt(p.b) + 'B · ' + this.fmt(p.w) + 'W · ' + this.fmt(p.t) + 'T', pressed: sel, pick: () => upd({ pid: p.id }), border: sel ? '1.5px solid #C75B38' : '1px solid #E5DAC3', bg: sel ? 'rgba(199,91,56,0.07)' : '#FCF7EC', mark: sel ? '✓' : '', markBg: sel ? '#C75B38' : 'transparent', markBorder: sel ? '1px solid #C75B38' : '1.5px solid #CDC0A6' }; }),
+        gramsText: String(add.grams).replace('.', ','), onGrams: (ev) => upd({ grams: ev.target.value }),
+        decGrams: () => { if (gramsValid && grams > 10) upd({ grams: String(grams - 10) }); }, incGrams: () => upd({ grams: String((gramsValid ? grams : 0) + 10) }),
+        gramsInvalid: !gramsValid && String(add.grams).trim() !== '',
+        prodPreviewLabel: chosenProd && gramsValid ? this.gramLabel(grams) + ' · ' + chosenProd.name : '',
+        addSaving: add.saving, addNotSaving: !add.saving,
+        confirmDisabled: !canConfirm, confirmAria: !canConfirm,
+        confirmBg: canConfirm ? '#C75B38' : '#DCCFB2', confirmFg: canConfirm ? '#FFF8EC' : '#8C7F6C', confirmCursor: canConfirm ? 'pointer' : 'not-allowed',
+        confirmLabel: add.replaceId ? 'Zastąp w planie' : 'Dodaj do planu',
+        confirmAdd: () => {
+          if (!canConfirm) return;
+          upd({ saving: true, err: false });
+          clearTimeout(this._ts);
+          this._ts = setTimeout(() => {
+            if (this.props.bladZapisu) { set({ add: Object.assign({}, this.state.add, { saving: false, err: true }) }); return; }
+            const ne = isProdMode ? { id: 'e' + (++this._nid), date: add.date, pid: chosenProd.id, grams, meal: add.type } : { id: 'e' + (++this._nid), date: add.date, rid: chosen.id, meal: add.type, por };
+            let entries = [...this.state.entries, ne];
+            if (add.replaceId) entries = entries.filter(x => x.id !== add.replaceId);
+            set({ entries, add: null, create: null, selectedDate: add.date });
+            this.toast({ kind: 'ok', msg: (add.replaceId ? 'Zastąpiono wpis: ' : 'Dodano do planu: ') + (isProdMode ? chosenProd.name + ' (' + this.gramLabel(grams) + ')' : chosen.name) + ' — ' + this.dayShort(add.date) + '.' });
+          }, 600);
+        },
+        stopClick: stop
+      };
+      if (create) {
+        const isProdCreate = create.kind === 'product';
+        const prods = this.products();
+        const cupd = (o) => set({ create: Object.assign({}, create, o) });
+        const num = (v) => { const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? null : n; };
+        const okNum = (v) => num(v) !== null && num(v) >= 0;
+        const pValid = isProdCreate && create.name.trim() && okNum(create.kcal) && okNum(create.b) && okNum(create.t) && okNum(create.w);
+        const valid = isProdCreate ? pValid : (create.name.trim() && create.ings.some(i => i.pid && parseFloat(i.grams) > 0));
+        const totals = create.ings ? create.ings.reduce((a, i) => {
+          const p = prods.find(x => x.id === i.pid); const g = parseFloat(String(i.grams).replace(',', '.'));
+          if (p && g > 0) { a.kcal += p.kcal * g / 100; a.b += p.b * g / 100; a.t += p.t * g / 100; a.w += p.w * g / 100; }
+          return a;
+        }, { kcal: 0, b: 0, t: 0, w: 0 }) : { kcal: 0, b: 0, t: 0, w: 0 };
+        Object.assign(addVals, {
+          cancelCreate: () => set({ create: null }),
+          createIsRecipe: !isProdCreate, createIsProduct: isProdCreate,
+          createTitle: isProdCreate ? 'Nowy produkt' : 'Nowy przepis',
+          createSubtitle: isProdCreate ? 'Podaj wartości na 100 g — gramaturę wybierzesz przy dodawaniu. Typ posiłku został zapamiętany.' : 'Data, typ posiłku i liczba porcji zostały zapamiętane — po zapisaniu wrócisz do dodawania posiłku.',
+          saveNewLabel: isProdCreate ? 'Zapisz produkt' : 'Zapisz przepis',
+          createHint: isProdCreate ? 'Podaj nazwę oraz kalorie i makroskładniki na 100 g.' : 'Podaj nazwę, co najmniej jeden składnik z gramaturą oraz liczbę porcji.',
+          newNameVal: create.name, onNewName: (ev) => cupd({ name: ev.target.value }),
+          newNamePlaceholder: isProdCreate ? 'Np. Serek wiejski' : 'Np. Omlet z warzywami',
+          pKcalVal: create.kcal, onPKcal: (ev) => cupd({ kcal: ev.target.value }),
+          pBVal: create.b, onPB: (ev) => cupd({ b: ev.target.value }),
+          pTVal: create.t, onPT: (ev) => cupd({ t: ev.target.value }),
+          pWVal: create.w, onPW: (ev) => cupd({ w: ev.target.value }),
+          prodOpts: prods.map(p => ({ id: p.id, name: p.name })),
+          ingRows: (create.ings || []).map((row, i) => ({
+            pid: row.pid, grams: row.grams,
+            onProd: (ev) => cupd({ ings: create.ings.map((x, j) => j === i ? Object.assign({}, x, { pid: ev.target.value }) : x) }),
+            onGrams: (ev) => cupd({ ings: create.ings.map((x, j) => j === i ? Object.assign({}, x, { grams: ev.target.value }) : x) }),
+            rm: () => cupd({ ings: create.ings.length > 1 ? create.ings.filter((x, j) => j !== i) : [{ pid: '', grams: '' }] })
+          })),
+          addIng: () => cupd({ ings: [...create.ings, { pid: '', grams: '' }] }),
+          newPorLabel: create.portions + (create.portions === 1 ? ' porcja' : (create.portions < 5 ? ' porcje' : ' porcji')),
+          decNewPor: () => { if (create.portions > 1) cupd({ portions: create.portions - 1 }); },
+          incNewPor: () => cupd({ portions: create.portions + 1 }),
+          newMacroShow: valid, newMacroLine: this.fmt(totals.kcal / create.portions) + ' kcal · ' + this.fmt(totals.b / create.portions) + 'B · ' + this.fmt(totals.w / create.portions) + 'W · ' + this.fmt(totals.t / create.portions) + 'T',
+          createHintShow: !valid,
+          saveNewDisabled: !valid, saveNewAria: !valid,
+          saveNewBg: valid ? '#C75B38' : '#DCCFB2', saveNewFg: valid ? '#FFF8EC' : '#8C7F6C', saveNewCursor: valid ? 'pointer' : 'not-allowed',
+          saveNew: () => {
+            if (!valid) return;
+            if (isProdCreate) {
+              const np = { id: 'cp' + (++this._nid), name: create.name.trim(), kcal: num(create.kcal), b: num(create.b), t: num(create.t), w: num(create.w) };
+              set({ customProducts: [...(st.customProducts || []), np], create: null, add: Object.assign({}, add, { mode: 'product', pid: np.id, psearch: '' }) });
+              this.toast({ kind: 'ok', msg: 'Zapisano produkt „' + np.name + '” — potwierdź dodanie do planu.' });
+              return;
+            }
+            const nr = { id: 'nr' + (++this._nid), name: create.name.trim(), kcal: totals.kcal / create.portions, b: totals.b / create.portions, t: totals.t / create.portions, w: totals.w / create.portions };
+            set({ recipes: [...st.recipes, nr], create: null, add: Object.assign({}, add, { rid: nr.id, search: '' }) });
+            this.toast({ kind: 'ok', msg: 'Zapisano przepis „' + nr.name + '” — potwierdź dodanie do planu.' });
+          }
+        });
+      }
+    } else {
+      addVals = { addOpen: false };
+    }
+
+    // ── move modal ──
+    const move = st.move;
+    let moveVals = { moveOpen: false };
+    if (move) {
+      const ent = st.entries.find(x => x.id === move.id);
+      const name = ent ? this.entryName(ent) : '';
+      const mupd = (o) => set({ move: Object.assign({}, move, o) });
+      moveVals = {
+        moveOpen: true,
+        moveEntryLabel: name + ' · ' + (ent ? this.porLabel(ent.por) : '') + ' — obecnie: ' + (ent ? this.dayName(ent.date) + ', ' + this.typeLabel(ent.meal) : ''),
+        moveDateVal: move.date, onMoveDate: (ev) => { if (ev.target.value) mupd({ date: ev.target.value }); },
+        openMovePicker: () => this.openPicker('move', move.date), moveDateName: this.dayName(move.date),
+        moveTypeOptions: types.map(tp => {
+          const sel = tp === move.type;
+          return { label: this.typeLabel(tp), pressed: sel, on: () => mupd({ type: tp }), border: sel ? '1.5px solid #C75B38' : '1px solid #E5DAC3', bg: sel ? 'rgba(199,91,56,0.09)' : 'transparent', fg: sel ? '#C75B38' : '#6E6250', weight: sel ? 700 : 600 };
+        }),
+        moveDestLabel: this.dayName(move.date) + ' · ' + this.typeLabel(move.type),
+        moveErrShow: move.err, moveSaving: move.saving, moveNotSaving: !move.saving,
+        closeMove: () => set({ move: null }), closeMoveBg: () => set({ move: null }),
+        confirmMove: () => {
+          mupd({ saving: true, err: false });
+          clearTimeout(this._ts);
+          this._ts = setTimeout(() => {
+            if (this.props.bladZapisu) { set({ move: Object.assign({}, this.state.move, { saving: false, err: true }) }); return; }
+            set({ entries: this.state.entries.map(x => x.id === move.id ? Object.assign({}, x, { date: move.date, meal: move.type }) : x), move: null, selectedDate: move.date });
+            this.toast({ kind: 'ok', msg: 'Przeniesiono: ' + name + ' → ' + this.dayShort(move.date) + ' · ' + this.typeLabel(move.type) + '.' });
+          }, 600);
+        },
+        stopClick: stop
+      };
+    }
+
+    // ── copy modal ──
+    const copy = st.copy;
+    let copyVals = { copyOpen: false };
+    if (copy) {
+      const ent = st.entries.find(x => x.id === copy.id);
+      const name = ent ? this.entryName(ent) : '';
+      const cupd = (o) => set({ copy: Object.assign({}, copy, o) });
+      const selDates = Object.keys(copy.dates).filter(k => copy.dates[k]);
+      const canCopy = selDates.length > 0 && !copy.saving;
+      const isProd = ent && this.isProduct(ent);
+      const same = (x) => isProd ? x.pid === ent.pid : x.rid === ent.rid;
+      const dupSel = ent && selDates.some(d => this.dayEntries(d).some(same));
+      copyVals = {
+        copyOpen: true,
+        copyEntryLabel: name + ' · ' + (ent ? (isProd ? this.gramLabel(copy.grams) : this.porLabel(copy.por)) : ''),
+        copyDates: Array.from({ length: 10 }, (_, i) => {
+          const iso = this.addISO(ent ? ent.date : st.selectedDate, i + 1);
+          const checked = !!copy.dates[iso];
+          const has = ent ? this.dayEntries(iso).some(same) : false;
+          const n = this.dayEntries(iso).length;
+          return {
+            label: this.dayName(iso), checked,
+            toggle: () => cupd({ dates: Object.assign({}, copy.dates, { [iso]: !checked }) }),
+            border: checked ? '1.5px solid #C75B38' : '1px solid #E5DAC3', bg: checked ? 'rgba(199,91,56,0.07)' : '#FCF7EC',
+            mark: checked ? '✓' : '', markBg: checked ? '#C75B38' : 'transparent', markBorder: checked ? '1px solid #C75B38' : '1.5px solid #CDC0A6',
+            note: has ? 'ten przepis już tu jest' : (n ? n + ' posiłki w planie' : 'pusty dzień'), noteColor: has ? '#A8861B' : '#8C7F6C'
+          };
+        }),
+        copyTypeVal: copy.type, onCopyType: (ev) => cupd({ type: ev.target.value }),
+        copyPorLabel: isProd ? this.gramLabel(copy.grams) : String(copy.por).replace('.', ','),
+        decCopyPor: () => isProd ? (copy.grams > 10 && cupd({ grams: copy.grams - 10 })) : (copy.por > 0.5 && cupd({ por: copy.por - 0.5 })),
+        incCopyPor: () => isProd ? cupd({ grams: (copy.grams || 0) + 10 }) : cupd({ por: copy.por + 0.5 }),
+        copyDupShow: !!dupSel,
+        copySaving: copy.saving, copyNotSaving: !copy.saving,
+        copyDisabled: !canCopy, copyAria: !canCopy,
+        copyBg: canCopy ? '#C75B38' : '#DCCFB2', copyFg: canCopy ? '#FFF8EC' : '#8C7F6C', copyCursor: canCopy ? 'pointer' : 'not-allowed',
+        copyCtaLabel: selDates.length ? 'Kopiuj do ' + selDates.length + ' ' + (selDates.length === 1 ? 'dnia' : 'dni') : 'Zaznacz dni docelowe',
+        closeCopy: () => set({ copy: null }), closeCopyBg: () => set({ copy: null }),
+        confirmCopy: () => {
+          if (!canCopy) return;
+          cupd({ saving: true });
+          clearTimeout(this._ts);
+          this._ts = setTimeout(() => {
+            if (this.props.bladZapisu) { set({ copy: Object.assign({}, this.state.copy, { saving: false }) }); this.toast({ kind: 'err', msg: 'Nie udało się skopiować posiłku. Plan pozostał bez zmian.' }, false); this._retry = null; return; }
+            const news = selDates.map(d => Object.assign({ id: 'e' + (++this._nid), date: d, meal: copy.type === 'keep' ? ent.meal : copy.type }, isProd ? { pid: ent.pid, grams: copy.grams } : { rid: ent.rid, por: copy.por, snap: ent.snap }));
+            set({ entries: [...this.state.entries, ...news], copy: null });
+            this.toast({ kind: 'ok', msg: 'Skopiowano „' + name + '” do ' + selDates.length + ' ' + (selDates.length === 1 ? 'dnia' : 'dni') + '.' });
+          }, 600);
+        },
+        stopClick: stop
+      };
+    }
+
+    // ── copy day modal ──
+    const cday = st.cday;
+    let cdayVals = { cdayOpen: false };
+    if (cday) {
+      const srcEnts = this.dayEntries(cday.src);
+      const cupd = (o) => set({ cday: Object.assign({}, cday, o) });
+      const selDates = Object.keys(cday.dates).filter(k => cday.dates[k]);
+      const isReplace = cday.mode === 'replace';
+      const canGo = selDates.length > 0 && (!isReplace || cday.ack) && !cday.saving;
+      cdayVals = {
+        cdayOpen: true,
+        cdaySrcLabel: this.dayName(cday.src),
+        cdayMealsLabel: srcEnts.length + (srcEnts.length === 1 ? ' posiłek' : (srcEnts.length < 5 ? ' posiłki' : ' posiłków')),
+        cdayMeals: srcEnts.map(e => { const m = this.macros(e); return { type: this.typeLabel(e.meal).toUpperCase(), name: this.entryName(e), info: (this.isProduct(e) ? this.gramLabel(e.grams) : this.porLabel(e.por)) + ' · ' + this.fmt(m.kcal) + ' kcal' }; }),
+        cdayDates: Array.from({ length: 10 }, (_, i) => {
+          const iso = this.addISO(cday.src, i + 1);
+          const checked = !!cday.dates[iso];
+          const n = this.dayEntries(iso).length;
+          return {
+            label: this.dayName(iso), checked,
+            toggle: () => cupd({ dates: Object.assign({}, cday.dates, { [iso]: !checked }) }),
+            border: checked ? '1.5px solid #C75B38' : '1px solid #E5DAC3', bg: checked ? 'rgba(199,91,56,0.07)' : '#FCF7EC',
+            mark: checked ? '✓' : '', markBg: checked ? '#C75B38' : 'transparent', markBorder: checked ? '1px solid #C75B38' : '1.5px solid #CDC0A6',
+            note: n ? n + ' posiłki w planie' : 'pusty dzień', noteColor: '#8C7F6C'
+          };
+        }),
+        cdayIsMonth: isMonthView, cdayIsWeek: !isMonthView,
+        cdayMonthLabel: monthLabel, cdayMonthWeekdays: monthWeekdays,
+        cdayClear: () => cupd({ dates: {} }),
+        cdayMonthCells: monthDays.map(d => {
+          const checked = !!cday.dates[d.iso], isSrc = d.iso === cday.src, selectable = d.inMonth && !isSrc;
+          return {
+            num: d.num, checked, aria: this.dayName(d.iso) + (isSrc ? ' — dzień źródłowy' : ''),
+            toggle: () => { if (selectable) cupd({ dates: Object.assign({}, cday.dates, { [d.iso]: !checked }) }); },
+            bg: checked ? '#C75B38' : (isSrc ? 'rgba(199,91,56,0.14)' : (selectable ? '#FCF7EC' : 'transparent')),
+            fg: checked ? '#FFF8EC' : (isSrc ? '#C75B38' : (d.inMonth ? (selectable ? '#2A2018' : '#B8AB92') : '#D8CBB2')),
+            border: checked ? '1.5px solid #C75B38' : (isSrc ? '1.5px solid #C75B38' : (selectable ? '1px solid #E5DAC3' : '1px solid transparent')),
+            ring: '1.5px solid transparent',
+            dot: d.hasMeals ? (checked ? '#FFF8EC' : '#C75B38') : 'transparent',
+            cursor: selectable ? 'pointer' : 'default'
+          };
+        }),
+        cdayModeAdd: () => cupd({ mode: 'add', ack: false }), cdayModeReplace: () => cupd({ mode: 'replace' }),
+        cdayIsAdd: !isReplace, cdayIsReplace: isReplace,
+        cdayAddBorder: !isReplace ? '1.5px solid #C75B38' : '1px solid #E5DAC3', cdayAddBg: !isReplace ? 'rgba(199,91,56,0.07)' : '#FCF7EC',
+        cdayAddRadio: !isReplace ? '5px solid #C75B38' : '1.5px solid #CDC0A6', cdayAddRadioBg: '#FCF7EC', cdayAddRadioShadow: 'none',
+        cdayRepBorder: isReplace ? '1.5px solid #B3402E' : '1px solid #E5DAC3', cdayRepBg: isReplace ? 'rgba(179,64,46,0.06)' : '#FCF7EC',
+        cdayRepRadio: isReplace ? '5px solid #B3402E' : '1.5px solid #CDC0A6', cdayRepRadioBg: '#FCF7EC', cdayRepRadioShadow: 'none',
+        cdayToggleAck: () => cupd({ ack: !cday.ack }), cdayAck: cday.ack,
+        cdayAckMark: cday.ack ? '✓' : '', cdayAckBg: cday.ack ? '#B3402E' : 'transparent', cdayAckBorder: cday.ack ? '1px solid #B3402E' : '1.5px solid rgba(179,64,46,0.5)',
+        cdaySaving: cday.saving, cdayNotSaving: !cday.saving,
+        cdayDisabled: !canGo, cdayAria: !canGo,
+        cdayBg: canGo ? '#C75B38' : '#DCCFB2', cdayFg: canGo ? '#FFF8EC' : '#8C7F6C', cdayCursor: canGo ? 'pointer' : 'not-allowed',
+        cdayCtaLabel: selDates.length ? 'Kopiuj dzień do ' + selDates.length + ' ' + (selDates.length === 1 ? 'dnia' : 'dni') : 'Zaznacz dni docelowe',
+        closeCday: () => set({ cday: null }), closeCdayBg: () => set({ cday: null }),
+        confirmCday: () => {
+          if (!canGo) return;
+          cupd({ saving: true });
+          clearTimeout(this._ts);
+          this._ts = setTimeout(() => {
+            if (this.props.bladZapisu) { set({ cday: Object.assign({}, this.state.cday, { saving: false }) }); this.toast({ kind: 'err', msg: 'Nie udało się skopiować dnia. Plan pozostał bez zmian.' }, false); return; }
+            let entries = this.state.entries;
+            if (isReplace) entries = entries.filter(x => selDates.indexOf(x.date) < 0);
+            const news = [];
+            selDates.forEach(d => srcEnts.forEach(e => news.push(Object.assign({ id: 'e' + (++this._nid), date: d, meal: e.meal }, this.isProduct(e) ? { pid: e.pid, grams: e.grams } : { rid: e.rid, por: e.por, snap: e.snap }))));
+            set({ entries: [...entries, ...news], cday: null });
+            this.toast({ kind: 'ok', msg: 'Skopiowano dzień do ' + selDates.length + ' ' + (selDates.length === 1 ? 'dnia' : 'dni') + '.' });
+          }, 650);
+        },
+        stopClick: stop
+      };
+    }
+
+    // ── shopping modal ──
+    const shop = st.shop;
+    let shopVals = { shopOpen: false };
+    if (shop) {
+      const supd = (o) => set({ shop: Object.assign({}, shop, o) });
+      const selDates = Object.keys(shop.dates).filter(k => shop.dates[k]);
+      const can = selDates.length > 0;
+      const monthPlanned = monthDays.filter(d => d.inMonth && d.hasMeals);
+      shopVals = {
+        shopOpen: true,
+        shopIsMonth: !!shop.month, shopIsWeek: !shop.month,
+        shopMonthWeekdays: monthWeekdays, shopMonthLabel: monthLabel,
+        shopSubtitle: shop.month ? 'Zaznacz dni miesiąca, z których zsumujemy składniki.' : 'Wybierz dni, z których zsumujemy składniki.',
+        shopAllOn: () => { const o = Object.assign({}, shop.dates); monthPlanned.forEach(d => { o[d.iso] = true; }); supd({ dates: o }); },
+        shopAllOff: () => supd({ dates: {} }),
+        shopMonthCells: monthDays.map(d => {
+          const checked = !!shop.dates[d.iso], selectable = d.inMonth && d.hasMeals;
+          return {
+            num: d.num, checked, selectable, aria: this.dayName(d.iso), isToday: d.isToday,
+            toggle: () => { if (selectable) supd({ dates: Object.assign({}, shop.dates, { [d.iso]: !checked }) }); },
+            bg: checked ? '#C75B38' : (selectable ? '#FCF7EC' : 'transparent'),
+            fg: checked ? '#FFF8EC' : (d.inMonth ? (selectable ? '#2A2018' : '#B8AB92') : '#D8CBB2'),
+            border: checked ? '1.5px solid #C75B38' : (selectable ? '1px solid #E5DAC3' : '1px solid transparent'),
+            ring: d.isToday && !checked ? '1.5px solid #C75B38' : '1.5px solid transparent',
+            dot: d.hasMeals ? (checked ? '#FFF8EC' : '#C75B38') : 'transparent',
+            cursor: selectable ? 'pointer' : 'default'
+          };
+        }),
+        shopDates: days.map(d => {
+          const checked = !!shop.dates[d.iso];
+          const empty = !d.hasMeals;
+          return {
+            label: this.dayName(d.iso), checked, disabled: empty,
+            toggle: () => { if (!empty) supd({ dates: Object.assign({}, shop.dates, { [d.iso]: !checked }) }); },
+            border: checked ? '1.5px solid #C75B38' : '1px solid #E5DAC3', bg: checked ? 'rgba(199,91,56,0.07)' : '#FCF7EC',
+            mark: checked ? '✓' : '', markBg: checked ? '#C75B38' : 'transparent', markBorder: checked ? '1px solid #C75B38' : '1.5px solid #CDC0A6',
+            note: empty ? 'brak posiłków' : d.mealsLabel, noteColor: '#8C7F6C',
+            cursor: empty ? 'not-allowed' : 'pointer', opacity: empty ? 0.55 : 1
+          };
+        }),
+        shopAria: !can, shopBg: can ? '#2A2018' : '#DCCFB2', shopFg: can ? '#F8F1E3' : '#8C7F6C', shopPointer: can ? 'auto' : 'none',
+        shopCtaLabel: can ? 'Dalej — lista z ' + selDates.length + ' ' + (selDates.length === 1 ? 'dnia' : 'dni') : 'Zaznacz dni',
+        closeShop: () => set({ shop: null }), closeShopBg: () => set({ shop: null }),
+        stopClick: stop
+      };
+    }
+
+    // ── date picker ──
+    const pk = st.picker;
+    let pickerVals = { pickerOpen: false };
+    if (pk) {
+      const anchor = this.fromISO(pk.month), yy = anchor.getFullYear(), mm = anchor.getMonth();
+      const first = new Date(yy, mm, 1), off = (first.getDay() + 6) % 7, gStart = new Date(yy, mm, 1 - off);
+      const cells = [];
+      for (let i = 0; i < 42; i++) {
+        const d = new Date(gStart); d.setDate(gStart.getDate() + i); const iso = this.iso(d);
+        const inMonth = d.getMonth() === mm, isSel = iso === pk.value, isToday = iso === this.todayISO;
+        const pick = () => {
+          if (pk.target === 'main') set({ selectedDate: iso, weekStart: mondayOf(iso), picker: null });
+          else if (pk.target === 'add') set({ add: Object.assign({}, st.add, { date: iso }), picker: null });
+          else if (pk.target === 'move') set({ move: Object.assign({}, st.move, { date: iso }), picker: null });
+          else set({ picker: null });
+        };
+        cells.push({
+          num: String(d.getDate()), pick, aria: this.dayName(iso),
+          bg: isSel ? '#C75B38' : 'transparent',
+          fg: isSel ? '#FFF8EC' : (inMonth ? '#2A2018' : '#BDB09A'),
+          weight: (isSel || isToday) ? 700 : 500,
+          ring: (isToday && !isSel) ? '1.5px solid #C75B38' : '1.5px solid transparent'
+        });
+      }
+      const monISO = this.iso(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+      pickerVals = {
+        pickerOpen: true, pickerCells: cells, pickerWeekdays: monthWeekdays,
+        pickerMonthLabel: this.cap(new Intl.DateTimeFormat('pl-PL', { month: 'long', year: 'numeric' }).format(first)),
+        pickerPrev: () => set({ picker: Object.assign({}, pk, { month: this.iso(new Date(yy, mm - 1, 1)) }) }),
+        pickerNext: () => set({ picker: Object.assign({}, pk, { month: this.iso(new Date(yy, mm + 1, 1)) }) }),
+        pickerJumpToday: () => set({ picker: Object.assign({}, pk, { month: monISO }) }),
+        closePicker: () => set({ picker: null }), stopClick: stop
+      };
+    }
+
+    // ── toast ──
+    const t = st.toast;
+
+    return Object.assign({
+      isDesktop: !isMobile, isMobile,
+      noop: prevent,
+      rangeLabel: isMonthView ? monthLabel : (this.cap(new Intl.DateTimeFormat('pl-PL', { day: 'numeric', month: 'long' }).format(this.fromISO(st.weekStart))) + ' – ' + new Intl.DateTimeFormat('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' }).format(this.fromISO(this.addISO(st.weekStart, 6)))),
+      isWeekView, isDayView: st.view === 'day', isMonthView,
+      setWeekView: () => set({ view: 'week' }),
+      setDayView: () => set({ view: 'day' }),
+      setMonthView: () => set({ view: 'month' }),
+      weekBtnBg: isWeekView ? 'rgba(242,233,216,0.14)' : 'transparent', weekBtnFg: isWeekView ? '#F2E9D8' : 'rgba(242,233,216,0.55)',
+      dayBtnBg: st.view === 'day' ? 'rgba(242,233,216,0.14)' : 'transparent', dayBtnFg: st.view === 'day' ? '#F2E9D8' : 'rgba(242,233,216,0.55)',
+      monthBtnBg: isMonthView ? 'rgba(242,233,216,0.14)' : 'transparent', monthBtnFg: isMonthView ? '#F2E9D8' : 'rgba(242,233,216,0.55)',
+      showBackToday: st.weekStart !== this.thisMonISO || st.selectedDate !== this.todayISO,
+      goToday: () => set({ weekStart: this.thisMonISO, selectedDate: this.todayISO }),
+      prevAria: isMonthView ? 'Poprzedni miesiąc' : (isWeekView ? 'Poprzedni tydzień' : 'Poprzedni dzień'), nextAria: isMonthView ? 'Następny miesiąc' : (isWeekView ? 'Następny tydzień' : 'Następny dzień'),
+      prevPeriod: () => { if (isMonthView) { const d = this.fromISO(st.selectedDate); const iso = this.iso(new Date(d.getFullYear(), d.getMonth() - 1, 1)); set({ selectedDate: iso, weekStart: mondayOf(iso) }); return; } const n = isWeekView ? -7 : -1; const nd = this.addISO(st.selectedDate, n); set({ selectedDate: nd, weekStart: this.addISO(st.weekStart, isWeekView ? -7 : (this.fromISO(nd) < this.fromISO(st.weekStart) ? -7 : 0)) }); },
+      nextPeriod: () => { if (isMonthView) { const d = this.fromISO(st.selectedDate); const iso = this.iso(new Date(d.getFullYear(), d.getMonth() + 1, 1)); set({ selectedDate: iso, weekStart: mondayOf(iso) }); return; } const n = isWeekView ? 7 : 1; const nd = this.addISO(st.selectedDate, n); const end = this.addISO(st.weekStart, 6); set({ selectedDate: nd, weekStart: this.addISO(st.weekStart, isWeekView ? 7 : (this.fromISO(nd) > this.fromISO(end) ? 7 : 0)) }); },
+      dateVal: st.selectedDate, dateBtnLabel: this.dayShort(st.selectedDate),
+      openMainPicker: () => this.openPicker('main', st.selectedDate),
+      onDate: (ev) => { const v = ev.target.value; if (!v) return; const d = this.fromISO(v); const mon = new Date(d); mon.setDate(mon.getDate() - ((mon.getDay() + 6) % 7)); set({ selectedDate: v, weekStart: this.iso(mon) }); },
+      openAddToolbar: () => this.openAdd(st.selectedDate, 'obiad'),
+      openAddSel: () => this.openAdd(st.selectedDate, 'obiad'),
+      bgRefresh, showLoading, showLoadError, showContent,
+      retryLoad: () => set({ loadFixed: true }),
+      summaryChips, hasAnyMeals: planned.length > 0,
+      openShop: () => { const pre = {}; if (isMonthView) { monthDays.forEach(d => { if (d.inMonth && d.hasMeals) pre[d.iso] = true; }); } else { planned.forEach(d => { pre[d.iso] = true; }); } set({ shop: { dates: pre, month: isMonthView } }); },
+      days, monthDays, monthWeekdays, monthLabel,
+      showCards: !isMobile && isWeekView,
+      showStrip: isMobile && isWeekView,
+      showMonthCal: isMonthView,
+      noRecipes,
+      showDayPanel: !noRecipes,
+      selDayLabel: this.dayName(selISO), selDayShort: this.dayName(selISO).toLowerCase(),
+      selIsToday: selISO === this.todayISO,
+      selHasMeals: selEnts.length > 0, selNoMeals: selEnts.length === 0,
+      openCopyDay: () => set({ cday: { src: selISO, dates: {}, mode: 'add', ack: false, saving: false } }),
+      mealGroups, balanceRows,
+      selPctLabel: hasGoal ? Math.round(selTot.kcal / goal.kcal * 100) + '% celu kalorii' : '',
+      hasGoal, noGoal: !hasGoal,
+      noGoalTotals: this.fmt(selTot.kcal) + ' kcal · ' + this.fmt(selTot.b) + 'g białka · ' + this.fmt(selTot.w) + 'g węgli · ' + this.fmt(selTot.t) + 'g tłuszczu',
+      showMobileFab: isMobile && showContent && !noRecipes && !st.add && !st.move && !st.copy && !st.cday && !st.shop,
+      ovlStyle: 'position:fixed;inset:0;z-index:50;background:rgba(31,23,18,0.6);display:flex;align-items:' + (isMobile ? 'flex-end' : 'center') + ';justify-content:center;padding:' + (isMobile ? '0' : '20px'),
+      panelStyle: 'background:#F8F1E3;color:#2A2018;width:' + (isMobile ? '100%' : 'min(720px,100%)') + ';max-height:' + (isMobile ? '94vh' : 'min(760px,92vh)') + ';border-radius:' + (isMobile ? '22px 22px 0 0' : '22px') + ';display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,0.5);animation:jd-rise 0.25s ease-out',
+      panelSmStyle: 'background:#F8F1E3;color:#2A2018;width:' + (isMobile ? '100%' : 'min(500px,100%)') + ';max-height:' + (isMobile ? '94vh' : 'min(680px,92vh)') + ';border-radius:' + (isMobile ? '22px 22px 0 0' : '22px') + ';display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,0.5);animation:jd-rise 0.25s ease-out',
+      toastShow: !!t,
+      toastBg: t && t.kind === 'err' ? '#8F3222' : '#2A2018',
+      toastIsSaving: !!t && t.kind === 'saving', toastIsOk: !!t && t.kind === 'ok', toastIsErr: !!t && t.kind === 'err',
+      toastMsg: t ? t.msg : '', toastHasUndo: !!t && !!t.undo,
+      undoDelete: () => this.restoreEntry(),
+      retryToast: () => { if (this._retry) this._retry(); },
+      closeToast: () => set({ toast: null })
+    }, addVals, moveVals, copyVals, cdayVals, shopVals, pickerVals);
+  }
+}
+</script>
+</body>
+</html>

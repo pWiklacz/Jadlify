@@ -1,202 +1,442 @@
-import { useState } from 'react'
-import { DailyMacroSummaryPanel } from './DailyMacroSummaryPanel'
-import { MealPlanEntryForm } from './MealPlanEntryForm'
-import { useDailyMacroSummary } from './useDailyMacroSummary'
-import { useMealPlan } from './useMealPlan'
-import { formatMacro } from '../recipes/macroMath'
-import { useRecipes } from '../recipes/useRecipes'
+import { useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { PageHeader } from '../ui/PageHeader'
+import { QueryState } from '../ui/QueryState'
+import { Toast, type ToastTone } from '../ui/Toast'
+import { readAddToPlanParams, stripAddToPlanParams } from '../recipes/addToPlan'
+import { AddMealEntryDialog } from './AddMealEntryDialog'
+import { CopyDayDialog } from './CopyDayDialog'
+import { CopyMealEntryDialog } from './CopyMealEntryDialog'
+import { DayCard } from './DayCard'
+import { DayPanel } from './DayPanel'
+import { MonthGrid } from './MonthGrid'
+import { MoveMealEntryDialog } from './MoveMealEntryDialog'
+import { PlannerRangeNav } from './PlannerRangeNav'
+import { WeekSummary } from './WeekSummary'
+import { isIsoDate, rangeFor, shiftDate, todayIso, type PlannerView } from './dateRange'
+import { formatRangeLabel } from './plannerFormat'
+import { useMealPlanRange } from './useMealPlanRange'
 import {
   useAddMealPlanEntry,
+  useCopyMealPlanDay,
+  useCopyMealPlanEntry,
   useDeleteMealPlanEntry,
+  useMoveMealPlanEntry,
   useUpdateMealPlanEntry,
 } from './useMealPlanMutations'
-import {
-  mealTypes,
-  type AddMealPlanEntryRequest,
-  type MacroSummary,
-  type MealPlanEntry,
-  type MealType,
+import type {
+  AddMealPlanEntryRequest,
+  CopyMealPlanDayRequest,
+  CopyMealPlanEntryRequest,
+  MealPlanDay,
+  MealPlanEntry,
+  MoveMealPlanEntryRequest,
+  MealType,
 } from './types'
 
+type DialogState =
+  | { kind: 'add'; date: string; mealType?: MealType; initialRecipeId?: string }
+  | { kind: 'move'; entry: MealPlanEntry }
+  | { kind: 'copy'; entry: MealPlanEntry }
+  | { kind: 'copyDay'; date: string; entryCount: number }
+  | null
+
+interface ToastState {
+  tone: ToastTone
+  message: string
+  action?: { label: string; onClick: () => void }
+}
+
+function normalizeView(value: string | null): PlannerView {
+  return value === 'day' || value === 'month' ? value : 'week'
+}
+
+function normalizeDate(value: string | null): string {
+  return value && isIsoDate(value) ? value : todayIso()
+}
+
+/** An empty stand-in when the selected day is not present in the range (defensive). */
+function emptyDay(date: string): MealPlanDay {
+  return {
+    date,
+    entries: [],
+    entryMacros: [],
+    total: { calories: 0, protein: 0, fat: 0, carbohydrates: 0 },
+    goal: null,
+    remaining: null,
+  }
+}
+
+/**
+ * The planner surface (S-05). The day / week / month views and every batch
+ * operation read through one range request keyed by `[view, date]` in the URL, so
+ * the view is shareable and survives reloads. Selecting a day inside the current
+ * window re-highlights without refetching; stepping the period or switching the
+ * view issues exactly one new range request. Every mutation invalidates the shared
+ * `meal-plan` prefix, so the whole surface stays consistent from one place.
+ */
 export function MealPlanPage() {
-  const [date, setDate] = useState(todayIsoDate())
-  const [editing, setEditing] = useState<MealPlanEntry | null>(null)
-  const { data: entries, isLoading, isError } = useMealPlan(date)
-  const summaryQuery = useDailyMacroSummary(date)
-  const recipesQuery = useRecipes()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
+
+  const view = normalizeView(searchParams.get('view'))
+  const date = normalizeDate(searchParams.get('date'))
+  const { from, to } = rangeFor(view, date)
+
+  const [dialog, setDialog] = useState<DialogState>(null)
+  const [handoffReturnTo, setHandoffReturnTo] = useState<string | null>(null)
+  const [toast, setToast] = useState<ToastState | null>(null)
+
+  const range = useMealPlanRange(from, to)
   const addEntry = useAddMealPlanEntry()
   const updateEntry = useUpdateMealPlanEntry()
   const deleteEntry = useDeleteMealPlanEntry()
+  const moveEntry = useMoveMealPlanEntry()
+  const copyEntry = useCopyMealPlanEntry()
+  const copyDay = useCopyMealPlanDay()
 
-  const orderedEntries = [...(entries ?? [])].sort(compareEntries)
-  const entryMacros = new Map(
-    (summaryQuery.data?.entries ?? []).map((item) => [item.entryId, item.macros]),
-  )
-  const mutationFailed = addEntry.isError || updateEntry.isError || deleteEntry.isError
+  const today = todayIso()
+  const showBackToday = today < from || today > to
 
-  async function addMealPlanEntry(body: AddMealPlanEntryRequest) {
-    await addEntry.mutateAsync(body)
+  // Consume an add-to-plan handoff from `/recipes/:id`: open the add dialog with
+  // the recipe pre-selected on the requested day, then strip the params so a reload
+  // does not re-open it. The URL — not localStorage — carries the intent.
+  useEffect(() => {
+    const handoff = readAddToPlanParams(searchParams)
+    if (!handoff) {
+      return
+    }
+    const handoffDate = handoff.date ?? date
+    setDialog({ kind: 'add', date: handoffDate, initialRecipeId: handoff.recipeId })
+    setHandoffReturnTo(handoff.returnTo ?? null)
+
+    const next = stripAddToPlanParams(searchParams)
+    if (handoff.date) {
+      next.set('date', handoff.date)
+    }
+    setSearchParams(next, { replace: true })
+    // `date` is intentionally omitted: the handoff carries its own target day.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, setSearchParams])
+
+  useEffect(() => {
+    if (!toast) {
+      return
+    }
+    const handle = setTimeout(() => setToast(null), 5000)
+    return () => clearTimeout(handle)
+  }, [toast])
+
+  function patchUrl(next: { view?: PlannerView; date?: string }) {
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev)
+        params.set('view', next.view ?? view)
+        params.set('date', next.date ?? date)
+        return params
+      },
+      { replace: true },
+    )
   }
 
-  async function updateMealPlanEntry(entry: MealPlanEntry, body: { mealType: MealType; portions: number }) {
-    await updateEntry.mutateAsync({
-      id: entry.id,
-      date: entry.date,
-      body,
+  const days = range.data?.days ?? []
+  const selectedDay = days.find((day) => day.date === date) ?? emptyDay(date)
+  const rangeLabel = formatRangeLabel(view, date)
+  const entriesBusy = updateEntry.isPending || deleteEntry.isPending
+
+  function openAdd(mealType?: MealType, targetDate: string = date) {
+    setHandoffReturnTo(null)
+    setDialog({ kind: 'add', date: targetDate, mealType })
+  }
+
+  function changeQuantity(entry: MealPlanEntry, value: number) {
+    const body =
+      entry.source === 'Recipe'
+        ? { mealType: entry.mealType, portions: value }
+        : { mealType: entry.mealType, grams: value }
+    updateEntry.mutate(
+      { id: entry.id, body },
+      { onError: () => setToast({ tone: 'error', message: 'Nie udało się zapisać zmiany.' }) },
+    )
+  }
+
+  function changeMealType(entry: MealPlanEntry, mealType: MealType) {
+    const body =
+      entry.source === 'Recipe'
+        ? { mealType, portions: entry.portions ?? 1 }
+        : { mealType, grams: entry.grams ?? 0 }
+    updateEntry.mutate(
+      { id: entry.id, body },
+      { onError: () => setToast({ tone: 'error', message: 'Nie udało się zmienić typu posiłku.' }) },
+    )
+  }
+
+  function undoDelete(entry: MealPlanEntry) {
+    const body: AddMealPlanEntryRequest =
+      entry.source === 'Recipe'
+        ? {
+            date: entry.date,
+            mealType: entry.mealType,
+            recipeId: entry.recipeId ?? '',
+            portions: entry.portions ?? 1,
+          }
+        : {
+            date: entry.date,
+            mealType: entry.mealType,
+            productId: entry.productId ?? '',
+            grams: entry.grams ?? 0,
+          }
+    addEntry.mutate(body, {
+      onSuccess: () => setToast({ tone: 'success', message: 'Przywrócono posiłek.' }),
+      onError: () =>
+        setToast({ tone: 'error', message: 'Nie udało się przywrócić posiłku — spróbuj ponownie.' }),
     })
-    setEditing(null)
   }
 
-  async function deleteMealPlanEntry(entry: MealPlanEntry) {
-    await deleteEntry.mutateAsync({ id: entry.id, date: entry.date })
+  function deleteWithUndo(entry: MealPlanEntry) {
+    deleteEntry.mutate(
+      { id: entry.id },
+      {
+        onSuccess: () =>
+          setToast({
+            tone: 'info',
+            message: 'Usunięto posiłek.',
+            action: { label: 'Cofnij', onClick: () => undoDelete(entry) },
+          }),
+        onError: () => setToast({ tone: 'error', message: 'Nie udało się usunąć posiłku.' }),
+      },
+    )
   }
+
+  function submitAdd(body: AddMealPlanEntryRequest, targetDate: string) {
+    addEntry.mutate(body, {
+      onSuccess: () => {
+        const returnTo = handoffReturnTo
+        setDialog(null)
+        if (targetDate !== date) {
+          patchUrl({ date: targetDate })
+        }
+        setToast({
+          tone: 'success',
+          message: 'Dodano posiłek.',
+          action: returnTo
+            ? { label: 'Wróć do przepisu', onClick: () => navigate(returnTo) }
+            : undefined,
+        })
+        setHandoffReturnTo(null)
+      },
+    })
+  }
+
+  function submitMove(entry: MealPlanEntry, body: MoveMealPlanEntryRequest) {
+    moveEntry.mutate(
+      { id: entry.id, body },
+      {
+        onSuccess: () => {
+          setDialog(null)
+          setToast({ tone: 'success', message: 'Przeniesiono posiłek.' })
+        },
+      },
+    )
+  }
+
+  function submitCopy(entry: MealPlanEntry, body: CopyMealPlanEntryRequest) {
+    copyEntry.mutate(
+      { id: entry.id, body },
+      {
+        onSuccess: (result) => {
+          setDialog(null)
+          setToast({
+            tone: 'success',
+            message: `Skopiowano posiłek do ${result.entries.length} dni.`,
+          })
+        },
+      },
+    )
+  }
+
+  function submitCopyDay(sourceDate: string, body: CopyMealPlanDayRequest) {
+    copyDay.mutate(
+      { date: sourceDate, body },
+      {
+        onSuccess: (result) => {
+          setDialog(null)
+          setToast({
+            tone: 'success',
+            message: `Skopiowano dzień — dodano ${result.entries.length} posiłków.`,
+          })
+        },
+      },
+    )
+  }
+
+  const backgroundRefreshing = range.isFetching && !range.isPending
 
   return (
-    <section className="flex flex-col gap-5">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold">Meal plan</h1>
-        <p className="max-w-2xl text-sm text-slate-600">
-          Plan recipes for one day at a time. A daily goal is optional for this step.
-        </p>
-      </div>
+    <section>
+      <PageHeader title="Plan posiłków" subtitle={rangeLabel} />
 
-      <label className="flex max-w-xs flex-col gap-1 text-sm font-medium text-slate-700">
-        Date
-        <input
-          type="date"
-          value={date}
-          onChange={(event) => {
-            setDate(event.currentTarget.value)
-            setEditing(null)
-          }}
-          className="rounded-md border border-slate-300 px-3 py-2 text-base font-normal text-slate-900"
-        />
-      </label>
-
-      {recipesQuery.isLoading && <p className="text-slate-600">Loading recipes.</p>}
-
-      {recipesQuery.isError && (
-        <p role="alert" className="text-red-600">
-          Could not load recipes for meal planning. Please refresh to try again.
-        </p>
-      )}
-
-      {recipesQuery.data && (
-        <MealPlanEntryForm
-          mode="create"
+      <div className="mb-5">
+        <PlannerRangeNav
+          view={view}
           date={date}
-          recipes={recipesQuery.data}
+          showBackToday={showBackToday}
+          onViewChange={(next) => patchUrl({ view: next })}
+          onPrev={() => patchUrl({ date: shiftDate(view, date, -1) })}
+          onNext={() => patchUrl({ date: shiftDate(view, date, 1) })}
+          onDateChange={(next) => {
+            if (isIsoDate(next)) {
+              patchUrl({ date: next })
+            }
+          }}
+          onToday={() => patchUrl({ date: today })}
+          onAdd={() => openAdd()}
+        />
+      </div>
+
+      {backgroundRefreshing && (
+        <div
+          role="status"
+          className="mb-4 flex items-center gap-2.5 rounded-panel border border-parchment/12 bg-parchment/[0.06] px-3.5 py-2.5 text-[13px] text-parchment/65"
+        >
+          <span
+            aria-hidden="true"
+            className="h-3.5 w-3.5 animate-spin-slow rounded-full border-2 border-parchment/25 border-t-terracotta"
+          />
+          Odświeżamy plan w tle — Twoje zaplanowane posiłki pozostają widoczne.
+        </div>
+      )}
+
+      <QueryState
+        isPending={range.isPending}
+        isError={range.isError}
+        onRetry={() => void range.refetch()}
+        loadingLabel="Wczytujemy Twój plan posiłków…"
+        errorTitle="Nie udało się pobrać planu"
+        errorDescription="Wystąpił problem z połączeniem. Twoje przepisy i wcześniejsze plany są bezpieczne — spróbuj ponownie."
+      >
+        {view === 'week' && (
+          <>
+            <WeekSummary days={days} />
+            <section aria-label="Przegląd tygodnia" className="mb-5 overflow-x-auto pb-1">
+              <div className="grid min-w-[620px] grid-cols-7 gap-2.5 design:min-w-0">
+                {days.map((day) => (
+                  <DayCard
+                    key={day.date}
+                    day={day}
+                    isSelected={day.date === date}
+                    isToday={day.date === today}
+                    onSelect={() => patchUrl({ date: day.date })}
+                    onAddFirst={() => openAdd(undefined, day.date)}
+                  />
+                ))}
+              </div>
+            </section>
+          </>
+        )}
+
+        {view === 'month' && (
+          <MonthGrid
+            days={days}
+            selectedDate={date}
+            todayDate={today}
+            focusMonth={date}
+            onSelect={(next) => patchUrl({ date: next })}
+          />
+        )}
+
+        <DayPanel
+          day={selectedDay}
+          isToday={selectedDay.date === today}
+          busy={entriesBusy}
+          onQuantityChange={changeQuantity}
+          onMealTypeChange={changeMealType}
+          onMove={(entry) => setDialog({ kind: 'move', entry })}
+          onCopy={(entry) => setDialog({ kind: 'copy', entry })}
+          onDelete={deleteWithUndo}
+          onAdd={(mealType) => openAdd(mealType)}
+          onCopyDay={() =>
+            setDialog({ kind: 'copyDay', date: selectedDay.date, entryCount: selectedDay.entries.length })
+          }
+        />
+      </QueryState>
+
+      {/* Mobile floating action button — the desktop add button lives in the nav. */}
+      <div className="pointer-events-none fixed inset-x-4 bottom-4 z-30 flex justify-center design:hidden">
+        <button
+          type="button"
+          onClick={() => openAdd()}
+          className="pointer-events-auto inline-flex min-h-[52px] items-center gap-2 rounded-pill bg-terracotta-strong px-7 text-[15px] font-semibold text-paper shadow-fab transition-colors hover:bg-terracotta-hover"
+        >
+          + Dodaj posiłek
+        </button>
+      </div>
+
+      {dialog?.kind === 'add' && (
+        <AddMealEntryDialog
+          key={dialog.initialRecipeId ?? `add-${dialog.date}`}
+          date={dialog.date}
+          initialMealType={dialog.mealType}
+          initialRecipeId={dialog.initialRecipeId}
           isSubmitting={addEntry.isPending}
-          onSubmit={addMealPlanEntry}
+          isError={addEntry.isError}
+          onClose={() => {
+            setDialog(null)
+            setHandoffReturnTo(null)
+          }}
+          onSubmit={submitAdd}
         />
       )}
 
-      {mutationFailed && (
-        <p role="alert" className="text-sm font-medium text-red-600">
-          The meal-plan change could not be saved. Please try again.
-        </p>
+      {dialog?.kind === 'move' && (
+        <MoveMealEntryDialog
+          entry={dialog.entry}
+          isSubmitting={moveEntry.isPending}
+          isError={moveEntry.isError}
+          onClose={() => setDialog(null)}
+          onSubmit={(body) => submitMove(dialog.entry, body)}
+        />
       )}
 
-      <DailyMacroSummaryPanel
-        summary={summaryQuery.data}
-        isLoading={summaryQuery.isLoading}
-        isError={summaryQuery.isError}
-      />
+      {dialog?.kind === 'copy' && (
+        <CopyMealEntryDialog
+          entry={dialog.entry}
+          isSubmitting={copyEntry.isPending}
+          isError={copyEntry.isError}
+          onClose={() => setDialog(null)}
+          onSubmit={(body) => submitCopy(dialog.entry, body)}
+        />
+      )}
 
-      <div className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Entries for {date}</h2>
+      {dialog?.kind === 'copyDay' && (
+        <CopyDayDialog
+          date={dialog.date}
+          entryCount={dialog.entryCount}
+          isSubmitting={copyDay.isPending}
+          isError={copyDay.isError}
+          onClose={() => setDialog(null)}
+          onSubmit={(body) => submitCopyDay(dialog.date, body)}
+        />
+      )}
 
-        {isLoading && <p className="text-slate-600">Loading meal plan.</p>}
-
-        {isError && (
-          <p role="alert" className="text-red-600">
-            Could not load the meal plan. Please refresh to try again.
-          </p>
-        )}
-
-        {entries && entries.length === 0 && (
-          <p className="rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-600">
-            No entries for this date yet.
-          </p>
-        )}
-
-        {orderedEntries.length > 0 && (
-          <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-            {orderedEntries.map((entry) => (
-              <li
-                key={entry.id}
-                className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4"
-              >
-                <div className="flex flex-col gap-1">
-                  <p className="text-sm font-medium text-slate-500">{entry.mealType}</p>
-                  <h3 className="text-lg font-semibold">{entry.recipeName}</h3>
-                  <p className="text-sm text-slate-600">
-                    {entry.portions} {entry.portions === 1 ? 'portion' : 'portions'}
-                  </p>
-                  <p className="text-sm font-medium text-slate-700">
-                    {formatEntryMacros(entryMacros.get(entry.id))}
-                  </p>
-                </div>
-
-                {editing?.id === entry.id ? (
-                  <MealPlanEntryForm
-                    mode="edit"
-                    date={date}
-                    entry={entry}
-                    recipes={recipesQuery.data ?? []}
-                    isSubmitting={updateEntry.isPending}
-                    onCancel={() => setEditing(null)}
-                    onSubmit={(body) => updateMealPlanEntry(entry, body)}
-                  />
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setEditing(entry)}
-                      className="rounded-md border border-slate-300 px-3 py-1 text-sm font-medium hover:bg-slate-100"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => deleteMealPlanEntry(entry)}
-                      className="rounded-md border border-slate-300 px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-50"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      {toast && (
+        <Toast
+          tone={toast.tone}
+          message={toast.message}
+          action={
+            toast.action
+              ? {
+                  label: toast.action.label,
+                  onClick: () => {
+                    const run = toast.action?.onClick
+                    setToast(null)
+                    run?.()
+                  },
+                }
+              : undefined
+          }
+        />
+      )}
     </section>
   )
-}
-
-function todayIsoDate(): string {
-  return new Date().toISOString().slice(0, 10)
-}
-
-function compareEntries(left: MealPlanEntry, right: MealPlanEntry): number {
-  const mealTypeDifference = mealTypes.indexOf(left.mealType) - mealTypes.indexOf(right.mealType)
-  if (mealTypeDifference !== 0) {
-    return mealTypeDifference
-  }
-
-  return left.recipeName.localeCompare(right.recipeName)
-}
-
-function formatEntryMacros(macros: MacroSummary | undefined): string {
-  if (!macros) {
-    return '- kcal, - g protein, - g fat, - g carbs'
-  }
-
-  return [
-    `${formatMacro(macros.calories)} kcal`,
-    `${formatMacro(macros.protein)} g protein`,
-    `${formatMacro(macros.fat)} g fat`,
-    `${formatMacro(macros.carbohydrates)} g carbs`,
-  ].join(', ')
 }

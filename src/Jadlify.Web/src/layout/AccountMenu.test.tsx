@@ -31,56 +31,54 @@ afterEach(() => {
 })
 
 describe('AccountMenu', () => {
-  it('shows the signed-in user email on the trigger', () => {
+  it('labels the trigger with the signed-in email and stays closed initially', () => {
     renderMenu()
 
-    expect(
-      screen.getByRole('button', { name: 'user@example.com' }),
-    ).toBeInTheDocument()
-    // Panel is not mounted until opened.
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    const trigger = screen.getByRole('button', { name: 'user@example.com' })
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    // The disclosed panel (and its Wyloguj action) is not mounted until opened.
+    expect(screen.queryByRole('button', { name: 'Wyloguj' })).not.toBeInTheDocument()
   })
 
   it('opens and closes via the trigger', async () => {
     const user = userEvent.setup()
     renderMenu()
 
-    const trigger = screen.getByRole('button', { name: /user@example.com/ })
-    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    const trigger = screen.getByRole('button', { name: 'user@example.com' })
 
     await user.click(trigger)
-    expect(screen.getByRole('menu')).toBeInTheDocument()
     expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('button', { name: 'Wyloguj' })).toBeInTheDocument()
 
     await user.click(trigger)
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
     expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('button', { name: 'Wyloguj' })).not.toBeInTheDocument()
   })
 
   it('closes on Escape and returns focus to the trigger', async () => {
     const user = userEvent.setup()
     renderMenu()
 
-    const trigger = screen.getByRole('button', { name: /user@example.com/ })
+    const trigger = screen.getByRole('button', { name: 'user@example.com' })
     await user.click(trigger)
-    expect(screen.getByRole('menu')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Wyloguj' })).toBeInTheDocument()
 
     await user.keyboard('{Escape}')
 
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Wyloguj' })).not.toBeInTheDocument()
     expect(trigger).toHaveFocus()
   })
 
-  it('closes when clicking outside the menu', async () => {
+  it('closes when clicking outside the popover', async () => {
     const user = userEvent.setup()
     renderMenu()
 
-    await user.click(screen.getByRole('button', { name: /user@example.com/ }))
-    expect(screen.getByRole('menu')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'user@example.com' }))
+    expect(screen.getByRole('button', { name: 'Wyloguj' })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'outside' }))
 
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Wyloguj' })).not.toBeInTheDocument()
   })
 
   it('calls supabase signOut from Wyloguj without navigating', async () => {
@@ -88,8 +86,8 @@ describe('AccountMenu', () => {
     signOut.mockResolvedValue({ error: null })
     renderMenu()
 
-    await user.click(screen.getByRole('button', { name: /user@example.com/ }))
-    await user.click(screen.getByRole('menuitem', { name: 'Wyloguj' }))
+    await user.click(screen.getByRole('button', { name: 'user@example.com' }))
+    await user.click(screen.getByRole('button', { name: 'Wyloguj' }))
 
     expect(signOut).toHaveBeenCalledTimes(1)
   })
@@ -100,6 +98,6 @@ describe('AccountMenu', () => {
       isLoading: false,
     })
 
-    expect(screen.getByRole('button', { name: /Twoje konto/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Twoje konto' })).toBeInTheDocument()
   })
 })

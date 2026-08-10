@@ -1,5 +1,6 @@
 using FluentValidation.Results;
 using Jadlify.Application.Products.CreateProduct;
+using Jadlify.Domain.Products;
 
 namespace Jadlify.Application.Tests.Products;
 
@@ -122,5 +123,36 @@ public class CreateProductCommandValidatorTests
         CreateProductCommand command = Valid() with { PackageSizeGrams = packageSize };
 
         Assert.False(_validator.Validate(command).IsValid);
+    }
+
+    [Fact]
+    public void Accepts_BrandAndCategory()
+    {
+        CreateProductCommand command = Valid() with
+        {
+            Brand = "Ferrero",
+            Category = ProductCategory.PantryAndDryGoods,
+        };
+
+        Assert.True(_validator.Validate(command).IsValid);
+    }
+
+    [Fact]
+    public void Accepts_MissingBrandAndCategory()
+    {
+        // A null category is the valid "Bez kategorii" state; a blank brand is optional.
+        CreateProductCommand command = Valid() with { Brand = null, Category = null };
+
+        Assert.True(_validator.Validate(command).IsValid);
+    }
+
+    [Fact]
+    public void Rejects_BrandOverMaxLength()
+    {
+        CreateProductCommand command = Valid() with { Brand = new string('x', 201) };
+
+        ValidationResult result = _validator.Validate(command);
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == nameof(CreateProductCommand.Brand));
     }
 }

@@ -1,5 +1,6 @@
 using System.Net;
 using Jadlify.Application.Products;
+using Jadlify.Domain.Products;
 using Jadlify.Infrastructure.OpenFoodFacts;
 
 namespace Jadlify.Infrastructure.Tests.OpenFoodFacts;
@@ -389,6 +390,86 @@ public class OpenFoodFactsBarcodeLookupTests
 
         Assert.NotNull(data);
         Assert.Equal(350m, data.PackageSizeGrams);
+    }
+
+    [Fact]
+    public async Task LookupAsync_SuggestsProductCategory_ForKnownTag()
+    {
+        const string json = """
+            {
+              "status": 1,
+              "product": {
+                "product_name": "Sok pomarańczowy",
+                "categories_tags": ["en:plant-based-foods-and-beverages", "en:beverages", "en:juices"]
+              }
+            }
+            """;
+        OpenFoodFactsBarcodeLookup lookup = CreateLookup(StubHttpMessageHandler.Json(HttpStatusCode.OK, json));
+
+        BarcodeProductData? data = await lookup.LookupAsync("123");
+
+        Assert.NotNull(data);
+        Assert.Equal(ProductCategory.Beverages, data.Category);
+    }
+
+    [Fact]
+    public async Task LookupAsync_SuggestsProductCategory_FoodTypeBeatsStorageForm()
+    {
+        // "Frozen vegetables" carries both tags; food type wins, so it suggests Vegetables.
+        const string json = """
+            {
+              "status": 1,
+              "product": {
+                "product_name": "Mrożona fasolka",
+                "categories_tags": ["en:frozen-foods", "en:frozen-vegetables", "en:vegetables"]
+              }
+            }
+            """;
+        OpenFoodFactsBarcodeLookup lookup = CreateLookup(StubHttpMessageHandler.Json(HttpStatusCode.OK, json));
+
+        BarcodeProductData? data = await lookup.LookupAsync("123");
+
+        Assert.NotNull(data);
+        Assert.Equal(ProductCategory.Vegetables, data.Category);
+    }
+
+    [Fact]
+    public async Task LookupAsync_LeavesProductCategoryNull_ForUnrecognizedTags()
+    {
+        const string json = """
+            {
+              "status": 1,
+              "product": {
+                "product_name": "Coś dziwnego",
+                "categories_tags": ["en:some-obscure-thing"]
+              }
+            }
+            """;
+        OpenFoodFactsBarcodeLookup lookup = CreateLookup(StubHttpMessageHandler.Json(HttpStatusCode.OK, json));
+
+        BarcodeProductData? data = await lookup.LookupAsync("123");
+
+        Assert.NotNull(data);
+        Assert.Null(data.Category);
+    }
+
+    [Fact]
+    public async Task LookupAsync_LeavesProductCategoryNull_WhenTagsAbsent()
+    {
+        const string json = """
+            {
+              "status": 1,
+              "product": {
+                "product_name": "Bez tagów"
+              }
+            }
+            """;
+        OpenFoodFactsBarcodeLookup lookup = CreateLookup(StubHttpMessageHandler.Json(HttpStatusCode.OK, json));
+
+        BarcodeProductData? data = await lookup.LookupAsync("123");
+
+        Assert.NotNull(data);
+        Assert.Null(data.Category);
     }
 
     private static OpenFoodFactsBarcodeLookup CreateLookup(StubHttpMessageHandler handler) =>

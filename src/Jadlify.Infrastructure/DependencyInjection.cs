@@ -1,6 +1,7 @@
 using Jadlify.Application.Planning;
 using Jadlify.Application.Products;
 using Jadlify.Application.Recipes;
+using Jadlify.Application.Shopping.ShoppingLists;
 using Jadlify.Infrastructure.OpenFoodFacts;
 using Jadlify.Infrastructure.Persistence;
 using Jadlify.Infrastructure.Persistence.Repositories;
@@ -25,6 +26,7 @@ public static class DependencyInjection
         services.AddScoped<IRecipeRepository, RecipeRepository>();
         services.AddScoped<IDailyMacroGoalRepository, DailyMacroGoalRepository>();
         services.AddScoped<IMealPlanRepository, MealPlanRepository>();
+        services.AddScoped<IShoppingListRepository, ShoppingListRepository>();
 
         services.Configure<OpenFoodFactsOptions>(
             configuration.GetSection(OpenFoodFactsOptions.SectionName));

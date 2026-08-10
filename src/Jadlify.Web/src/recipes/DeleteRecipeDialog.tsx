@@ -1,90 +1,96 @@
-import { useEffect, useId, useRef } from 'react'
+import { useRef } from 'react'
+import type { ReactNode } from 'react'
 import { ApiError } from '../api/client'
+import { Button } from '../ui/Button'
+import { Dialog } from '../ui/Dialog'
 import { useDeleteRecipe } from './useRecipeMutations'
-import type { Recipe } from './types'
 
 interface DeleteRecipeDialogProps {
-  recipe: Recipe
+  recipeId: string
+  recipeName: string
   onClose: () => void
+  onDeleted?: () => void
+  /** Link to the planner, offered when the recipe is still used by an entry. */
+  planLink?: ReactNode
 }
 
-/** Confirmation dialog for deleting an unused recipe. */
-export function DeleteRecipeDialog({ recipe, onClose }: DeleteRecipeDialogProps) {
+/**
+ * Confirmation dialog for deleting a recipe. A 409 means the recipe is still
+ * referenced by a meal-plan entry: the dialog switches to an explanatory state
+ * that points at the planner instead of offering a delete that cannot succeed.
+ */
+export function DeleteRecipeDialog({
+  recipeId,
+  recipeName,
+  onClose,
+  onDeleted,
+  planLink,
+}: DeleteRecipeDialogProps) {
   const deleteRecipe = useDeleteRecipe()
   const cancelRef = useRef<HTMLButtonElement>(null)
-  const baseId = useId()
-  const titleId = `${baseId}-title`
   const isConflict = deleteRecipe.error instanceof ApiError && deleteRecipe.error.status === 409
 
-  useEffect(() => {
-    cancelRef.current?.focus()
-  }, [])
-
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        event.preventDefault()
-        onClose()
-      }
-    }
-    document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [onClose])
-
   function handleDelete() {
-    deleteRecipe.mutate(recipe.id, { onSuccess: onClose })
+    deleteRecipe.mutate(recipeId, {
+      onSuccess: () => {
+        onDeleted?.()
+        onClose()
+      },
+    })
+  }
+
+  if (isConflict) {
+    return (
+      <Dialog
+        open
+        role="alertdialog"
+        onClose={onClose}
+        title="Nie można jeszcze usunąć przepisu"
+        initialFocusRef={cancelRef}
+        footer={
+          <Button ref={cancelRef} onClick={onClose}>
+            Zamknij
+          </Button>
+        }
+      >
+        <p className="text-sm leading-relaxed text-mocha">
+          Przepis <b className="text-espresso">{recipeName}</b> jest używany w zaplanowanych
+          posiłkach. Usuń go najpierw z planu, aby móc usunąć przepis. Wygenerowane wcześniej listy
+          zakupów są zapisem z chwili utworzenia i pozostaną bez zmian.
+        </p>
+        {planLink && <p className="mt-3 text-sm">{planLink}</p>}
+      </Dialog>
+    )
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose()
-        }
-      }}
+    <Dialog
+      open
+      role="alertdialog"
+      onClose={onClose}
+      title="Usunąć przepis?"
+      initialFocusRef={cancelRef}
+      footer={
+        <>
+          <Button ref={cancelRef} variant="ghost" onClick={onClose} disabled={deleteRecipe.isPending}>
+            Anuluj
+          </Button>
+          <Button variant="danger" onClick={handleDelete} isLoading={deleteRecipe.isPending}>
+            Usuń przepis
+          </Button>
+        </>
+      }
     >
-      <div
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        className="w-full max-w-sm rounded-lg bg-white p-5 shadow-xl"
-      >
-        <h2 id={titleId} className="text-lg font-bold">
-          Delete recipe
-        </h2>
-        <p className="mt-2 text-sm text-slate-600">
-          Delete <span className="font-medium text-slate-900">{recipe.name}</span>? This cannot be
-          undone.
+      <p className="text-sm leading-relaxed text-mocha">
+        Przepis <b className="text-espresso">{recipeName}</b> zostanie trwale usunięty. Tej operacji
+        nie można cofnąć. Twoje produkty pozostaną bez zmian.
+      </p>
+
+      {deleteRecipe.isError && !isConflict && (
+        <p role="alert" className="mt-3 text-[12.5px] font-semibold text-danger">
+          Nie udało się usunąć przepisu. Spróbuj ponownie.
         </p>
-
-        {deleteRecipe.isError && (
-          <p role="alert" className="mt-2 text-sm text-red-600">
-            {isConflict
-              ? 'This recipe is already used in a meal plan and cannot be deleted.'
-              : 'Could not delete the recipe. Please try again.'}
-          </p>
-        )}
-
-        <div className="mt-4 flex justify-end gap-2">
-          <button
-            ref={cancelRef}
-            type="button"
-            onClick={onClose}
-            className="rounded-md px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={deleteRecipe.isPending}
-            className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-          >
-            {deleteRecipe.isPending ? 'Deleting.' : 'Delete'}
-          </button>
-        </div>
-      </div>
-    </div>
+      )}
+    </Dialog>
   )
 }

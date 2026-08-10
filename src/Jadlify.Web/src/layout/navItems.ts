@@ -1,21 +1,21 @@
-/** A primary navigation destination shown in the app bar / mobile drawer. */
+/** A primary navigation destination shown in the app-shell pill nav. */
 export interface NavItem {
   /** Router path (absolute). */
   to: string
-  /** Human-readable label. */
+  /** Human-readable Polish label. */
   label: string
 }
 
 /**
- * The MVP section destinations. Each currently resolves to a placeholder page;
- * later roadmap slices (S-02…S-06) fill them in without changing this list or
- * the routing structure. `/` is the post-login home/landing.
+ * The six primary sections, in the fixed order from the design mockups. `/` is
+ * the post-login home/dashboard. Labels are the accessible names the shell nav
+ * (and tests) rely on.
  */
 export const navItems: NavItem[] = [
-  { to: '/', label: 'Home' },
-  { to: '/products', label: 'Products' },
-  { to: '/recipes', label: 'Recipes' },
-  { to: '/meal-plan', label: 'Meal plan' },
-  { to: '/goals', label: 'Daily goals' },
-  { to: '/shopping-list', label: 'Shopping list' },
+  { to: '/', label: 'Strona główna' },
+  { to: '/products', label: 'Produkty' },
+  { to: '/recipes', label: 'Przepisy' },
+  { to: '/meal-plan', label: 'Plan posiłków' },
+  { to: '/goals', label: 'Dzienne cele' },
+  { to: '/shopping-list', label: 'Lista zakupów' },
 ]

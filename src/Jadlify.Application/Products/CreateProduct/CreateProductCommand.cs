@@ -1,4 +1,5 @@
 using Jadlify.Application.Common.Mediator;
+using Jadlify.Domain.Products;
 
 namespace Jadlify.Application.Products.CreateProduct;
 
@@ -23,4 +24,6 @@ public sealed record CreateProductCommand(
     decimal? Iron = null,
     decimal? VitaminA = null,
     decimal? VitaminC = null,
-    decimal? VitaminD = null) : ICommand<Guid>, IExtendedNutritionFields;
+    decimal? VitaminD = null,
+    string? Brand = null,
+    ProductCategory? Category = null) : ICommand<Guid>, IExtendedNutritionFields;

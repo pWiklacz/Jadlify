@@ -1,4 +1,5 @@
 using Jadlify.Application.Products;
+using Jadlify.Domain.Products;
 
 namespace Jadlify.API.Products;
 
@@ -30,7 +31,11 @@ public sealed record CreateProductRequest(
     decimal? Iron = null,
     decimal? VitaminA = null,
     decimal? VitaminC = null,
-    decimal? VitaminD = null);
+    decimal? VitaminD = null,
+    // Optional brand; optional category as a stable enum name ("Vegetables"…) or null/empty
+    // for "Bez kategorii". An unknown name is rejected as a 400 field error at the boundary.
+    string? Brand = null,
+    string? Category = null);
 
 public sealed record UpdateProductRequest(
     string Name,
@@ -53,7 +58,9 @@ public sealed record UpdateProductRequest(
     decimal? Iron = null,
     decimal? VitaminA = null,
     decimal? VitaminC = null,
-    decimal? VitaminD = null);
+    decimal? VitaminD = null,
+    string? Brand = null,
+    string? Category = null);
 
 public sealed record ProductResponse(
     Guid Id,
@@ -77,7 +84,9 @@ public sealed record ProductResponse(
     decimal? Iron,
     decimal? VitaminA,
     decimal? VitaminC,
-    decimal? VitaminD)
+    decimal? VitaminD,
+    string? Brand,
+    string? Category)
 {
     public static ProductResponse FromDto(ProductDto dto) =>
         new(
@@ -102,10 +111,15 @@ public sealed record ProductResponse(
             dto.Iron,
             dto.VitaminA,
             dto.VitaminC,
-            dto.VitaminD);
+            dto.VitaminD,
+            dto.Brand,
+            dto.Category?.ToString());
 
-    /// <summary>The 201 echo body: the persisted id plus the values the create request carried.</summary>
-    public static ProductResponse Created(Guid id, CreateProductRequest request) =>
+    /// <summary>
+    /// The 201 echo body: the persisted id plus the values the create request carried. The
+    /// <paramref name="category"/> is the parsed, normalized taxonomy value (or null).
+    /// </summary>
+    public static ProductResponse Created(Guid id, CreateProductRequest request, ProductCategory? category) =>
         new(
             id,
             request.Name,
@@ -128,7 +142,27 @@ public sealed record ProductResponse(
             request.Iron,
             request.VitaminA,
             request.VitaminC,
-            request.VitaminD);
+            request.VitaminD,
+            string.IsNullOrWhiteSpace(request.Brand) ? null : request.Brand.Trim(),
+            category?.ToString());
+}
+
+/// <summary>
+/// One page of the product catalog: <see cref="ProductResponse"/> items plus the total match
+/// count and the effective paging window (<c>GET /api/products/catalog</c>).
+/// </summary>
+public sealed record ProductCatalogResponse(
+    IReadOnlyList<ProductResponse> Items,
+    int Total,
+    int Skip,
+    int Take)
+{
+    public static ProductCatalogResponse FromDto(ProductCatalogPageDto dto) =>
+        new(
+            dto.Items.Select(ProductResponse.FromDto).ToArray(),
+            dto.Total,
+            dto.Skip,
+            dto.Take);
 }
 
 /// <summary>
@@ -142,6 +176,7 @@ public sealed record BarcodeLookupResponse(
     Guid? ExistingProductId,
     string? Name,
     string? Brand,
+    string? Category,
     decimal? Calories,
     decimal? Protein,
     decimal? Fat,
@@ -169,6 +204,7 @@ public sealed record BarcodeLookupResponse(
             result.ExistingProductId,
             result.Name,
             result.Brand,
+            result.Category?.ToString(),
             result.Calories,
             result.Protein,
             result.Fat,

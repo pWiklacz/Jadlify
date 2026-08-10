@@ -1,3 +1,5 @@
+using Jadlify.Domain.Products;
+
 namespace Jadlify.Application.Products;
 
 /// <summary>
@@ -28,6 +30,7 @@ public sealed record BarcodeLookupResult(
     Guid? ExistingProductId = null,
     string? Name = null,
     string? Brand = null,
+    ProductCategory? Category = null,
     decimal? Calories = null,
     decimal? Protein = null,
     decimal? Fat = null,
@@ -58,6 +61,7 @@ public sealed record BarcodeLookupResult(
             ExistingProductId: null,
             Name: data.Name,
             Brand: data.Brand,
+            Category: data.Category,
             Calories: data.Calories,
             Protein: data.Protein,
             Fat: data.Fat,
@@ -84,7 +88,8 @@ public sealed record BarcodeLookupResult(
             barcode,
             ExistingProductId: existing.Id,
             Name: existing.Name,
-            Brand: null,
+            Brand: existing.Brand,
+            Category: existing.Category,
             Calories: existing.Calories,
             Protein: existing.Protein,
             Fat: existing.Fat,

@@ -1,5 +1,5 @@
-import { ShoppingListPage as ShoppingShoppingListPage } from '../../shopping/ShoppingListPage'
+import { ShoppingListsPage } from '../../shopping/ShoppingListsPage'
 
 export function ShoppingListPage() {
-  return <ShoppingShoppingListPage />
+  return <ShoppingListsPage />
 }

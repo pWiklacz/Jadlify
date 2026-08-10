@@ -18,6 +18,18 @@ public interface IRecipeRepository
     Task<IReadOnlyList<Recipe>> ListAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Loads one owner-scoped page of the recipe catalog plus the total match count.
+    /// Ingredients are included because the shared macro core computes the page's summary
+    /// totals from them; the window is bounded, so at most <c>take</c> compositions load.
+    /// </summary>
+    Task<RecipeCatalogResult> GetCatalogAsync(
+        string? search,
+        RecipeCatalogSort sort,
+        int skip,
+        int take,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Loads the current user's recipes for the requested ids. Used by meal-plan listing
     /// to resolve current recipe display data in one batch; must filter by current user,
     /// return only requested ids, and never expose another user's recipes.

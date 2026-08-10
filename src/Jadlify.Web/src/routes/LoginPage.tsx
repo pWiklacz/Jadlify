@@ -4,6 +4,9 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useSession } from '../auth/useSession'
 import { toAuthMessage } from '../auth/authErrors'
+import { BrandMark } from '../layout/BrandMark'
+import { Button } from '../ui/Button'
+import { TextField } from '../ui/Field'
 
 type Mode = 'signin' | 'signup'
 
@@ -18,9 +21,11 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
  * "Zaloguj się" and "Załóż konto", validates lightly, maps Supabase errors to
  * friendly Polish messages, and on success navigates to the protected home.
  *
- * Auth-state propagation is implicit: the component only calls Supabase and
- * navigates. `SessionProvider.onAuthStateChange` is the single source that
- * updates the session, so authenticated visitors are bounced off `/login` here.
+ * Redesigned to the target auth surface: a warm dark backdrop with a brand
+ * statement beside a cream card. Auth behaviour is unchanged — the component
+ * only calls Supabase and navigates; `SessionProvider.onAuthStateChange` is the
+ * single source that updates the session, so authenticated visitors are bounced
+ * off `/login` here.
  */
 export function LoginPage() {
   const { session, isLoading } = useSession()
@@ -29,6 +34,7 @@ export function LoginPage() {
   const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -43,7 +49,7 @@ export function LoginPage() {
       <div
         role="status"
         aria-live="polite"
-        className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-600"
+        className="flex min-h-screen items-center justify-center text-parchment/60"
       >
         Ładowanie…
       </div>
@@ -113,83 +119,97 @@ export function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-slate-50 px-6 text-slate-900">
-      <div className="w-full max-w-sm">
-        <h1 className="mb-1 text-center text-3xl font-bold">
-          {isSignup ? 'Załóż konto' : 'Zaloguj się'}
-        </h1>
-        <p className="mb-6 text-center text-slate-600">
-          {isSignup
-            ? 'Utwórz konto, aby zacząć planować posiłki.'
-            : 'Zaloguj się, aby kontynuować.'}
-        </p>
+    <main className="flex min-h-screen items-center justify-center px-5 py-10 text-parchment">
+      <div className="flex w-full max-w-[920px] flex-col items-center gap-10 design:flex-row design:items-center design:gap-16">
+        {/* Brand / value statement */}
+        <aside className="flex flex-col items-center text-center design:flex-1 design:items-start design:text-left">
+          <BrandMark size={34} withTagline />
+          <p className="mt-6 max-w-[18ch] font-serif text-2xl leading-snug text-parchment design:text-3xl">
+            Planuj posiłki, pilnuj makro i twórz listy zakupów na podstawie swojego
+            planu.
+          </p>
+        </aside>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="email" className="text-sm font-medium">
-              E-mail
-            </label>
-            <input
+        {/* Auth card */}
+        <div className="w-full max-w-[420px] rounded-card bg-cream p-7 text-espresso shadow-authcard animate-rise design:p-9">
+          <h1 className="font-serif text-3xl font-normal leading-tight">
+            {isSignup ? 'Załóż konto' : 'Zaloguj się'}
+          </h1>
+          <p className="mb-6 mt-1.5 text-sm text-mocha">
+            {isSignup
+              ? 'Utwórz prywatne konto — Twoje produkty i plany widzisz tylko Ty.'
+              : 'Wróć do swojego planu posiłków i makro.'}
+          </p>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+            <TextField
               id="email"
               name="email"
               type="email"
+              label="E-mail"
+              labelVariant="plain"
               autoComplete="email"
+              inputMode="email"
+              placeholder="ty@example.com"
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               disabled={isSubmitting}
-              className="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:opacity-60"
             />
-          </div>
 
-          <div className="flex flex-col gap-1">
-            <label htmlFor="password" className="text-sm font-medium">
-              Hasło
-            </label>
-            <input
+            <TextField
               id="password"
               name="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
+              label="Hasło"
+              labelVariant="plain"
               autoComplete={isSignup ? 'new-password' : 'current-password'}
+              placeholder="Twoje hasło"
               required
               minLength={MIN_PASSWORD_LENGTH}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               disabled={isSubmitting}
-              className="rounded-md border border-slate-300 px-3 py-2 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:opacity-60"
+              trailing={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((value) => !value)}
+                  aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
+                  className="rounded-field px-2 py-1.5 text-xs font-bold uppercase tracking-wide text-mocha transition-colors hover:text-espresso"
+                >
+                  {showPassword ? 'Ukryj' : 'Pokaż'}
+                </button>
+              }
             />
-          </div>
 
-          {error && (
-            <p role="alert" className="text-sm text-red-600">
-              {error}
-            </p>
-          )}
+            {error && (
+              <p role="alert" className="flex items-start gap-2 text-sm text-danger">
+                <span aria-hidden="true">▲</span>
+                {error}
+              </p>
+            )}
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rounded-md bg-slate-900 px-4 py-2 font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isSubmitting
-              ? 'Proszę czekać…'
-              : isSignup
-                ? 'Załóż konto'
-                : 'Zaloguj się'}
-          </button>
-        </form>
+            <Button type="submit" block isLoading={isSubmitting} className="mt-2">
+              {isSubmitting
+                ? 'Proszę czekać…'
+                : isSignup
+                  ? 'Załóż konto'
+                  : 'Zaloguj się'}
+            </Button>
+          </form>
 
-        <p className="mt-6 text-center text-sm text-slate-600">
-          {isSignup ? 'Masz już konto?' : 'Nie masz jeszcze konta?'}{' '}
-          <button
-            type="button"
-            onClick={switchMode}
-            disabled={isSubmitting}
-            className="font-medium text-slate-900 underline underline-offset-2 hover:text-slate-700 disabled:opacity-60"
-          >
-            {isSignup ? 'Zaloguj się' : 'Załóż konto'}
-          </button>
-        </p>
+          <p className="mt-6 border-t border-dotted border-cream-line pt-5 text-center text-sm text-mocha">
+            {isSignup ? 'Masz już konto?' : 'Nie masz jeszcze konta?'}{' '}
+            <button
+              type="button"
+              onClick={switchMode}
+              disabled={isSubmitting}
+              className="font-bold text-terracotta-strong underline-offset-2 hover:underline disabled:opacity-60"
+            >
+              {isSignup ? 'Zaloguj się' : 'Załóż konto'}
+            </button>
+          </p>
+        </div>
       </div>
     </main>
   )

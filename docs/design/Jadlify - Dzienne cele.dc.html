@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Archivo:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: #1F1712; }
+  button, select, input { font: inherit; }
+  a { color: #D97E57; }
+  a:hover { color: #C75B38; }
+  @keyframes jd-pulse { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+  @keyframes jd-spin { to { transform: rotate(360deg); } }
+  @keyframes jd-toast { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  @keyframes jd-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes jd-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+</style>
+</helmet>
+<div data-screen-label="Dzienne cele Jadlify" style="min-height:100vh;background:radial-gradient(1100px 500px at 50% -120px,#2C2015 0%,#1F1712 70%);font-family:'Archivo',system-ui,sans-serif;color:#F2E9D8;display:flex;flex-direction:column">
+
+  <!-- ── Nagłówek: desktop ─────────────────────────────── -->
+  <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+    <header style="border-bottom:1px solid rgba(242,233,216,0.08);padding:20px clamp(20px,4vw,52px) 0">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px">
+        <div style="display:flex;justify-content:flex-start">
+          <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;border:1px solid rgba(242,233,216,0.16);font-size:11px;font-weight:700;letter-spacing:0.12em;color:{{ statusFg }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ statusDot }}"></span>{{ statusLabel }}</span>
+        </div>
+        <a href="Jadlify - Strona główna v5.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;color:#F2E9D8">
+          <svg width="34" height="34" viewBox="0 0 32 32" fill="none" stroke="#D97E57" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="16" cy="16" r="8.2"/><circle cx="16" cy="16" r="3.4"/>
+            <path d="M4.4 10.5v4a1.6 1.6 0 0 0 3.2 0v-4"/><path d="M6 10.5V25"/><path d="M26.6 10.5c-1.7 1.9-1.7 5 0 6.6V25"/>
+          </svg>
+          <span style="font-family:'Instrument Serif',serif;font-size:26px;line-height:1;letter-spacing:0.01em">Jadlify</span>
+          <span style="font-size:9px;font-weight:700;letter-spacing:0.26em;color:rgba(242,233,216,0.45)">PLANER POSIŁKÓW I MAKRO</span>
+        </a>
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px">
+          <a href="#" onClick="{{ goKonto }}" aria-label="Moje konto" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid rgba(242,233,216,0.16);color:rgba(242,233,216,0.75);text-decoration:none" style-hover="background:rgba(242,233,216,0.08);color:#F2E9D8">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"/><path d="M4.5 17c0-3 2.5-4.6 5.5-4.6s5.5 1.6 5.5 4.6"/></svg></a>
+          <a href="#" onClick="{{ goWyloguj }}" style="font-size:13px;font-weight:600;color:rgba(242,233,216,0.55);text-decoration:none;padding:8px 4px" style-hover="color:#F2E9D8">Wyloguj</a>
+        </div>
+      </div>
+      <nav style="display:flex;justify-content:center;align-items:center;gap:4px;padding:14px 0 16px;flex-wrap:wrap">
+        <a href="Jadlify - Strona główna v5.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Strona główna</a>
+        <a href="Jadlify - Produkty.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Produkty</a>
+        <a href="Jadlify - Przepisy.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Przepisy</a>
+        <a href="#" onClick="{{ goPlan }}" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Plan posiłków</a>
+        <a href="#" onClick="{{ goCele }}" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:600;color:#F2E9D8;background:rgba(242,233,216,0.1);text-decoration:none">Dzienne cele</a>
+        <a href="Jadlify - Lista zakupów.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Lista zakupów</a>
+      </nav>
+    </header>
+  </sc-if>
+
+  <!-- ── Nagłówek: mobile ──────────────────────────────── -->
+  <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+    <header style="position:sticky;top:0;z-index:30;background:#1F1712;border-bottom:1px solid rgba(242,233,216,0.08)">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:12px 16px 6px">
+        <div></div>
+        <a href="Jadlify - Strona główna v5.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;color:#F2E9D8">
+          <svg width="26" height="26" viewBox="0 0 32 32" fill="none" stroke="#D97E57" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="16" cy="16" r="8.2"/><circle cx="16" cy="16" r="3.4"/>
+            <path d="M4.4 10.5v4a1.6 1.6 0 0 0 3.2 0v-4"/><path d="M6 10.5V25"/><path d="M26.6 10.5c-1.7 1.9-1.7 5 0 6.6V25"/>
+          </svg>
+          <span style="font-family:'Instrument Serif',serif;font-size:20px;line-height:1">Jadlify</span>
+        </a>
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:6px">
+          <a href="#" onClick="{{ goKonto }}" aria-label="Moje konto" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid rgba(242,233,216,0.16);color:rgba(242,233,216,0.75);text-decoration:none">
+            <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"/><path d="M4.5 17c0-3 2.5-4.6 5.5-4.6s5.5 1.6 5.5 4.6"/></svg></a>
+          <a href="#" onClick="{{ goWyloguj }}" style="font-size:12.5px;font-weight:600;color:rgba(242,233,216,0.55);text-decoration:none;padding:8px 2px">Wyloguj</a>
+        </div>
+      </div>
+      <nav style="display:flex;gap:6px;overflow-x:auto;padding:6px 16px 12px">
+        <a href="Jadlify - Strona główna v5.dc.html" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Strona główna</a>
+        <a href="Jadlify - Produkty.dc.html" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Produkty</a>
+        <a href="Jadlify - Przepisy.dc.html" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Przepisy</a>
+        <a href="#" onClick="{{ goPlan }}" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Plan posiłków</a>
+        <a href="#" onClick="{{ goCele }}" style="flex:none;padding:7px 13px;border-radius:999px;background:rgba(242,233,216,0.12);color:#F2E9D8;text-decoration:none;font-size:13px;font-weight:600">Dzienne cele</a>
+        <a href="Jadlify - Lista zakupów.dc.html" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Lista zakupów</a>
+      </nav>
+    </header>
+  </sc-if>
+
+  <main style="width:100%;max-width:1120px;margin:0 auto;padding:clamp(18px,3vw,34px) clamp(16px,3.4vw,44px) 110px">
+
+    <!-- ── Tytuł strony ────────────────────────────────── -->
+    <div style="margin:0 0 24px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.18em;color:#D97E57;margin:0 0 8px">TWÓJ PLAN ŻYWIENIOWY</div>
+      <h1 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(32px,3.6vw,44px);line-height:1.03;letter-spacing:0.005em">Dzienne cele</h1>
+      <p style="margin:8px 0 0;max-width:560px;font-size:15px;line-height:1.55;color:rgba(242,233,216,0.6)">Jeden aktualny cel kalorii i makroskładników, do którego Jadlify porównuje zaplanowane posiłki.</p>
+    </div>
+
+    <!-- ── Ładowanie ───────────────────────────────────── -->
+    <sc-if value="{{ showLoading }}" hint-placeholder-val="{{ false }}">
+      <div aria-label="Ładowanie dziennych celów" style="display:flex;flex-wrap:wrap;gap:22px">
+        <div style="flex:2 1 440px;display:flex;flex-direction:column;gap:14px">
+          <div style="height:260px;border-radius:22px;background:rgba(242,233,216,0.07);animation:jd-pulse 1.4s ease-in-out infinite"></div>
+          <div style="height:64px;border-radius:16px;background:rgba(242,233,216,0.05);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.2s"></div>
+        </div>
+        <div style="flex:1 1 280px;height:300px;border-radius:20px;background:rgba(242,233,216,0.06);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.12s"></div>
+        <div style="flex-basis:100%;font-size:13.5px;color:rgba(242,233,216,0.5);display:flex;align-items:center;gap:9px">
+          <span style="width:14px;height:14px;border:2px solid rgba(242,233,216,0.25);border-top-color:#D97E57;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span>
+          Wczytujemy Twoje dzienne cele…
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ── Błąd pobierania ─────────────────────────────── -->
+    <sc-if value="{{ showError }}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="max-width:520px;margin:20px auto 0;background:#F8F1E3;border-radius:20px;padding:32px;text-align:center;color:#2A2018;animation:jd-rise 0.4s ease-out">
+        <div style="width:46px;height:46px;margin:0 auto 14px;border-radius:50%;background:rgba(179,64,46,0.1);display:flex;align-items:center;justify-content:center;color:#B3402E">
+          <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 18 17H2z"/><path d="M10 8.5v3.5"/><circle cx="10" cy="14.4" r="0.5" fill="currentColor"/></svg>
+        </div>
+        <h2 style="margin:0 0 6px;font-family:'Instrument Serif',serif;font-weight:400;font-size:24px">Nie udało się wczytać celów</h2>
+        <p style="margin:0 0 20px;font-size:14.5px;line-height:1.55;color:#8C7F6C">Wystąpił problem z połączeniem. Twój aktualny cel jest bezpieczny — spróbuj wczytać stronę ponownie.</p>
+        <button onClick="{{ retryLoad }}" style="border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:14.5px;min-height:44px;padding:12px 24px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">Wczytaj ponownie</button>
+      </div>
+    </sc-if>
+
+    <!-- ── Treść ───────────────────────────────────────── -->
+    <sc-if value="{{ showContent }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start">
+
+        <!-- ══ Kolumna główna ══ -->
+        <div style="flex:2 1 440px;min-width:0;display:flex;flex-direction:column;gap:16px">
+
+          <!-- ── WIDOK: podsumowanie, cel ustawiony ──────── -->
+          <sc-if value="{{ summaryHasGoal }}" hint-placeholder-val="{{ true }}">
+            <section data-screen-label="Podsumowanie celu" aria-label="Aktualny cel dzienny" style="background:#F8F1E3;border-radius:22px;padding:clamp(20px,3vw,30px);color:#2A2018;animation:jd-rise 0.4s ease-out;border:1px solid rgba(0,0,0,0.05);box-shadow:0 20px 50px rgba(0,0,0,0.25)">
+              <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 12px;margin:0 0 4px">
+                <h2 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:25px">Aktualny cel dzienny</h2>
+                <div style="flex:1;border-bottom:2px dotted #DCCFB2;align-self:center;min-width:24px"></div>
+                <span style="font-size:12px;color:#8C7F6C">{{ updatedLabel }}</span>
+              </div>
+
+              <div style="margin:18px 0 0;background:#FCF7EC;border:1px solid #EADFC8;border-radius:16px;padding:18px 20px">
+                <div style="display:flex;align-items:baseline;gap:10px">
+                  <div style="font-family:'Instrument Serif',serif;font-size:clamp(40px,6vw,54px);line-height:1;color:#C75B38;font-variant-numeric:tabular-nums">{{ gKcal }}</div>
+                  <div style="font-size:14px;font-weight:600;color:#8C7F6C">kcal / dzień</div>
+                </div>
+                <div style="margin-top:5px;font-size:12.5px;color:{{ balanceNoteColor }}">{{ balanceNote }}</div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px">
+                <sc-for list="{{ macroTiles }}" as="m" hint-placeholder-count="3">
+                  <div style="border:1px solid #EADFC8;background:#FCF7EC;border-radius:14px;padding:15px 18px">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <span style="width:9px;height:9px;border-radius:2px;background:{{ m.color }}"></span>
+                      <span style="font-size:11px;font-weight:700;letter-spacing:0.14em;color:#8C7F6C">{{ m.cap }}</span>
+                    </div>
+                    <div style="margin-top:8px;display:flex;align-items:baseline;gap:6px">
+                      <span style="font-family:'Instrument Serif',serif;font-size:30px;line-height:1;font-variant-numeric:tabular-nums">{{ m.val }}</span>
+                      <span style="font-size:13px;font-weight:600;color:#8C7F6C">g</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-top:22px">
+                <button onClick="{{ openEdit }}" style="flex:1 1 auto;min-width:180px;display:flex;align-items:center;justify-content:center;gap:9px;border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:15px;min-height:48px;padding:13px 24px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">
+                  <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13.5V16h2.5l8-8L12 5.5z"/><path d="M11.5 6 14 8.5"/></svg>
+                  Edytuj cele</button>
+                <button onClick="{{ askDelete }}" style="flex:none;border:none;background:transparent;color:#9B5A47;font-weight:600;font-size:13.5px;min-height:44px;padding:11px 14px;border-radius:999px;cursor:pointer" style-hover="background:rgba(179,64,46,0.08);color:#B3402E">Usuń cele</button>
+              </div>
+              <div style="margin-top:14px;padding-top:14px;border-top:1px dotted #DCCFB2;font-size:12.5px;line-height:1.55;color:#8C7F6C">Masz jeden aktualny zestaw celów. Zapisanie nowych wartości zastąpi obecne cele.</div>
+            </section>
+          </sc-if>
+
+          <!-- ── WIDOK: brak celu (empty state) ──────────── -->
+          <sc-if value="{{ summaryNoGoal }}" hint-placeholder-val="{{ false }}">
+            <section data-screen-label="Brak dziennych celów" aria-label="Brak dziennych celów" style="background:#F8F1E3;border-radius:22px;padding:clamp(24px,4vw,40px);color:#2A2018;animation:jd-rise 0.4s ease-out;border:1px solid rgba(0,0,0,0.05);box-shadow:0 20px 50px rgba(0,0,0,0.25)">
+              <div style="width:52px;height:52px;border-radius:16px;background:rgba(199,91,56,0.1);display:flex;align-items:center;justify-content:center;color:#C75B38;margin:0 0 16px">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/></svg>
+              </div>
+              <h2 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(26px,3vw,32px);line-height:1.1">Nie masz jeszcze dziennych celów</h2>
+              <p style="margin:0 0 20px;max-width:520px;font-size:15px;line-height:1.6;color:#8C7F6C">Planowanie posiłków działa również bez celów, a Jadlify wciąż zlicza kalorie i makro dla każdego dnia. Aby porównywać plan z założeniami, ustaw jeden dzienny cel.</p>
+              <div style="display:flex;flex-direction:column;gap:2px;margin:0 0 24px">
+                <div style="display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px dotted #DCCFB2">
+                  <span style="flex:none;color:#5F7C4E;margin-top:1px"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5l4 4L16 5.5"/></svg></span>
+                  <span style="font-size:14px;line-height:1.5;color:#4A4032">Plan posiłków i lista zakupów działają normalnie.</span>
+                </div>
+                <div style="display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px dotted #DCCFB2">
+                  <span style="flex:none;color:#5F7C4E;margin-top:1px"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5l4 4L16 5.5"/></svg></span>
+                  <span style="font-size:14px;line-height:1.5;color:#4A4032">Sumy kalorii i makroskładników nadal są obliczane.</span>
+                </div>
+                <div style="display:flex;gap:11px;align-items:flex-start;padding:9px 0">
+                  <span style="flex:none;color:#A79A83;margin-top:1px"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="M10 6.5v4M10 13.4h.01"/></svg></span>
+                  <span style="font-size:14px;line-height:1.5;color:#8C7F6C">Porównanie z celem pojawi się dopiero po ustawieniu wartości.</span>
+                </div>
+              </div>
+              <button onClick="{{ openCreate }}" style="width:100%;max-width:340px;display:flex;align-items:center;justify-content:center;gap:9px;border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:15px;min-height:50px;padding:14px 24px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>
+                Ustaw dzienne cele</button>
+            </section>
+          </sc-if>
+
+          <!-- ── WIDOK: formularz (utwórz / edytuj) ──────── -->
+          <sc-if value="{{ formView }}" hint-placeholder-val="{{ false }}">
+            <section data-screen-label="Formularz celów" aria-label="Formularz dziennych celów" style="background:#F8F1E3;border-radius:22px;padding:clamp(20px,3vw,30px);color:#2A2018;animation:jd-rise 0.4s ease-out;border:1px solid rgba(0,0,0,0.05);box-shadow:0 20px 50px rgba(0,0,0,0.25)">
+              <div style="display:flex;align-items:flex-start;gap:12px;margin:0 0 4px">
+                <div style="flex:1 1 auto;min-width:0">
+                  <h2 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:26px">{{ formTitle }}</h2>
+                  <p style="margin:6px 0 0;font-size:13.5px;line-height:1.55;color:#8C7F6C">{{ formIntro }}</p>
+                </div>
+              </div>
+
+              <!-- Kalorie (wyróżnione) -->
+              <div style="margin-top:22px">
+                <label for="goal-kcal" style="display:block;font-size:12px;font-weight:700;letter-spacing:0.12em;color:#5C5140;margin:0 0 8px">KALORIE <span style="color:#C75B38">*</span></label>
+                <div style="display:flex;align-items:center;background:#FCF7EC;border-radius:12px;padding:0 16px;min-height:56px;border:{{ fKcal.border }}">
+                  <input id="goal-kcal" type="text" inputmode="decimal" value="{{ fKcal.value }}" onChange="{{ fKcal.onInput }}" onBlur="{{ fKcal.onBlur }}" placeholder="np. 2600" aria-invalid="{{ fKcal.invalid }}" aria-describedby="{{ fKcal.describedby }}" style="flex:1 1 auto;min-width:0;border:none;background:transparent;font-size:22px;font-weight:700;color:#2A2018;outline:none;font-variant-numeric:tabular-nums">
+                  <span id="unit-kcal" style="flex:none;font-size:14px;font-weight:700;color:#8C7F6C;padding-left:10px">kcal</span>
+                </div>
+                <sc-if value="{{ fKcal.showErr }}" hint-placeholder-val="{{ false }}">
+                  <div id="err-kcal" role="alert" style="display:flex;align-items:center;gap:6px;margin-top:7px;font-size:12.5px;font-weight:600;color:#B3402E"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3 18 17H2z"/><path d="M10 8.5v3.5"/><circle cx="10" cy="14.4" r="0.5" fill="currentColor"/></svg>{{ fKcal.errMsg }}</div>
+                </sc-if>
+              </div>
+
+              <!-- Makroskładniki -->
+              <div style="font-size:12px;font-weight:700;letter-spacing:0.12em;color:#5C5140;margin:20px 0 8px">MAKROSKŁADNIKI</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+                <sc-for list="{{ macroFields }}" as="f" hint-placeholder-count="3">
+                  <div>
+                    <label for="{{ f.id }}" style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:#5C5140;margin:0 0 7px"><span style="width:9px;height:9px;border-radius:2px;background:{{ f.color }}"></span>{{ f.label }}</label>
+                    <div style="display:flex;align-items:center;background:#FCF7EC;border-radius:12px;padding:0 14px;min-height:50px;border:{{ f.border }}">
+                      <input id="{{ f.id }}" type="text" inputmode="decimal" value="{{ f.value }}" onChange="{{ f.onInput }}" onBlur="{{ f.onBlur }}" placeholder="{{ f.ph }}" aria-invalid="{{ f.invalid }}" aria-describedby="{{ f.describedby }}" style="flex:1 1 auto;min-width:0;border:none;background:transparent;font-size:17px;font-weight:700;color:#2A2018;outline:none;font-variant-numeric:tabular-nums">
+                      <span id="{{ f.unitId }}" style="flex:none;font-size:13px;font-weight:700;color:#8C7F6C;padding-left:8px">g</span>
+                    </div>
+                    <sc-if value="{{ f.showErr }}" hint-placeholder-val="{{ false }}">
+                      <div id="{{ f.errId }}" role="alert" style="display:flex;align-items:flex-start;gap:6px;margin-top:7px;font-size:12px;font-weight:600;color:#B3402E;line-height:1.4"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:1px"><path d="M10 3 18 17H2z"/><path d="M10 8.5v3.5"/><circle cx="10" cy="14.4" r="0.5" fill="currentColor"/></svg>{{ f.errMsg }}</div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+
+              <!-- Ostrzeżenie makro↔kalorie (ni3blokujące) -->
+              <sc-if value="{{ mismatchShow }}" hint-placeholder-val="{{ false }}">
+                <div role="status" style="display:flex;gap:10px;align-items:flex-start;margin-top:16px;background:rgba(201,162,39,0.1);border:1px solid rgba(201,162,39,0.5);border-radius:12px;padding:12px 14px">
+                  <span style="flex:none;color:#9A7B12;margin-top:1px"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2.5 18.5 17.5H1.5z"/><path d="M10 8v3.4M10 14.4h.01"/></svg></span>
+                  <div style="font-size:12.5px;line-height:1.5;color:#6E5A12"><b style="color:#5A4A0E">{{ mismatchText }}</b> To tylko informacja — możesz zapisać cel z tymi wartościami.</div>
+                </div>
+              </sc-if>
+
+              <!-- Notatka o zastąpieniu -->
+              <div style="margin-top:16px;display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.55;color:#8C7F6C">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:2px"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v4.2M10 6.4h.01"/></svg>
+                <span>{{ replaceNote }}</span>
+              </div>
+
+              <!-- Stopka formularza -->
+              <div style="display:flex;gap:10px;margin-top:24px">
+                <button onClick="{{ cancelForm }}" disabled="{{ saving }}" style="flex:1;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14.5px;min-height:50px;padding:13px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Anuluj</button>
+                <button onClick="{{ saveGoal }}" disabled="{{ saving }}" aria-busy="{{ saving }}" style="flex:2;display:flex;align-items:center;justify-content:center;gap:9px;border:none;background:{{ saveBg }};color:#FFF8EC;font-weight:600;font-size:14.5px;min-height:50px;padding:13px 16px;border-radius:999px;cursor:{{ saveCursor }}">
+                  <sc-if value="{{ saving }}" hint-placeholder-val="{{ false }}">
+                    <span aria-hidden="true" style="flex:none;width:14px;height:14px;border:2px solid rgba(255,248,236,0.35);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span>
+                    <span>Zapisywanie…</span>
+                  </sc-if>
+                  <sc-if value="{{ notSaving }}" hint-placeholder-val="{{ true }}"><span>{{ saveLabel }}</span></sc-if>
+                </button>
+              </div>
+            </section>
+          </sc-if>
+
+        </div>
+
+        <!-- ══ Kolumna kontekstowa ══ -->
+        <aside style="flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:16px">
+
+          <!-- Podgląd „przy obecnym planie dnia" (formularz) -->
+          <sc-if value="{{ formView }}" hint-placeholder-val="{{ false }}">
+            <section aria-label="Porównanie z planem dnia" style="background:#F8F1E3;border-radius:20px;padding:20px 22px;color:#2A2018;animation:jd-rise 0.45s ease-out">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 4px">PRZY OBECNYM PLANIE DNIA</div>
+              <sc-if value="{{ planHasMeals }}" hint-placeholder-val="{{ true }}">
+                <div style="font-size:12.5px;color:#8C7F6C;margin:0 0 14px">{{ planMealsLabel }} · {{ todayLabel }}</div>
+                <div style="display:flex;flex-direction:column;gap:13px">
+                  <sc-for list="{{ previewRows }}" as="pr" hint-placeholder-count="4">
+                    <div>
+                      <div style="display:flex;align-items:baseline;gap:7px;font-size:12.5px;flex-wrap:wrap">
+                        <span style="font-weight:600">{{ pr.label }}</span>
+                        <div style="flex:1;border-bottom:2px dotted #DCCFB2;align-self:center;min-width:14px"></div>
+                        <span style="font-variant-numeric:tabular-nums"><b>{{ pr.planned }}</b> <span style="color:#8C7F6C">/ {{ pr.target }}</span></span>
+                      </div>
+                      <div style="margin-top:5px;height:6px;border-radius:999px;background:#EBE0CB;overflow:hidden">
+                        <div style="height:100%;border-radius:999px;width:{{ pr.pct }}%;background:{{ pr.barColor }};transform-origin:left;animation:jd-bar 0.6s ease-out"></div>
+                      </div>
+                      <div style="margin-top:5px;display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:{{ pr.deltaWeight }};color:{{ pr.deltaColor }}">{{ pr.deltaIcon }}{{ pr.deltaLabel }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="margin-top:14px;font-size:11.5px;line-height:1.5;color:#8C7F6C">Podgląd aktualizuje się na bieżąco z wpisywanymi wartościami. Zmiana celu nie zmienia zaplanowanych posiłków.</div>
+              </sc-if>
+              <sc-if value="{{ planEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:8px;font-size:13px;line-height:1.55;color:#8C7F6C">Nie masz posiłków zaplanowanych na dzisiaj. Porównanie z celem pojawi się, gdy dodasz posiłki do planu dnia.</div>
+              </sc-if>
+            </section>
+          </sc-if>
+
+          <!-- Podgląd bilansu (podsumowanie, cel ustawiony) -->
+          <sc-if value="{{ summaryHasGoal }}" hint-placeholder-val="{{ true }}">
+            <section aria-label="Bilans dnia na stronie głównej" style="background:#F8F1E3;border-radius:20px;padding:20px 22px;color:#2A2018;animation:jd-rise 0.45s ease-out">
+              <div style="display:flex;align-items:center;gap:8px;margin:0 0 4px">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250">BILANS DNIA · DZISIAJ</div>
+              </div>
+              <sc-if value="{{ planHasMeals }}" hint-placeholder-val="{{ true }}">
+                <div style="font-size:12.5px;color:#8C7F6C;margin:0 0 14px">{{ planMealsLabel }} porównane z celem</div>
+                <div style="display:flex;flex-direction:column;gap:13px">
+                  <sc-for list="{{ balanceRows }}" as="pr" hint-placeholder-count="4">
+                    <div>
+                      <div style="display:flex;align-items:baseline;gap:7px;font-size:12.5px;flex-wrap:wrap">
+                        <span style="font-weight:600">{{ pr.label }}</span>
+                        <div style="flex:1;border-bottom:2px dotted #DCCFB2;align-self:center;min-width:14px"></div>
+                        <span style="font-variant-numeric:tabular-nums"><b>{{ pr.planned }}</b> <span style="color:#8C7F6C">/ {{ pr.target }}</span></span>
+                      </div>
+                      <div style="margin-top:5px;height:6px;border-radius:999px;background:#EBE0CB;overflow:hidden">
+                        <div style="height:100%;border-radius:999px;width:{{ pr.pct }}%;background:{{ pr.barColor }}"></div>
+                      </div>
+                      <div style="margin-top:5px;display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:{{ pr.deltaWeight }};color:{{ pr.deltaColor }}">{{ pr.deltaIcon }}{{ pr.deltaLabel }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ planEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:8px;font-size:13px;line-height:1.5;color:#8C7F6C">Brak posiłków w planie na dzisiaj — po dodaniu posiłków zobaczysz porównanie z celem.</div>
+              </sc-if>
+              <a href="Jadlify - Strona główna v5.dc.html" style="margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px;border:none;background:#2A2018;color:#F8F1E3;font-weight:600;font-size:13px;min-height:44px;padding:11px 14px;border-radius:999px;text-decoration:none" style-hover="background:#1F1712">Zobacz na stronie głównej<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+            </section>
+          </sc-if>
+
+          <!-- Gdzie używamy celów -->
+          <section aria-label="Gdzie używamy celów" style="background:rgba(242,233,216,0.06);border:1px solid rgba(242,233,216,0.12);border-radius:20px;padding:20px 22px;animation:jd-rise 0.5s ease-out">
+            <h3 style="margin:0 0 10px;font-family:'Instrument Serif',serif;font-weight:400;font-size:20px;color:#F2E9D8">Gdzie używamy celów</h3>
+            <p style="margin:0 0 14px;font-size:13px;line-height:1.55;color:rgba(242,233,216,0.62)">Jadlify porównuje z tym celem wszystkie posiłki zaplanowane na wybrany dzień.</p>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <div style="display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.45;color:rgba(242,233,216,0.72)"><span style="color:#D97E57;font-weight:700">→</span>Bilans dnia na stronie głównej</div>
+              <div style="display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.45;color:rgba(242,233,216,0.72)"><span style="color:#D97E57;font-weight:700">→</span>Podsumowanie makro dla wybranego dnia</div>
+              <div style="display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.45;color:rgba(242,233,216,0.72)"><span style="color:#D97E57;font-weight:700">→</span>Wartości pozostałe i przekroczone w planie posiłków</div>
+            </div>
+            <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(242,233,216,0.1);font-size:12px;line-height:1.55;color:rgba(242,233,216,0.5)">Zmiana celu wpływa tylko na porównania oraz wartości pozostałe i przekroczone. Nie zmienia przepisów, produktów, planu ani gotowych list zakupów.</div>
+          </section>
+
+        </aside>
+      </div>
+    </sc-if>
+  </main>
+
+  <!-- ── Modal: niezapisane zmiany ─────────────────────── -->
+  <sc-if value="{{ confirmLeave }}" hint-placeholder-val="{{ false }}">
+    <div style="{{ ovlStyle }}" onClick="{{ closeLeaveBg }}">
+      <div role="dialog" aria-modal="true" aria-label="Niezapisane zmiany" style="{{ confirmPanelStyle }}" onClick="{{ stopClick }}">
+        <div style="width:44px;height:44px;border-radius:50%;background:rgba(201,162,39,0.14);display:flex;align-items:center;justify-content:center;color:#9A7B12;margin:0 0 14px"><svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5 18.5 17.5H1.5z"/><path d="M10 8v3.4M10 14.4h.01"/></svg></div>
+        <h2 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:24px">Masz niezapisane zmiany</h2>
+        <p style="margin:0 0 22px;font-size:14px;line-height:1.55;color:#8C7F6C">Jeśli teraz wyjdziesz, wpisane wartości nie zostaną zapisane, a obecny cel pozostanie bez zmian.</p>
+        <div style="display:flex;gap:10px">
+          <button onClick="{{ closeLeave }}" style="flex:1;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Wróć do edycji</button>
+          <button onClick="{{ discardLeave }}" style="flex:1;border:none;background:#B3402E;color:#FFF8EC;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#96341F">Odrzuć zmiany</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ── Modal: usuń cele ──────────────────────────────── -->
+  <sc-if value="{{ confirmDelete }}" hint-placeholder-val="{{ false }}">
+    <div style="{{ ovlStyle }}" onClick="{{ closeDeleteBg }}">
+      <div role="dialog" aria-modal="true" aria-label="Usuń dzienne cele" style="{{ confirmPanelStyle }}" onClick="{{ stopClick }}">
+        <div style="width:44px;height:44px;border-radius:50%;background:rgba(179,64,46,0.12);display:flex;align-items:center;justify-content:center;color:#B3402E;margin:0 0 14px"><svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12M8 6V4h4v2M6.5 6l.7 10h5.6l.7-10"/></svg></div>
+        <h2 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:24px">Usunąć dzienne cele?</h2>
+        <p style="margin:0 0 12px;font-size:14px;line-height:1.55;color:#8C7F6C">Po usunięciu nie będzie aktywnego celu. Zmienią się tylko porównania:</p>
+        <div style="display:flex;flex-direction:column;gap:2px;margin:0 0 22px">
+          <div style="display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px dotted #DCCFB2;font-size:13px;line-height:1.45"><span style="flex:none;color:#5F7C4E;margin-top:1px"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5l4 4L16 5.5"/></svg></span><span style="color:#4A4032">Przepisy i plany posiłków pozostają bez zmian.</span></div>
+          <div style="display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px dotted #DCCFB2;font-size:13px;line-height:1.45"><span style="flex:none;color:#5F7C4E;margin-top:1px"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5l4 4L16 5.5"/></svg></span><span style="color:#4A4032">Sumy kalorii i makro nadal są dostępne.</span></div>
+          <div style="display:flex;gap:9px;align-items:flex-start;padding:7px 0;font-size:13px;line-height:1.45"><span style="flex:none;color:#B3402E;margin-top:1px"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l10 10M15 5 5 15"/></svg></span><span style="color:#4A4032">Porównania z celem przestaną się wyświetlać.</span></div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button onClick="{{ closeDelete }}" disabled="{{ deleting }}" style="flex:1;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Anuluj</button>
+          <button onClick="{{ doDelete }}" disabled="{{ deleting }}" aria-busy="{{ deleting }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;border:none;background:#B3402E;color:#FFF8EC;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:{{ deleteCursor }}">
+            <sc-if value="{{ deleting }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="flex:none;width:14px;height:14px;border:2px solid rgba(255,248,236,0.35);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span><span>Usuwanie…</span></sc-if>
+            <sc-if value="{{ notDeleting }}" hint-placeholder-val="{{ true }}"><span>Usuń cele</span></sc-if>
+          </button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ── Toast ─────────────────────────────────────────── -->
+  <sc-if value="{{ toastShow }}" hint-placeholder-val="{{ false }}">
+    <div role="status" aria-live="polite" style="position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;background:{{ toastBg }};color:#FFF8EC;border-radius:999px;padding:11px 18px;font-size:13.5px;font-weight:500;box-shadow:0 12px 32px rgba(0,0,0,0.4);animation:jd-toast 0.22s ease-out;max-width:calc(100vw - 32px)">
+      <sc-if value="{{ toastIsSaving }}" hint-placeholder-val="{{ false }}"><span style="flex:none;width:14px;height:14px;border:2px solid rgba(255,248,236,0.35);border-top-color:#FFF8EC;border-radius:50%;animation:jd-spin 0.8s linear infinite"></span></sc-if>
+      <sc-if value="{{ toastIsOk }}" hint-placeholder-val="{{ false }}"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M4 10.5l4 4L16 5.5"/></svg></sc-if>
+      <sc-if value="{{ toastIsErr }}" hint-placeholder-val="{{ false }}"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M10 3 18 17H2z"/><path d="M10 8.5v3.5"/><circle cx="10" cy="14.4" r="0.5" fill="currentColor"/></svg></sc-if>
+      <span>{{ toastMsg }}</span>
+      <sc-if value="{{ toastIsErr }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ retrySave }}" style="flex:none;border:1px solid rgba(255,248,236,0.5);background:transparent;color:#FFF8EC;font-weight:600;font-size:12.5px;padding:6px 12px;border-radius:999px;cursor:pointer" style-hover="background:rgba(255,248,236,0.12)">Spróbuj ponownie</button>
+        <button onClick="{{ closeToast }}" aria-label="Zamknij komunikat" style="flex:none;border:none;background:transparent;color:rgba(255,248,236,0.7);cursor:pointer;padding:4px;display:flex" style-hover="color:#FFF8EC"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l10 10M15 5 5 15"/></svg></button>
+      </sc-if>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;scenariusz&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Cel ustawiony&quot;,&quot;Brak celu&quot;],&quot;default&quot;:&quot;Cel ustawiony&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Scenariusz demo&quot;},&quot;widokStartowy&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Podsumowanie&quot;,&quot;Formularz&quot;],&quot;default&quot;:&quot;Podsumowanie&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Scenariusz demo&quot;},&quot;planDnia&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Zaplanowany dzień&quot;,&quot;Pusty dzień&quot;],&quot;default&quot;:&quot;Zaplanowany dzień&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Scenariusz demo&quot;},&quot;stanSystemu&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Normalny&quot;,&quot;Ładowanie&quot;,&quot;Błąd pobierania&quot;],&quot;default&quot;:&quot;Normalny&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Scenariusz demo&quot;},&quot;bladZapisu&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Zapis&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.today = new Date(2026, 6, 13);
+    this.planned = { kcal: 1840, protein: 138, fat: 58, carbs: 205 };
+    this.plannedMeals = 3;
+    const st = this.freshState(props);
+    st.isMobile = typeof window !== 'undefined' && window.innerWidth <= 940;
+    this.state = st;
+    this._t = null;
+    this._td = null;
+  }
+
+  freshState(props) {
+    const goal = this.seedGoal(props);
+    const view = (props.widokStartowy === 'Formularz') ? 'form' : 'summary';
+    const mode = goal ? 'edit' : 'create';
+    const form = goal ? this.goalToForm(goal) : this.emptyForm();
+    return {
+      view: view, mode: mode, goal: goal, updatedISO: '2026-07-08',
+      form: form, baseForm: Object.assign({}, form),
+      touched: {}, submitted: false, saving: false,
+      confirmLeave: false, confirmDelete: false, deleting: false,
+      toast: null, reloading: false, loadFixed: false,
+      isMobile: (this.state ? this.state.isMobile : false)
+    };
+  }
+  seedGoal(props) {
+    return (props.scenariusz === 'Brak celu') ? null : { kcal: 2600, protein: 180, fat: 80, carbs: 290 };
+  }
+  emptyForm() { return { kcal: '', protein: '', fat: '', carbs: '' }; }
+  goalToForm(g) { return { kcal: this.numStr(g.kcal), protein: this.numStr(g.protein), fat: this.numStr(g.fat), carbs: this.numStr(g.carbs) }; }
+  numStr(n) { return Number.isInteger(n) ? String(n) : String(n).replace('.', ','); }
+
+  componentDidMount() {
+    this._onResize = () => {
+      const m = window.innerWidth <= 940;
+      if (m !== this.state.isMobile) this.setState({ isMobile: m });
+    };
+    window.addEventListener('resize', this._onResize);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this._onResize);
+    clearTimeout(this._t); clearTimeout(this._td);
+  }
+  componentDidUpdate(prev) {
+    if (prev.scenariusz !== this.props.scenariusz || prev.widokStartowy !== this.props.widokStartowy ||
+        prev.stanSystemu !== this.props.stanSystemu || prev.planDnia !== this.props.planDnia ||
+        prev.bladZapisu !== this.props.bladZapisu) {
+      clearTimeout(this._t); clearTimeout(this._td);
+      const st = this.freshState(this.props);
+      st.isMobile = this.state.isMobile;
+      this.setState(st);
+    }
+  }
+
+  parseNum(s) {
+    const t = String(s == null ? '' : s).trim().replace(',', '.');
+    if (t === '') return null;
+    const v = Number(t);
+    return isFinite(v) ? v : NaN;
+  }
+  parseOr0(s) { const v = this.parseNum(s); return (v === null || isNaN(v) || v < 0) ? 0 : v; }
+  nf(v) { return Math.round(v).toLocaleString('pl-PL'); }
+  numDisplay(n) {
+    if (Number.isInteger(n)) return n.toLocaleString('pl-PL');
+    return n.toLocaleString('pl-PL', { maximumFractionDigits: 1 });
+  }
+
+  validateField(key, raw) {
+    const s = String(raw == null ? '' : raw).trim();
+    if (s === '') return 'Podaj wartość.';
+    const v = this.parseNum(raw);
+    if (v === null || isNaN(v)) return 'Wpisz liczbę, np. 180 lub 79,5.';
+    if (key === 'kcal') { if (v <= 0) return 'Kalorie muszą być większe od zera.'; }
+    else if (v < 0) return 'Wartość nie może być ujemna.';
+    return null;
+  }
+
+  formErrors() {
+    const f = this.state.form;
+    return {
+      kcal: this.validateField('kcal', f.kcal),
+      protein: this.validateField('protein', f.protein),
+      fat: this.validateField('fat', f.fat),
+      carbs: this.validateField('carbs', f.carbs)
+    };
+  }
+
+  openForm(mode) {
+    const g = this.state.goal;
+    const form = (mode === 'edit' && g) ? this.goalToForm(g) : this.emptyForm();
+    this.setState({ view: 'form', mode: mode, form: form, baseForm: Object.assign({}, form), touched: {}, submitted: false, saving: false, toast: null });
+  }
+  updateField(key, val) {
+    const form = Object.assign({}, this.state.form); form[key] = val;
+    this.setState({ form: form });
+  }
+  setTouched(key) {
+    const t = Object.assign({}, this.state.touched); t[key] = true;
+    this.setState({ touched: t });
+  }
+  isDirty() {
+    const a = this.state.form, b = this.state.baseForm;
+    return a.kcal !== b.kcal || a.protein !== b.protein || a.fat !== b.fat || a.carbs !== b.carbs;
+  }
+
+  toastMsg(kind, msg, autohide) {
+    clearTimeout(this._td);
+    this.setState({ toast: { kind: kind, msg: msg } });
+    if (autohide) this._td = setTimeout(() => this.setState({ toast: null }), 2800);
+  }
+
+  doSave() {
+    clearTimeout(this._t);
+    this.setState({ saving: true, toast: { kind: 'saving', msg: 'Zapisywanie celów…' } });
+    this._t = setTimeout(() => {
+      if (this.props.bladZapisu) {
+        this.setState({ saving: false, toast: { kind: 'err', msg: 'Nie udało się zapisać celów. Sprawdź połączenie i spróbuj ponownie.' } });
+      } else {
+        const f = this.state.form;
+        const goal = { kcal: this.parseNum(f.kcal), protein: this.parseNum(f.protein), fat: this.parseNum(f.fat), carbs: this.parseNum(f.carbs) };
+        this.setState({ goal: goal, updatedISO: '2026-07-13', view: 'summary', mode: 'edit', saving: false, submitted: false, touched: {} });
+        this.toastMsg('ok', 'Zapisano dzienne cele.', true);
+      }
+    }, 850);
+  }
+
+  renderVals() {
+    const self = this;
+    const st = this.state;
+
+    // System state
+    const eff = st.reloading ? 'Ładowanie' : (st.loadFixed ? 'Normalny' : (this.props.stanSystemu || 'Normalny'));
+    const showLoading = eff === 'Ładowanie';
+    const showError = eff === 'Błąd pobierania';
+    const showContent = !showLoading && !showError;
+
+    const goal = st.goal;
+    const hasGoal = !!goal;
+    const formView = st.view === 'form';
+    const summaryView = st.view === 'summary';
+
+    // updated label
+    const upd = st.updatedISO;
+    const updDate = new Intl.DateTimeFormat('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(+upd.slice(0, 4), +upd.slice(5, 7) - 1, +upd.slice(8, 10)));
+    const updatedLabel = upd === '2026-07-13' ? 'Zaktualizowano dzisiaj' : ('Zaktualizowano ' + updDate);
+
+    // macro tiles (summary)
+    const macroTiles = hasGoal ? [
+      { cap: 'BIAŁKO', color: '#C75B38', val: this.numDisplay(goal.protein) },
+      { cap: 'TŁUSZCZ', color: '#6D8B5C', val: this.numDisplay(goal.fat) },
+      { cap: 'WĘGLOWODANY', color: '#C9A227', val: this.numDisplay(goal.carbs) }
+    ] : [];
+
+    // macro-consistency note (summary)
+    let balanceNote = '', balanceNoteColor = '#8C7F6C';
+    if (hasGoal) {
+      const computed = goal.protein * 4 + goal.carbs * 4 + goal.fat * 9;
+      const roundC = Math.round(computed / 10) * 10;
+      const diff = Math.abs(computed - goal.kcal);
+      if (diff > Math.max(75, goal.kcal * 0.05)) {
+        balanceNote = 'Makroskładniki odpowiadają ok. ' + this.nf(roundC) + ' kcal.';
+        balanceNoteColor = '#9A7B12';
+      } else {
+        balanceNote = 'Makroskładniki odpowiadają ok. ' + this.nf(roundC) + ' kcal — spójne z celem kalorii.';
+        balanceNoteColor = '#5F7C4E';
+      }
+    }
+
+    // form fields
+    const errs = this.formErrors();
+    const mkField = (key, label, color, ph) => {
+      const err = errs[key];
+      const show = (st.touched[key] || st.submitted) && !!err;
+      return {
+        key: key, id: 'goal-' + key, errId: 'err-' + key, unitId: 'unit-' + key,
+        label: label, color: color, ph: ph, value: st.form[key],
+        showErr: show, errMsg: err || '', invalid: show ? 'true' : 'false',
+        border: show ? '1.5px solid #B3402E' : '1px solid #E5DAC3',
+        describedby: (show ? 'err-' + key + ' ' : '') + 'unit-' + key,
+        onInput: (ev) => self.updateField(key, ev.target.value),
+        onBlur: () => self.setTouched(key)
+      };
+    };
+    const fKcal = mkField('kcal', 'Kalorie', '#C75B38', 'np. 2600');
+    const macroFields = [
+      mkField('protein', 'Białko', '#C75B38', 'np. 180'),
+      mkField('fat', 'Tłuszcz', '#6D8B5C', 'np. 80'),
+      mkField('carbs', 'Węglowodany', '#C9A227', 'np. 290')
+    ];
+
+    // mismatch warning (form)
+    const noErr = !errs.kcal && !errs.protein && !errs.fat && !errs.carbs;
+    let mismatchShow = false, mismatchText = '';
+    if (formView && noErr) {
+      const kc = this.parseNum(st.form.kcal);
+      const computed = this.parseNum(st.form.protein) * 4 + this.parseNum(st.form.carbs) * 4 + this.parseNum(st.form.fat) * 9;
+      if (Math.abs(computed - kc) > Math.max(75, kc * 0.05)) {
+        mismatchShow = true;
+        mismatchText = 'Podane makroskładniki odpowiadają około ' + this.nf(Math.round(computed / 10) * 10) + ' kcal, a ustawiony cel to ' + this.nf(kc) + ' kcal.';
+      }
+    }
+
+    // plan preview / balance rows
+    const planHasMeals = (this.props.planDnia || 'Zaplanowany dzień') !== 'Pusty dzień';
+    const planMealsLabel = this.plannedMeals + ' posiłki w planie';
+    const buildRows = (target) => {
+      const defs = [
+        { label: 'Kalorie', planned: this.planned.kcal, target: target.kcal, unit: ' kcal', color: '#C75B38' },
+        { label: 'Białko', planned: this.planned.protein, target: target.protein, unit: ' g', color: '#C75B38' },
+        { label: 'Tłuszcz', planned: this.planned.fat, target: target.fat, unit: ' g', color: '#6D8B5C' },
+        { label: 'Węglowodany', planned: this.planned.carbs, target: target.carbs, unit: ' g', color: '#C9A227' }
+      ];
+      return defs.map((r) => {
+        const p = Math.round(r.planned), t = Math.round(r.target);
+        const over = t > 0 && p > t;
+        const pct = t > 0 ? Math.min(100, (p / t) * 100) : 0;
+        let deltaLabel, deltaIcon = '', deltaColor = '#6E6250', deltaWeight = 500;
+        if (t <= 0) { deltaLabel = 'ustaw cel, aby porównać'; deltaColor = '#A79A83'; }
+        else if (over) { deltaLabel = 'ponad cel o ' + this.nf(p - t) + r.unit; deltaColor = '#B3402E'; deltaWeight = 700; deltaIcon = '▲ '; }
+        else if (p === t) { deltaLabel = 'dokładnie w celu'; deltaColor = '#5F7C4E'; deltaWeight = 600; }
+        else { deltaLabel = 'zostaje ' + this.nf(t - p) + r.unit; deltaColor = '#5F7C4E'; }
+        return {
+          label: r.label, planned: this.nf(p) + r.unit, target: this.nf(t) + r.unit,
+          pct: pct, barColor: over ? '#B3402E' : r.color,
+          deltaLabel: deltaLabel, deltaIcon: deltaIcon, deltaColor: deltaColor, deltaWeight: deltaWeight
+        };
+      });
+    };
+    const liveTarget = { kcal: this.parseOr0(st.form.kcal), protein: this.parseOr0(st.form.protein), fat: this.parseOr0(st.form.fat), carbs: this.parseOr0(st.form.carbs) };
+    const previewRows = buildRows(liveTarget);
+    const balanceRows = hasGoal ? buildRows(goal) : [];
+
+    // status badge
+    let statusLabel, statusDot, statusFg;
+    if (hasGoal) { statusLabel = 'CEL AKTYWNY'; statusDot = '#8FBF6A'; statusFg = '#AFCB90'; }
+    else { statusLabel = 'BRAK CELU'; statusDot = 'rgba(242,233,216,0.4)'; statusFg = 'rgba(242,233,216,0.55)'; }
+
+    // form copy
+    const formTitle = st.mode === 'create' ? 'Ustaw dzienne cele' : 'Edytuj dzienne cele';
+    const formIntro = st.mode === 'create'
+      ? 'Podaj cel kalorii oraz makroskładników. To będzie Twój jeden aktywny zestaw celów.'
+      : 'Zmień wartości swojego aktualnego celu dziennego.';
+    const replaceNote = st.mode === 'create'
+      ? 'Zawsze aktywny jest jeden zestaw celów. Wartości możesz później zmienić w każdej chwili.'
+      : 'Zapisanie nowych wartości zastąpi obecny cel. Zmiana wpływa tylko na porównania — nie zmienia posiłków w planie.';
+    const saveLabel = st.mode === 'create' ? 'Zapisz cele' : 'Zapisz cele';
+
+    // modals
+    const ovlStyle = { position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(18,12,8,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' };
+    const confirmPanelStyle = { width: 'min(440px,100%)', background: '#F8F1E3', borderRadius: '22px', color: '#2A2018', padding: 'clamp(22px,4vw,30px)', animation: 'jd-rise 0.25s ease-out', boxShadow: '0 24px 60px rgba(0,0,0,0.4)' };
+
+    const toast = st.toast;
+    const toastBgMap = { saving: '#2A2018', ok: '#5F7C4E', err: '#A93A28', info: '#2A2018' };
+    const goStub = (name) => (e) => { if (e) e.preventDefault(); self.toastMsg('info', 'Ekran „' + name + '” nie jest częścią tej makiety.', true); };
+
+    return {
+      isMobile: st.isMobile, isDesktop: !st.isMobile,
+      goCele: (e) => { if (e) e.preventDefault(); },
+      goPlan: (e) => { if (e) e.preventDefault(); window.location.href = 'Jadlify - Plan posiłków.dc.html'; }, goKonto: goStub('Moje konto'), goWyloguj: goStub('Wylogowanie'),
+      statusLabel: statusLabel, statusDot: statusDot, statusFg: statusFg,
+
+      showLoading: showLoading, showError: showError, showContent: showContent,
+      retryLoad: () => {
+        self.setState({ reloading: true });
+        self._t = setTimeout(() => { self.setState({ reloading: false, loadFixed: true }); self.toastMsg('ok', 'Dane zostały wczytane.', true); }, 1100);
+      },
+
+      summaryHasGoal: summaryView && hasGoal,
+      summaryNoGoal: summaryView && !hasGoal,
+      formView: formView,
+
+      updatedLabel: updatedLabel,
+      gKcal: hasGoal ? this.numDisplay(goal.kcal) : '—',
+      macroTiles: macroTiles,
+      balanceNote: balanceNote, balanceNoteColor: balanceNoteColor,
+      openEdit: () => self.openForm('edit'),
+      openCreate: () => self.openForm('create'),
+      askDelete: () => self.setState({ confirmDelete: true }),
+
+      formTitle: formTitle, formIntro: formIntro, replaceNote: replaceNote, saveLabel: saveLabel,
+      fKcal: fKcal, macroFields: macroFields,
+      mismatchShow: mismatchShow, mismatchText: mismatchText,
+      saving: st.saving, notSaving: !st.saving,
+      saveBg: st.saving ? '#C75B38' : '#C75B38',
+      saveCursor: st.saving ? 'not-allowed' : 'pointer',
+      saveGoal: () => {
+        if (st.saving) return;
+        const e = self.formErrors();
+        const bad = e.kcal || e.protein || e.fat || e.carbs;
+        if (bad) {
+          self.setState({ submitted: true, touched: { kcal: true, protein: true, fat: true, carbs: true } });
+          const first = e.kcal ? 'kcal' : (e.protein ? 'protein' : (e.fat ? 'fat' : 'carbs'));
+          setTimeout(() => { const el = document.getElementById('goal-' + first); if (el) el.focus(); }, 30);
+          return;
+        }
+        self.doSave();
+      },
+      cancelForm: () => {
+        if (st.saving) return;
+        if (self.isDirty()) self.setState({ confirmLeave: true });
+        else if (st.goal) self.setState({ view: 'summary' });
+        else self.setState({ view: 'summary' });
+      },
+
+      planHasMeals: planHasMeals, planEmpty: !planHasMeals,
+      planMealsLabel: planMealsLabel, todayLabel: 'dzisiaj',
+      previewRows: previewRows, balanceRows: balanceRows,
+
+      confirmLeave: st.confirmLeave,
+      closeLeave: () => self.setState({ confirmLeave: false }),
+      closeLeaveBg: () => self.setState({ confirmLeave: false }),
+      discardLeave: () => self.setState({ confirmLeave: false, view: 'summary', form: Object.assign({}, st.baseForm), touched: {}, submitted: false }),
+
+      confirmDelete: st.confirmDelete, deleting: st.deleting, notDeleting: !st.deleting,
+      deleteCursor: st.deleting ? 'not-allowed' : 'pointer',
+      closeDelete: () => { if (!st.deleting) self.setState({ confirmDelete: false }); },
+      closeDeleteBg: () => { if (!st.deleting) self.setState({ confirmDelete: false }); },
+      doDelete: () => {
+        if (st.deleting) return;
+        self.setState({ deleting: true });
+        self._td = setTimeout(() => {
+          self.setState({ goal: null, mode: 'create', view: 'summary', confirmDelete: false, deleting: false, form: self.emptyForm(), baseForm: self.emptyForm() });
+          self.toastMsg('ok', 'Usunięto dzienne cele.', true);
+        }, 700);
+      },
+
+      ovlStyle: ovlStyle, confirmPanelStyle: confirmPanelStyle, stopClick: (e) => e.stopPropagation(),
+
+      toastShow: !!toast, toastMsg: toast ? toast.msg : '',
+      toastBg: toast ? toastBgMap[toast.kind] : '#2A2018',
+      toastIsSaving: !!toast && toast.kind === 'saving',
+      toastIsOk: !!toast && toast.kind === 'ok',
+      toastIsErr: !!toast && toast.kind === 'err',
+      retrySave: () => self.doSave(),
+      closeToast: () => self.setState({ toast: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

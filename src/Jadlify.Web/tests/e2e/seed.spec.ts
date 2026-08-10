@@ -15,14 +15,18 @@
  * because if the product data doesn't survive persistence, all downstream macro
  * calculations (recipes → meal plan → daily summary) are invalid.
  *
+ * The locators are Polish because the UI is: after the redesign the accessible
+ * name *is* the Polish label, so an English locator would be asserting against
+ * copy that no longer exists.
+ *
  * Provenance: seed-test-pattern.md (10x-e2e skill references)
  */
 import { test, expect } from '@playwright/test';
 
-test.describe('Product persistence (risk #1 foundation)', () => {
-  test('created product with macro values persists after page reload', async ({ page }) => {
+test.describe('Trwałość produktu (fundament ryzyka #1)', () => {
+  test('utworzony produkt z wartościami makro przeżywa przeładowanie strony', async ({ page }) => {
     // Unique test data to avoid collisions in parallel/repeat runs
-    const productName = `Seed Product ${Date.now()}`;
+    const productName = `Seed Produkt ${Date.now()}`;
     const macros = {
       calories: '250',
       protein: '20',
@@ -32,24 +36,24 @@ test.describe('Product persistence (risk #1 foundation)', () => {
 
     // --- Setup: navigate to products page ---
     await page.goto('/products');
-    await expect(page.getByRole('heading', { name: 'Products' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Produkty' })).toBeVisible();
 
     // --- Action: create a product via the form ---
-    await page.getByRole('button', { name: 'Add product' }).click();
+    await page.getByRole('button', { name: /^Dodaj (pierwszy )?produkt$/ }).first().click();
 
     // Wait for the modal dialog to appear
-    const dialog = page.getByRole('dialog', { name: 'Add product' });
+    const dialog = page.getByRole('dialog', { name: 'Dodaj produkt' });
     await expect(dialog).toBeVisible();
 
     // Fill the product form
-    await dialog.getByLabel('Name').fill(productName);
-    await dialog.getByLabel('Calories (kcal / 100 g)').fill(macros.calories);
-    await dialog.getByLabel('Protein (g / 100 g)').fill(macros.protein);
-    await dialog.getByLabel('Fat (g / 100 g)').fill(macros.fat);
-    await dialog.getByLabel('Carbohydrates (g / 100 g)').fill(macros.carbohydrates);
+    await dialog.getByLabel('Nazwa produktu').fill(productName);
+    await dialog.getByLabel('Kalorie (kcal)').fill(macros.calories);
+    await dialog.getByLabel('Białko (g)').fill(macros.protein);
+    await dialog.getByLabel('Tłuszcz (g)').fill(macros.fat);
+    await dialog.getByLabel('Węglowodany (g)').fill(macros.carbohydrates);
 
-    // Submit and wait for the API response
-    await page.getByRole('button', { name: 'Save' }).click();
+    // Submit and wait for the dialog to close (the mutation resolved)
+    await dialog.getByRole('button', { name: 'Zapisz produkt' }).click();
     await expect(dialog).toBeHidden();
 
     // --- Assertion 1: product appears in the list ---
@@ -57,18 +61,16 @@ test.describe('Product persistence (risk #1 foundation)', () => {
 
     // --- Assertion 2: product persists after reload (the risk) ---
     await page.reload();
-    await expect(page.getByRole('heading', { name: 'Products' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Produkty' })).toBeVisible();
     await expect(page.getByText(productName)).toBeVisible();
 
     // --- Cleanup: delete the test product ---
-    // Find the product card and click its Delete button
-    const productCard = page.getByRole('listitem').filter({ hasText: productName });
-    await productCard.getByRole('button', { name: 'Delete' }).click();
+    await page.getByRole('button', { name: `Usuń produkt ${productName}` }).click();
 
     // Confirm deletion in the alert dialog
-    const deleteDialog = page.getByRole('alertdialog', { name: 'Delete product' });
+    const deleteDialog = page.getByRole('alertdialog', { name: 'Usunąć produkt?' });
     await expect(deleteDialog).toBeVisible();
-    await deleteDialog.getByRole('button', { name: 'Delete' }).click();
+    await deleteDialog.getByRole('button', { name: 'Usuń produkt' }).click();
     await expect(deleteDialog).toBeHidden();
 
     // Verify product is gone

@@ -10,6 +10,9 @@ public static class ProductValidationBounds
 {
     public const int MaxNameLength = 200;
 
+    /// <summary>Optional brand is short free text; generous ceiling that rejects pasted junk.</summary>
+    public const int MaxBrandLength = 200;
+
     /// <summary>A macro (protein/fat/carbs) cannot exceed 100 g per 100 g.</summary>
     public const decimal MaxMacroGramsPer100g = 100m;
 

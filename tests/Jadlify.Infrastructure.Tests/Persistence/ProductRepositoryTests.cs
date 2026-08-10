@@ -1,4 +1,5 @@
 using Jadlify.Application.Identity;
+using Jadlify.Application.Products;
 using Jadlify.Domain.Nutrition;
 using Jadlify.Domain.Products;
 using Jadlify.Domain.Recipes;
@@ -283,8 +284,271 @@ public class ProductRepositoryTests
         Assert.Equal(ErrorType.NotFound, result.Error.Type);
     }
 
+    [Fact]
+    public async Task AddAsync_PersistsBrandAndCategory()
+    {
+        using SqliteTestDatabase database = new();
+        var productId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            await repository.AddAsync(new Product(
+                productId,
+                "Nutella",
+                new MacroNutrients(539m, 6.3m, 30.9m, 57.5m),
+                brand: "Ferrero",
+                category: ProductCategory.PantryAndDryGoods));
+        }
+
+        Product? stored;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            stored = await repository.GetByIdAsync(productId);
+        }
+
+        Assert.NotNull(stored);
+        Assert.Equal("Ferrero", stored.Brand);
+        Assert.Equal(ProductCategory.PantryAndDryGoods, stored.Category);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ChangesBrandAndCategory_IncludingClearingToNull()
+    {
+        using SqliteTestDatabase database = new();
+        var productId = Guid.NewGuid();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            await repository.AddAsync(new Product(
+                productId,
+                "Yogurt",
+                new MacroNutrients(60m, 4m, 3m, 5m),
+                brand: "Zott",
+                category: ProductCategory.Dairy));
+        }
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            await repository.UpdateAsync(new Product(
+                productId,
+                "Yogurt",
+                new MacroNutrients(60m, 4m, 3m, 5m),
+                brand: null,
+                category: null));
+        }
+
+        Product? stored;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            stored = await repository.GetByIdAsync(productId);
+        }
+
+        Assert.NotNull(stored);
+        Assert.Null(stored.Brand);
+        Assert.Null(stored.Category);
+    }
+
+    [Fact]
+    public async Task GetCatalogAsync_ReturnsOnlyOwnersProducts_WithTotal()
+    {
+        using SqliteTestDatabase database = new();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository owner = new(context, new TestCurrentUser(OwnerId));
+            await owner.AddAsync(Categorized(Guid.NewGuid(), "Oats", ProductCategory.GrainsAndBread));
+            await owner.AddAsync(Categorized(Guid.NewGuid(), "Rice", ProductCategory.GrainsAndBread));
+
+            ProductRepository other = new(context, new TestCurrentUser(OtherId));
+            await other.AddAsync(Categorized(Guid.NewGuid(), "Beans", ProductCategory.Vegetables));
+        }
+
+        ProductCatalogResult page;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            page = await repository.GetCatalogAsync(
+                search: null,
+                category: null,
+                uncategorizedOnly: false,
+                sort: ProductCatalogSort.NameAsc,
+                skip: 0,
+                take: 50);
+        }
+
+        Assert.Equal(2, page.Total);
+        Assert.All(page.Items, product => Assert.Contains(product.Name, new[] { "Oats", "Rice" }));
+    }
+
+    [Fact]
+    public async Task GetCatalogAsync_FiltersBySpecificCategory()
+    {
+        using SqliteTestDatabase database = new();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            await repository.AddAsync(Categorized(Guid.NewGuid(), "Apple", ProductCategory.Fruits));
+            await repository.AddAsync(Categorized(Guid.NewGuid(), "Cucumber", ProductCategory.Vegetables));
+            await repository.AddAsync(Categorized(Guid.NewGuid(), "Mystery", category: null));
+        }
+
+        ProductCatalogResult page;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            page = await repository.GetCatalogAsync(
+                search: null,
+                category: ProductCategory.Fruits,
+                uncategorizedOnly: false,
+                sort: ProductCatalogSort.NameAsc,
+                skip: 0,
+                take: 50);
+        }
+
+        Assert.Equal(1, page.Total);
+        Product only = Assert.Single(page.Items);
+        Assert.Equal("Apple", only.Name);
+    }
+
+    [Fact]
+    public async Task GetCatalogAsync_FiltersUncategorizedOnly()
+    {
+        using SqliteTestDatabase database = new();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            await repository.AddAsync(Categorized(Guid.NewGuid(), "Apple", ProductCategory.Fruits));
+            await repository.AddAsync(Categorized(Guid.NewGuid(), "Mystery", category: null));
+        }
+
+        ProductCatalogResult page;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            page = await repository.GetCatalogAsync(
+                search: null,
+                category: null,
+                uncategorizedOnly: true,
+                sort: ProductCatalogSort.NameAsc,
+                skip: 0,
+                take: 50);
+        }
+
+        Product only = Assert.Single(page.Items);
+        Assert.Equal("Mystery", only.Name);
+        Assert.Null(only.Category);
+    }
+
+    [Fact]
+    public async Task GetCatalogAsync_SearchesNameAndBarcode()
+    {
+        using SqliteTestDatabase database = new();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            await repository.AddAsync(
+                Categorized(Guid.NewGuid(), "Almond milk", ProductCategory.Beverages, barcode: "11110000"));
+            await repository.AddAsync(
+                Categorized(Guid.NewGuid(), "Cow milk", ProductCategory.Dairy, barcode: "22220000"));
+            await repository.AddAsync(
+                Categorized(Guid.NewGuid(), "Oat flakes", ProductCategory.GrainsAndBread, barcode: "33330000"));
+        }
+
+        ProductCatalogResult byName;
+        ProductCatalogResult byBarcode;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            byName = await repository.GetCatalogAsync(
+                "milk", null, false, ProductCatalogSort.NameAsc, 0, 50);
+            byBarcode = await repository.GetCatalogAsync(
+                "3333", null, false, ProductCatalogSort.NameAsc, 0, 50);
+        }
+
+        Assert.Equal(2, byName.Total);
+        Product barcodeHit = Assert.Single(byBarcode.Items);
+        Assert.Equal("Oat flakes", barcodeHit.Name);
+    }
+
+    [Fact]
+    public async Task GetCatalogAsync_SortsByCaloriesAscending()
+    {
+        using SqliteTestDatabase database = new();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            await repository.AddAsync(Categorized(Guid.NewGuid(), "Oil", ProductCategory.PantryAndDryGoods, calories: 900m));
+            await repository.AddAsync(Categorized(Guid.NewGuid(), "Lettuce", ProductCategory.Vegetables, calories: 15m));
+            await repository.AddAsync(Categorized(Guid.NewGuid(), "Bread", ProductCategory.GrainsAndBread, calories: 250m));
+        }
+
+        ProductCatalogResult page;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            page = await repository.GetCatalogAsync(
+                null, null, false, ProductCatalogSort.CaloriesAsc, 0, 50);
+        }
+
+        Assert.Equal(
+            new[] { "Lettuce", "Bread", "Oil" },
+            page.Items.Select(product => product.Name).ToArray());
+    }
+
+    [Fact]
+    public async Task GetCatalogAsync_PaginatesWithStableOrder()
+    {
+        using SqliteTestDatabase database = new();
+
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            await repository.AddAsync(Categorized(Guid.NewGuid(), "Apple", ProductCategory.Fruits));
+            await repository.AddAsync(Categorized(Guid.NewGuid(), "Banana", ProductCategory.Fruits));
+            await repository.AddAsync(Categorized(Guid.NewGuid(), "Cherry", ProductCategory.Fruits));
+        }
+
+        ProductCatalogResult firstPage;
+        ProductCatalogResult secondPage;
+        await using (JadlifyDbContext context = database.CreateContext())
+        {
+            ProductRepository repository = new(context, new TestCurrentUser(OwnerId));
+            firstPage = await repository.GetCatalogAsync(null, null, false, ProductCatalogSort.NameAsc, 0, 2);
+            secondPage = await repository.GetCatalogAsync(null, null, false, ProductCatalogSort.NameAsc, 2, 2);
+        }
+
+        Assert.Equal(3, firstPage.Total);
+        Assert.Equal(new[] { "Apple", "Banana" }, firstPage.Items.Select(p => p.Name).ToArray());
+        Product last = Assert.Single(secondPage.Items);
+        Assert.Equal("Cherry", last.Name);
+    }
+
     private static Product NewProduct(Guid id, string name)
     {
         return new Product(id, name, new MacroNutrients(100m, 10m, 5m, 20m));
+    }
+
+    private static Product Categorized(
+        Guid id,
+        string name,
+        ProductCategory? category,
+        decimal calories = 100m,
+        string? barcode = null)
+    {
+        return new Product(
+            id,
+            name,
+            new MacroNutrients(calories, 10m, 5m, 20m),
+            barcode,
+            category: category);
     }
 }

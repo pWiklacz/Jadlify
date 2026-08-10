@@ -1,3 +1,5 @@
+using Jadlify.Domain.Products;
+
 namespace Jadlify.Application.Products;
 
 /// <summary>
@@ -16,7 +18,9 @@ public interface IBarcodeProductLookup
 /// crowdsourced sources frequently lack one or more values, and a missing field
 /// simply leaves the corresponding form input blank. Beyond the core macros it also
 /// carries the net package size and the extended per-100g profile (fat breakdown,
-/// sugars/fiber, salt/sodium/potassium, and a small micronutrient set).
+/// sugars/fiber, salt/sodium/potassium, and a small micronutrient set). <see cref="Category"/>
+/// is a best-effort taxonomy suggestion mapped from the external source; an unrecognized
+/// category maps to <c>null</c>, never an error.
 /// </summary>
 public sealed record BarcodeProductData(
     string? Name = null,
@@ -39,4 +43,5 @@ public sealed record BarcodeProductData(
     decimal? Iron = null,
     decimal? VitaminA = null,
     decimal? VitaminC = null,
-    decimal? VitaminD = null);
+    decimal? VitaminD = null,
+    ProductCategory? Category = null);

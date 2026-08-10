@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Archivo:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: #1F1712; }
+  button, select, input, textarea { font: inherit; }
+  a { color: #C75B38; }
+  a:hover { color: #B04E2E; }
+  input::placeholder, textarea::placeholder { color: #B4A88F; }
+  @keyframes jd-pulse { 0%,100% { opacity: .45; } 50% { opacity: 1; } }
+  @keyframes jd-spin { to { transform: rotate(360deg); } }
+  @keyframes jd-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes jd-toast { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes jd-fade { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:radial-gradient(1100px 520px at 50% -140px,#2C2015 0%,#1F1712 68%);font-family:'Archivo',system-ui,sans-serif;color:#F2E9D8">
+
+  <div>
+
+  <!-- ══════════ ŁADOWANIE APLIKACJI (przywracanie sesji) ══════════ -->
+  <sc-if value="{{ isAppLoading }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Przywracanie sesji" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;animation:jd-fade 0.4s ease-out">
+      <svg width="46" height="46" viewBox="0 0 32 32" fill="none" stroke="#D97E57" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="animation:jd-pulse 1.5s ease-in-out infinite">
+        <circle cx="16" cy="16" r="8.2"/><circle cx="16" cy="16" r="3.4"/>
+        <path d="M4.4 10.5v4a1.6 1.6 0 0 0 3.2 0v-4"/><path d="M6 10.5V25"/><path d="M26.6 10.5c-1.7 1.9-1.7 5 0 6.6V25"/>
+      </svg>
+      <div style="font-family:'Instrument Serif',serif;font-size:26px">Jadlify</div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:13.5px;color:rgba(242,233,216,0.55)">
+        <span style="width:14px;height:14px;border:2px solid rgba(242,233,216,0.22);border-top-color:#D97E57;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span>
+        Przywracamy Twoją sesję…
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ══════════ POWIERZCHNIA PUBLICZNA (auth) ══════════ -->
+  <sc-if value="{{ isAuthShell }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:clamp(20px,4vw,52px)">
+      <div style="width:100%;max-width:{{ shellMax }};display:flex;flex-direction:{{ shellDir }};align-items:center;gap:clamp(28px,5vw,64px)">
+
+        <!-- Marka -->
+        <aside style="flex:{{ brandFlex }};align-self:{{ brandAlign }};max-width:{{ brandMax }};text-align:{{ brandTextAlign }}">
+          <a href="Jadlify - Strona główna v5.dc.html" style="display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:#F2E9D8">
+            <svg width="34" height="34" viewBox="0 0 32 32" fill="none" stroke="#D97E57" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="16" cy="16" r="8.2"/><circle cx="16" cy="16" r="3.4"/>
+              <path d="M4.4 10.5v4a1.6 1.6 0 0 0 3.2 0v-4"/><path d="M6 10.5V25"/><path d="M26.6 10.5c-1.7 1.9-1.7 5 0 6.6V25"/>
+            </svg>
+            <span style="font-family:'Instrument Serif',serif;font-size:32px;line-height:1">Jadlify</span>
+          </a>
+          <div style="margin-top:7px;font-size:10px;font-weight:700;letter-spacing:0.26em;color:rgba(242,233,216,0.42)">PLANER POSIŁKÓW I MAKRO</div>
+          <p style="margin:{{ statementMargin }};font-family:'Instrument Serif',serif;font-weight:400;font-size:{{ statementSize }};line-height:1.22;color:#F2E9D8;max-width:16ch">Planuj posiłki, pilnuj makro i twórz listy zakupów na podstawie swojego planu.</p>
+          <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+            <div style="margin-top:22px;display:flex;flex-wrap:wrap;gap:6px 4px;font-size:12.5px;color:rgba(242,233,216,0.5)">
+              <span>Produkty</span><span style="color:rgba(242,233,216,0.28)">·</span><span>Przepisy</span><span style="color:rgba(242,233,216,0.28)">·</span><span>Plan dnia</span><span style="color:rgba(242,233,216,0.28)">·</span><span>Makro</span><span style="color:rgba(242,233,216,0.28)">·</span><span>Lista zakupów</span>
+            </div>
+          </sc-if>
+        </aside>
+
+        <!-- Karta -->
+        <main style="width:100%;max-width:{{ cardMax }};background:#F8F1E3;border-radius:22px;padding:clamp(26px,3.4vw,38px);color:#2A2018;box-shadow:0 30px 70px -30px rgba(0,0,0,0.55);animation:jd-rise 0.4s ease-out">
+
+          <!-- ── ZALOGUJ SIĘ ── -->
+          <sc-if value="{{ isSignin }}" hint-placeholder-val="{{ true }}">
+            <div data-screen-label="Zaloguj się">
+              <h1 style="margin:0 0 6px;font-family:'Instrument Serif',serif;font-weight:400;font-size:30px;line-height:1.08">Zaloguj się</h1>
+              <p style="margin:0 0 20px;font-size:14px;color:#8C7F6C">Wróć do swojego planu posiłków i makro.</p>
+
+              <sc-if value="{{ bShow }}" hint-placeholder-val="{{ false }}">
+                <div role="status" style="margin:0 0 18px;border-radius:12px;padding:12px 14px;background:{{ bBg }};border-left:3px solid {{ bAccent }}">
+                  <div style="font-size:13.5px;font-weight:700;color:{{ bTitleFg }}">{{ bTitle }}</div>
+                  <div style="margin-top:3px;font-size:13px;line-height:1.5;color:#6B5D4A">{{ bText }}</div>
+                  <sc-if value="{{ bAction }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ bActionFn }}" style="margin-top:8px;border:none;background:none;padding:0;font-size:13px;font-weight:700;color:#C75B38;cursor:pointer;text-decoration:underline">{{ bActionLabel }}</button>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <form onSubmit="{{ submitSignin }}">
+                <label style="display:block;font-size:12.5px;font-weight:600;color:#5C5040;margin-bottom:6px" for="si-email">Adres e-mail</label>
+                <input id="si-email" type="email" autoComplete="username" inputMode="email" value="{{ vEmail }}" onInput="{{ onEmail }}" placeholder="ty@example.com" aria-invalid="{{ emailInvalid }}" style="width:100%;padding:12px 14px;border-radius:11px;border:1.5px solid {{ emailBd }};background:#FFFDF8;color:#2A2018;outline:none" />
+                <sc-if value="{{ eEmail }}" hint-placeholder-val="{{ false }}"><div role="alert" style="margin-top:6px;font-size:12.5px;color:#B3402E;display:flex;gap:5px;align-items:center"><span aria-hidden="true">⚠</span>{{ eEmail }}</div></sc-if>
+
+                <div style="display:flex;justify-content:space-between;align-items:baseline;margin:16px 0 6px">
+                  <label style="font-size:12.5px;font-weight:600;color:#5C5040" for="si-pw">Hasło</label>
+                  <button type="button" onClick="{{ gotoForgot }}" style="border:none;background:none;padding:0;font-size:12.5px;font-weight:600;color:#C75B38;cursor:pointer">Nie pamiętasz hasła?</button>
+                </div>
+                <div style="position:relative">
+                  <input id="si-pw" type="{{ pwType }}" autoComplete="current-password" value="{{ vPw }}" onInput="{{ onPw }}" placeholder="Twoje hasło" aria-invalid="{{ pwInvalid }}" style="width:100%;padding:12px 46px 12px 14px;border-radius:11px;border:1.5px solid {{ pwBd }};background:#FFFDF8;color:#2A2018;outline:none" />
+                  <button type="button" onClick="{{ togglePw }}" aria-label="{{ pwToggleAria }}" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);border:none;background:none;padding:8px;cursor:pointer;color:#8C7F6C;display:flex">
+                    <span aria-hidden="true" style="font-size:12px;font-weight:700;letter-spacing:0.04em">{{ pwToggleLabel }}</span>
+                  </button>
+                </div>
+                <sc-if value="{{ ePw }}" hint-placeholder-val="{{ false }}"><div role="alert" style="margin-top:6px;font-size:12.5px;color:#B3402E;display:flex;gap:5px;align-items:center"><span aria-hidden="true">⚠</span>{{ ePw }}</div></sc-if>
+
+                <button type="submit" disabled="{{ busy }}" style="margin-top:22px;width:100%;border:none;border-radius:999px;padding:14px;font-size:15px;font-weight:600;cursor:{{ busyCursor }};background:#C75B38;color:#FFF8EC;display:flex;align-items:center;justify-content:center;gap:9px;opacity:{{ busyOpacity }}" style-hover="background:#B04E2E">
+                  <sc-if value="{{ busy }}" hint-placeholder-val="{{ false }}"><span style="width:15px;height:15px;border:2px solid rgba(255,248,236,0.4);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span></sc-if>
+                  {{ signinBtnLabel }}
+                </button>
+              </form>
+              <div style="margin-top:20px;padding-top:18px;border-top:1px dotted #DCCFB2;text-align:center;font-size:14px;color:#8C7F6C">Nie masz konta? <button type="button" onClick="{{ gotoRegister }}" style="border:none;background:none;padding:0;font-size:14px;font-weight:700;color:#C75B38;cursor:pointer">Utwórz konto</button></div>
+            </div>
+          </sc-if>
+
+          <!-- ── UTWÓRZ KONTO ── -->
+          <sc-if value="{{ isRegister }}" hint-placeholder-val="{{ false }}">
+            <div data-screen-label="Utwórz konto">
+              <sc-if value="{{ regSuccess }}" hint-placeholder-val="{{ false }}">
+                <div style="text-align:center;animation:jd-rise 0.4s ease-out">
+                  <div style="width:52px;height:52px;margin:4px auto 16px;border-radius:50%;background:rgba(143,191,106,0.18);display:flex;align-items:center;justify-content:center;color:#4F7A3A">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg>
+                  </div>
+                  <h1 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:28px">Konto utworzone</h1>
+                  <p style="margin:0 auto 22px;max-width:34ch;font-size:14.5px;line-height:1.6;color:#8C7F6C">Wysłaliśmy wiadomość na <strong style="color:#2A2018">{{ cEmail }}</strong>. Potwierdź adres, klikając link w e-mailu — potem zalogujesz się i zaczniesz planować.</p>
+                  <button onClick="{{ gotoConfirm }}" style="width:100%;border:none;border-radius:999px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;background:#C75B38;color:#FFF8EC" style-hover="background:#B04E2E">Sprawdź skrzynkę</button>
+                  <button onClick="{{ gotoSignin }}" style="margin-top:10px;width:100%;border:none;background:none;padding:8px;font-size:13.5px;font-weight:600;color:#8C7F6C;cursor:pointer">Wróć do logowania</button>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ regForm }}" hint-placeholder-val="{{ true }}">
+                <h1 style="margin:0 0 6px;font-family:'Instrument Serif',serif;font-weight:400;font-size:30px;line-height:1.08">Utwórz konto</h1>
+                <p style="margin:0 0 20px;font-size:14px;color:#8C7F6C">Załóż prywatne konto Jadlify. Twoje produkty i plany widzisz tylko Ty.</p>
+
+                <sc-if value="{{ bShow }}" hint-placeholder-val="{{ false }}">
+                  <div role="status" style="margin:0 0 18px;border-radius:12px;padding:12px 14px;background:{{ bBg }};border-left:3px solid {{ bAccent }}">
+                    <div style="font-size:13.5px;font-weight:700;color:{{ bTitleFg }}">{{ bTitle }}</div>
+                    <div style="margin-top:3px;font-size:13px;line-height:1.5;color:#6B5D4A">{{ bText }}</div>
+                    <sc-if value="{{ bAction }}" hint-placeholder-val="{{ false }}"><button onClick="{{ bActionFn }}" style="margin-top:8px;border:none;background:none;padding:0;font-size:13px;font-weight:700;color:#C75B38;cursor:pointer;text-decoration:underline">{{ bActionLabel }}</button></sc-if>
+                  </div>
+                </sc-if>
+
+                <form onSubmit="{{ submitRegister }}">
+                  <label style="display:block;font-size:12.5px;font-weight:600;color:#5C5040;margin-bottom:6px" for="rg-email">Adres e-mail</label>
+                  <input id="rg-email" type="email" autoComplete="username" inputMode="email" value="{{ vEmail }}" onInput="{{ onEmail }}" placeholder="ty@example.com" aria-invalid="{{ emailInvalid }}" style="width:100%;padding:12px 14px;border-radius:11px;border:1.5px solid {{ emailBd }};background:#FFFDF8;color:#2A2018;outline:none" />
+                  <sc-if value="{{ eEmail }}" hint-placeholder-val="{{ false }}"><div role="alert" style="margin-top:6px;font-size:12.5px;color:#B3402E;display:flex;gap:5px;align-items:center"><span aria-hidden="true">⚠</span>{{ eEmail }}</div></sc-if>
+
+                  <label style="display:block;font-size:12.5px;font-weight:600;color:#5C5040;margin:16px 0 6px" for="rg-pw">Hasło</label>
+                  <div style="position:relative">
+                    <input id="rg-pw" type="{{ pwType }}" autoComplete="new-password" value="{{ vPw }}" onInput="{{ onPw }}" placeholder="Utwórz hasło" style="width:100%;padding:12px 46px 12px 14px;border-radius:11px;border:1.5px solid {{ pwBd }};background:#FFFDF8;color:#2A2018;outline:none" />
+                    <button type="button" onClick="{{ togglePw }}" aria-label="{{ pwToggleAria }}" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);border:none;background:none;padding:8px;cursor:pointer;color:#8C7F6C"><span aria-hidden="true" style="font-size:12px;font-weight:700">{{ pwToggleLabel }}</span></button>
+                  </div>
+
+                  <div style="margin-top:12px;background:#FFFDF8;border:1px solid #E7DCC4;border-radius:12px;padding:12px 14px">
+                    <div style="font-size:11.5px;font-weight:700;letter-spacing:0.06em;color:#8C7F6C;margin-bottom:8px">HASŁO POWINNO ZAWIERAĆ</div>
+                    <div style="display:flex;flex-direction:column;gap:7px">
+                      <sc-for list="{{ reqs }}" as="r" hint-placeholder-count="3">
+                        <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:{{ r.fg }};font-weight:{{ r.weight }}">
+                          <span aria-hidden="true" style="width:17px;height:17px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;background:{{ r.markBg }};color:{{ r.markFg }}">{{ r.mark }}</span>{{ r.label }}</div>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <label style="display:block;font-size:12.5px;font-weight:600;color:#5C5040;margin:16px 0 6px" for="rg-pw2">Powtórz hasło</label>
+                  <div style="position:relative">
+                    <input id="rg-pw2" type="{{ pw2Type }}" autoComplete="new-password" value="{{ vPw2 }}" onInput="{{ onPw2 }}" placeholder="Powtórz hasło" aria-invalid="{{ pw2Invalid }}" style="width:100%;padding:12px 46px 12px 14px;border-radius:11px;border:1.5px solid {{ pw2Bd }};background:#FFFDF8;color:#2A2018;outline:none" />
+                    <button type="button" onClick="{{ togglePw2 }}" aria-label="{{ pw2ToggleAria }}" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);border:none;background:none;padding:8px;cursor:pointer;color:#8C7F6C"><span aria-hidden="true" style="font-size:12px;font-weight:700">{{ pw2ToggleLabel }}</span></button>
+                  </div>
+                  <sc-if value="{{ ePw2 }}" hint-placeholder-val="{{ false }}"><div role="alert" style="margin-top:6px;font-size:12.5px;color:#B3402E;display:flex;gap:5px;align-items:center"><span aria-hidden="true">⚠</span>{{ ePw2 }}</div></sc-if>
+
+                  <label style="display:flex;gap:10px;align-items:flex-start;margin-top:18px;cursor:pointer">
+                    <input type="checkbox" checked="{{ vTerms }}" onChange="{{ onTerms }}" style="margin-top:2px;width:18px;height:18px;accent-color:#C75B38;flex:none" />
+                    <span style="font-size:13px;line-height:1.5;color:#6B5D4A">Akceptuję <a href="#regulamin">Regulamin</a> oraz <a href="#prywatnosc">Politykę prywatności</a> Jadlify.</span>
+                  </label>
+                  <sc-if value="{{ eTerms }}" hint-placeholder-val="{{ false }}"><div role="alert" style="margin-top:6px;font-size:12.5px;color:#B3402E;display:flex;gap:5px;align-items:center"><span aria-hidden="true">⚠</span>{{ eTerms }}</div></sc-if>
+
+                  <button type="submit" disabled="{{ busy }}" style="margin-top:20px;width:100%;border:none;border-radius:999px;padding:14px;font-size:15px;font-weight:600;cursor:{{ busyCursor }};background:#C75B38;color:#FFF8EC;display:flex;align-items:center;justify-content:center;gap:9px;opacity:{{ busyOpacity }}" style-hover="background:#B04E2E">
+                    <sc-if value="{{ busy }}" hint-placeholder-val="{{ false }}"><span style="width:15px;height:15px;border:2px solid rgba(255,248,236,0.4);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span></sc-if>
+                    {{ registerBtnLabel }}
+                  </button>
+                </form>
+                <div style="margin-top:20px;padding-top:18px;border-top:1px dotted #DCCFB2;text-align:center;font-size:14px;color:#8C7F6C">Masz już konto? <button type="button" onClick="{{ gotoSignin }}" style="border:none;background:none;padding:0;font-size:14px;font-weight:700;color:#C75B38;cursor:pointer">Zaloguj się</button></div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- ── POTWIERDZENIE E-MAIL ── -->
+          <sc-if value="{{ isConfirm }}" hint-placeholder-val="{{ false }}">
+            <div data-screen-label="Potwierdzenie e-mail" style="text-align:center;animation:jd-rise 0.4s ease-out">
+              <div style="width:54px;height:54px;margin:4px auto 16px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:{{ cIconBg }};color:{{ cIconFg }}">
+                <span aria-hidden="true">{{ cIconEl }}</span>
+              </div>
+              <h1 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:27px;line-height:1.12">{{ cTitle }}</h1>
+              <p style="margin:0 auto 20px;max-width:36ch;font-size:14.5px;line-height:1.6;color:#8C7F6C">{{ cText }}</p>
+
+              <sc-if value="{{ bShow }}" hint-placeholder-val="{{ false }}">
+                <div role="status" style="margin:0 0 18px;border-radius:12px;padding:11px 14px;text-align:left;background:{{ bBg }};border-left:3px solid {{ bAccent }}">
+                  <div style="font-size:13px;font-weight:700;color:{{ bTitleFg }}">{{ bTitle }}</div>
+                  <div style="margin-top:2px;font-size:12.5px;line-height:1.5;color:#6B5D4A">{{ bText }}</div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ cPrimaryShow }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ cPrimaryFn }}" disabled="{{ resendDisabled }}" style="width:100%;border:none;border-radius:999px;padding:14px;font-size:15px;font-weight:600;cursor:{{ resendCursor }};background:#C75B38;color:#FFF8EC;opacity:{{ resendOpacity }}" style-hover="background:#B04E2E">{{ cPrimaryLabel }}</button>
+              </sc-if>
+
+              <div style="margin-top:16px;padding-top:16px;border-top:1px dotted #DCCFB2;display:flex;flex-direction:column;gap:10px">
+                <sc-if value="{{ cShowChange }}" hint-placeholder-val="{{ true }}"><button onClick="{{ gotoRegister }}" style="border:none;background:none;font-size:13.5px;font-weight:600;color:#C75B38;cursor:pointer">Zmień adres e-mail</button></sc-if>
+                <button onClick="{{ gotoSignin }}" style="border:none;background:none;font-size:13.5px;font-weight:600;color:#8C7F6C;cursor:pointer">Wróć do logowania</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- ── NIE PAMIĘTASZ HASŁA ── -->
+          <sc-if value="{{ isForgot }}" hint-placeholder-val="{{ false }}">
+            <div data-screen-label="Nie pamiętasz hasła">
+              <sc-if value="{{ forgotSuccess }}" hint-placeholder-val="{{ false }}">
+                <div style="text-align:center;animation:jd-rise 0.4s ease-out">
+                  <div style="width:52px;height:52px;margin:4px auto 16px;border-radius:50%;background:rgba(217,126,87,0.16);display:flex;align-items:center;justify-content:center;color:#C75B38">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+                  </div>
+                  <h1 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:27px">Sprawdź skrzynkę</h1>
+                  <p style="margin:0 auto 22px;max-width:38ch;font-size:14.5px;line-height:1.6;color:#8C7F6C">Jeżeli konto z tym adresem istnieje, wyślemy wiadomość z instrukcją zmiany hasła. Sprawdź też folder ze spamem.</p>
+                  <button onClick="{{ gotoSignin }}" style="width:100%;border:none;border-radius:999px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;background:#C75B38;color:#FFF8EC" style-hover="background:#B04E2E">Wróć do logowania</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ forgotForm }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ gotoSignin }}" style="border:none;background:none;padding:0;margin-bottom:14px;font-size:13px;font-weight:600;color:#8C7F6C;cursor:pointer;display:flex;align-items:center;gap:6px">← Wróć do logowania</button>
+                <h1 style="margin:0 0 6px;font-family:'Instrument Serif',serif;font-weight:400;font-size:29px;line-height:1.1">Nie pamiętasz hasła?</h1>
+                <p style="margin:0 0 20px;font-size:14px;line-height:1.55;color:#8C7F6C">Podaj adres e-mail konta. Wyślemy link do ustawienia nowego hasła.</p>
+
+                <sc-if value="{{ bShow }}" hint-placeholder-val="{{ false }}">
+                  <div role="status" style="margin:0 0 18px;border-radius:12px;padding:12px 14px;background:{{ bBg }};border-left:3px solid {{ bAccent }}"><div style="font-size:13.5px;font-weight:700;color:{{ bTitleFg }}">{{ bTitle }}</div><div style="margin-top:3px;font-size:13px;line-height:1.5;color:#6B5D4A">{{ bText }}</div></div>
+                </sc-if>
+
+                <form onSubmit="{{ submitForgot }}">
+                  <label style="display:block;font-size:12.5px;font-weight:600;color:#5C5040;margin-bottom:6px" for="fg-email">Adres e-mail</label>
+                  <input id="fg-email" type="email" autoComplete="username" inputMode="email" value="{{ vEmail }}" onInput="{{ onEmail }}" placeholder="ty@example.com" aria-invalid="{{ emailInvalid }}" style="width:100%;padding:12px 14px;border-radius:11px;border:1.5px solid {{ emailBd }};background:#FFFDF8;color:#2A2018;outline:none" />
+                  <sc-if value="{{ eEmail }}" hint-placeholder-val="{{ false }}"><div role="alert" style="margin-top:6px;font-size:12.5px;color:#B3402E;display:flex;gap:5px;align-items:center"><span aria-hidden="true">⚠</span>{{ eEmail }}</div></sc-if>
+                  <button type="submit" disabled="{{ busy }}" style="margin-top:20px;width:100%;border:none;border-radius:999px;padding:14px;font-size:15px;font-weight:600;cursor:{{ busyCursor }};background:#C75B38;color:#FFF8EC;display:flex;align-items:center;justify-content:center;gap:9px;opacity:{{ busyOpacity }}" style-hover="background:#B04E2E">
+                    <sc-if value="{{ busy }}" hint-placeholder-val="{{ false }}"><span style="width:15px;height:15px;border:2px solid rgba(255,248,236,0.4);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span></sc-if>
+                    {{ forgotBtnLabel }}
+                  </button>
+                </form>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- ── USTAW NOWE HASŁO ── -->
+          <sc-if value="{{ isReset }}" hint-placeholder-val="{{ false }}">
+            <div data-screen-label="Ustaw nowe hasło">
+              <sc-if value="{{ resetBad }}" hint-placeholder-val="{{ false }}">
+                <div style="text-align:center;animation:jd-rise 0.4s ease-out">
+                  <div style="width:52px;height:52px;margin:4px auto 16px;border-radius:50%;background:rgba(179,64,46,0.12);display:flex;align-items:center;justify-content:center;color:#B3402E">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5"/><circle cx="12" cy="16" r="0.6" fill="currentColor"/></svg>
+                  </div>
+                  <h1 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:27px">{{ resetBadTitle }}</h1>
+                  <p style="margin:0 auto 22px;max-width:38ch;font-size:14.5px;line-height:1.6;color:#8C7F6C">{{ resetBadText }}</p>
+                  <button onClick="{{ gotoForgot }}" style="width:100%;border:none;border-radius:999px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;background:#C75B38;color:#FFF8EC" style-hover="background:#B04E2E">Poproś o nowy link</button>
+                  <button onClick="{{ gotoSignin }}" style="margin-top:10px;width:100%;border:none;background:none;padding:8px;font-size:13.5px;font-weight:600;color:#8C7F6C;cursor:pointer">Wróć do logowania</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ resetSuccess }}" hint-placeholder-val="{{ false }}">
+                <div style="text-align:center;animation:jd-rise 0.4s ease-out">
+                  <div style="width:52px;height:52px;margin:4px auto 16px;border-radius:50%;background:rgba(143,191,106,0.18);display:flex;align-items:center;justify-content:center;color:#4F7A3A"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5 11-11"/></svg></div>
+                  <h1 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:27px">Hasło zmienione</h1>
+                  <p style="margin:0 auto 22px;max-width:36ch;font-size:14.5px;line-height:1.6;color:#8C7F6C">Twoje hasło zostało zaktualizowane. Zaloguj się nowym hasłem, aby kontynuować.</p>
+                  <button onClick="{{ gotoSignin }}" style="width:100%;border:none;border-radius:999px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;background:#C75B38;color:#FFF8EC" style-hover="background:#B04E2E">Przejdź do logowania</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ resetForm }}" hint-placeholder-val="{{ true }}">
+                <h1 style="margin:0 0 6px;font-family:'Instrument Serif',serif;font-weight:400;font-size:29px;line-height:1.1">Ustaw nowe hasło</h1>
+                <p style="margin:0 0 20px;font-size:14px;color:#8C7F6C">Wybierz nowe hasło do konta <strong style="color:#2A2018">{{ cEmail }}</strong>.</p>
+
+                <sc-if value="{{ bShow }}" hint-placeholder-val="{{ false }}">
+                  <div role="status" style="margin:0 0 18px;border-radius:12px;padding:12px 14px;background:{{ bBg }};border-left:3px solid {{ bAccent }}"><div style="font-size:13.5px;font-weight:700;color:{{ bTitleFg }}">{{ bTitle }}</div><div style="margin-top:3px;font-size:13px;line-height:1.5;color:#6B5D4A">{{ bText }}</div></div>
+                </sc-if>
+
+                <form onSubmit="{{ submitReset }}">
+                  <label style="display:block;font-size:12.5px;font-weight:600;color:#5C5040;margin-bottom:6px" for="rs-pw">Nowe hasło</label>
+                  <div style="position:relative">
+                    <input id="rs-pw" type="{{ pwType }}" autoComplete="new-password" value="{{ vPw }}" onInput="{{ onPw }}" placeholder="Nowe hasło" style="width:100%;padding:12px 46px 12px 14px;border-radius:11px;border:1.5px solid {{ pwBd }};background:#FFFDF8;color:#2A2018;outline:none" />
+                    <button type="button" onClick="{{ togglePw }}" aria-label="{{ pwToggleAria }}" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);border:none;background:none;padding:8px;cursor:pointer;color:#8C7F6C"><span aria-hidden="true" style="font-size:12px;font-weight:700">{{ pwToggleLabel }}</span></button>
+                  </div>
+                  <div style="margin-top:12px;background:#FFFDF8;border:1px solid #E7DCC4;border-radius:12px;padding:12px 14px">
+                    <div style="font-size:11.5px;font-weight:700;letter-spacing:0.06em;color:#8C7F6C;margin-bottom:8px">HASŁO POWINNO ZAWIERAĆ</div>
+                    <div style="display:flex;flex-direction:column;gap:7px">
+                      <sc-for list="{{ reqs }}" as="r" hint-placeholder-count="3">
+                        <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:{{ r.fg }};font-weight:{{ r.weight }}"><span aria-hidden="true" style="width:17px;height:17px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;background:{{ r.markBg }};color:{{ r.markFg }}">{{ r.mark }}</span>{{ r.label }}</div>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <label style="display:block;font-size:12.5px;font-weight:600;color:#5C5040;margin:16px 0 6px" for="rs-pw2">Powtórz nowe hasło</label>
+                  <div style="position:relative">
+                    <input id="rs-pw2" type="{{ pw2Type }}" autoComplete="new-password" value="{{ vPw2 }}" onInput="{{ onPw2 }}" placeholder="Powtórz hasło" aria-invalid="{{ pw2Invalid }}" style="width:100%;padding:12px 46px 12px 14px;border-radius:11px;border:1.5px solid {{ pw2Bd }};background:#FFFDF8;color:#2A2018;outline:none" />
+                    <button type="button" onClick="{{ togglePw2 }}" aria-label="{{ pw2ToggleAria }}" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);border:none;background:none;padding:8px;cursor:pointer;color:#8C7F6C"><span aria-hidden="true" style="font-size:12px;font-weight:700">{{ pw2ToggleLabel }}</span></button>
+                  </div>
+                  <sc-if value="{{ ePw2 }}" hint-placeholder-val="{{ false }}"><div role="alert" style="margin-top:6px;font-size:12.5px;color:#B3402E;display:flex;gap:5px;align-items:center"><span aria-hidden="true">⚠</span>{{ ePw2 }}</div></sc-if>
+                  <button type="submit" disabled="{{ busy }}" style="margin-top:20px;width:100%;border:none;border-radius:999px;padding:14px;font-size:15px;font-weight:600;cursor:{{ busyCursor }};background:#C75B38;color:#FFF8EC;display:flex;align-items:center;justify-content:center;gap:9px;opacity:{{ busyOpacity }}" style-hover="background:#B04E2E">
+                    <sc-if value="{{ busy }}" hint-placeholder-val="{{ false }}"><span style="width:15px;height:15px;border:2px solid rgba(255,248,236,0.4);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span></sc-if>
+                    {{ resetBtnLabel }}
+                  </button>
+                </form>
+              </sc-if>
+            </div>
+          </sc-if>
+
+        </main>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ══════════ EKRANY WYŚRODKOWANE (sesja / wylogowano) ══════════ -->
+  <sc-if value="{{ isCentered }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:clamp(20px,4vw,52px)">
+      <main data-screen-label="{{ centeredLabel }}" style="width:100%;max-width:440px;background:#F8F1E3;border-radius:22px;padding:clamp(28px,4vw,40px);color:#2A2018;text-align:center;box-shadow:0 30px 70px -30px rgba(0,0,0,0.55);animation:jd-rise 0.4s ease-out">
+        <div style="width:54px;height:54px;margin:0 auto 16px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:{{ ctIconBg }};color:{{ ctIconFg }}"><span aria-hidden="true">{{ ctIcon }}</span></div>
+        <h1 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:28px;line-height:1.12">{{ ctTitle }}</h1>
+        <p style="margin:0 auto 22px;max-width:34ch;font-size:14.5px;line-height:1.6;color:#8C7F6C">{{ ctText }}</p>
+        <sc-if value="{{ ctDestShow }}" hint-placeholder-val="{{ false }}">
+          <div style="margin:0 0 20px;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgba(42,32,24,0.05);font-size:12.5px;color:#6B5D4A">Wrócisz do: <strong style="color:#2A2018">{{ ctDest }}</strong></div>
+        </sc-if>
+        <button onClick="{{ ctPrimaryFn }}" style="width:100%;border:none;border-radius:999px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;background:#C75B38;color:#FFF8EC" style-hover="background:#B04E2E">{{ ctPrimaryLabel }}</button>
+      </main>
+    </div>
+  </sc-if>
+
+  <!-- ══════════ APLIKACJA: KONTO ══════════ -->
+  <sc-if value="{{ isAppView }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="{{ appLabel }}" style="min-height:100vh;display:flex;flex-direction:column">
+      <!-- Nagłówek desktop -->
+      <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+        <header style="border-bottom:1px solid rgba(242,233,216,0.08);padding:20px clamp(20px,4vw,52px) 0">
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px">
+            <div></div>
+            <a href="Jadlify - Strona główna v5.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;color:#F2E9D8">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="#D97E57" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="16" cy="16" r="8.2"/><circle cx="16" cy="16" r="3.4"/><path d="M4.4 10.5v4a1.6 1.6 0 0 0 3.2 0v-4"/><path d="M6 10.5V25"/><path d="M26.6 10.5c-1.7 1.9-1.7 5 0 6.6V25"/></svg>
+              <span style="font-family:'Instrument Serif',serif;font-size:24px;line-height:1">Jadlify</span>
+            </a>
+            <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;position:relative">
+              <button onClick="{{ toggleMenu }}" aria-label="Moje konto" aria-expanded="{{ menuOpen }}" style="display:flex;align-items:center;gap:8px;padding:6px 6px 6px 12px;border-radius:999px;border:1px solid {{ acctBd }};background:{{ acctBg }};color:#F2E9D8;cursor:pointer">
+                <span style="font-size:12.5px;font-weight:600;color:rgba(242,233,216,0.7)">Konto</span>
+                <span style="width:30px;height:30px;border-radius:50%;background:#C75B38;color:#FFF8EC;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">KN</span>
+              </button>
+              <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:calc(100% + 10px);right:0;z-index:60;width:250px;background:#F8F1E3;border-radius:16px;padding:8px;color:#2A2018;box-shadow:0 24px 50px -18px rgba(0,0,0,0.6);animation:jd-rise 0.22s ease-out">
+                  <div style="padding:10px 12px 12px;border-bottom:1px dotted #DCCFB2">
+                    <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:#8C7F6C">ZALOGOWANO JAKO</div>
+                    <div style="margin-top:3px;font-size:13.5px;font-weight:600;word-break:break-all">{{ cEmail }}</div>
+                  </div>
+                  <button onClick="{{ gotoSettings }}" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:none;background:none;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:600;color:#2A2018;cursor:pointer" style-hover="background:rgba(42,32,24,0.06)"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="2.6"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M15.8 4.2l-1.4 1.4M5.6 14.4l-1.4 1.4"/></svg>Ustawienia konta</button>
+                  <button onClick="{{ doSignout }}" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:none;background:none;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:600;color:#B3402E;cursor:pointer" style-hover="background:rgba(179,64,46,0.08)"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 6V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2"/><path d="M8 10h9M14 7l3 3-3 3"/></svg>Wyloguj się</button>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+          <nav style="display:flex;justify-content:center;align-items:center;gap:4px;padding:14px 0 16px;flex-wrap:wrap">
+            <a href="Jadlify - Strona główna v5.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Strona główna</a>
+            <a href="Jadlify - Produkty.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Produkty</a>
+            <a href="Jadlify - Przepisy.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Przepisy</a>
+            <a href="Jadlify - Dzienne cele.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Dzienne cele</a>
+            <a href="Jadlify - Lista zakupów.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Lista zakupów</a>
+          </nav>
+        </header>
+      </sc-if>
+      <!-- Nagłówek mobile -->
+      <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+        <header style="position:sticky;top:0;z-index:30;background:#1F1712;border-bottom:1px solid rgba(242,233,216,0.08)">
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:14px 16px">
+            <button onClick="{{ backToApp }}" aria-label="Wróć" style="justify-self:start;border:none;background:none;color:rgba(242,233,216,0.7);cursor:pointer;padding:6px;display:flex"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 4 6.5 10l6 6"/></svg></button>
+            <a href="Jadlify - Strona główna v5.dc.html" style="display:flex;align-items:center;gap:7px;text-decoration:none;color:#F2E9D8"><svg width="22" height="22" viewBox="0 0 32 32" fill="none" stroke="#D97E57" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="16" cy="16" r="8.2"/><circle cx="16" cy="16" r="3.4"/><path d="M4.4 10.5v4a1.6 1.6 0 0 0 3.2 0v-4"/><path d="M6 10.5V25"/><path d="M26.6 10.5c-1.7 1.9-1.7 5 0 6.6V25"/></svg><span style="font-family:'Instrument Serif',serif;font-size:19px">Jadlify</span></a>
+            <div></div>
+          </div>
+        </header>
+      </sc-if>
+
+      <main style="width:100%;max-width:680px;margin:0 auto;padding:clamp(20px,3vw,34px) clamp(16px,3.4vw,28px) 90px;flex:1">
+
+        <!-- Menu konta (mobile arkusz) — pokaz na desktopie ekran ustawień; na mobile menu jako lista -->
+        <sc-if value="{{ isMenuView }}" hint-placeholder-val="{{ false }}">
+          <h1 style="margin:0 0 4px;font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(26px,4vw,32px)">Konto</h1>
+          <div style="margin-bottom:20px;font-size:13.5px;color:rgba(242,233,216,0.55)">{{ cEmail }}</div>
+          <div style="background:#F8F1E3;border-radius:18px;overflow:hidden;color:#2A2018">
+            <button onClick="{{ gotoSettings }}" style="display:flex;align-items:center;justify-content:space-between;width:100%;border:none;background:none;padding:17px 18px;font-size:15px;font-weight:600;color:#2A2018;cursor:pointer;border-bottom:1px dotted #DCCFB2"><span>Ustawienia konta</span><span aria-hidden="true" style="color:#8C7F6C">→</span></button>
+            <button onClick="{{ doSignout }}" style="display:flex;align-items:center;justify-content:space-between;width:100%;border:none;background:none;padding:17px 18px;font-size:15px;font-weight:600;color:#B3402E;cursor:pointer"><span>Wyloguj się</span><span aria-hidden="true">→</span></button>
+          </div>
+        </sc-if>
+
+        <!-- Ustawienia konta -->
+        <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ true }}">
+          <h1 style="margin:0 0 6px;font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(28px,4vw,36px);line-height:1.05">Ustawienia konta</h1>
+          <p style="margin:0 0 24px;font-size:14.5px;color:rgba(242,233,216,0.55)">Zarządzaj danymi logowania i swoim kontem Jadlify.</p>
+
+          <sc-if value="{{ bShow }}" hint-placeholder-val="{{ false }}">
+            <div role="status" style="margin:0 0 18px;border-radius:14px;padding:13px 16px;background:{{ bBg }};border-left:3px solid {{ bAccent }};color:#2A2018"><div style="font-size:13.5px;font-weight:700;color:{{ bTitleFg }}">{{ bTitle }}</div><div style="margin-top:3px;font-size:13px;color:#6B5D4A">{{ bText }}</div></div>
+          </sc-if>
+
+          <div style="background:#F8F1E3;border-radius:18px;padding:22px;color:#2A2018;margin-bottom:16px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;color:#8C7F6C;margin-bottom:14px">KONTO</div>
+            <div style="display:flex;justify-content:space-between;gap:14px;padding-bottom:13px;border-bottom:1px dotted #DCCFB2"><span style="font-size:14px;color:#8C7F6C">Adres e-mail</span><span style="font-size:14px;font-weight:600;text-align:right;word-break:break-all">{{ cEmail }}</span></div>
+            <div style="display:flex;justify-content:space-between;gap:14px;padding-top:13px"><span style="font-size:14px;color:#8C7F6C">Konto utworzone</span><span style="font-size:14px;font-weight:600">3 marca 2026</span></div>
+          </div>
+
+          <div style="background:#F8F1E3;border-radius:18px;padding:22px;color:#2A2018;margin-bottom:16px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;color:#8C7F6C;margin-bottom:14px">BEZPIECZEŃSTWO</div>
+            <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px">
+              <div><div style="font-size:15px;font-weight:600">Hasło</div><div style="font-size:13px;color:#8C7F6C;margin-top:2px">Zmień hasło do konta.</div></div>
+              <button onClick="{{ openChangePw }}" style="border:1.5px solid #C75B38;background:transparent;color:#C75B38;font-weight:600;font-size:14px;padding:10px 18px;border-radius:999px;cursor:pointer" style-hover="background:rgba(199,91,56,0.08)">Zmień hasło</button>
+            </div>
+            <div style="margin-top:16px;padding-top:16px;border-top:1px dotted #DCCFB2;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px">
+              <div><div style="font-size:15px;font-weight:600">Sesja</div><div style="font-size:13px;color:#8C7F6C;margin-top:2px">Wyloguj się z tego urządzenia.</div></div>
+              <button onClick="{{ doSignout }}" style="border:1.5px solid #D8CCB4;background:transparent;color:#5C5040;font-weight:600;font-size:14px;padding:10px 18px;border-radius:999px;cursor:pointer" style-hover="background:rgba(42,32,24,0.05)">Wyloguj się</button>
+            </div>
+          </div>
+
+          <div style="background:#F8F1E3;border-radius:18px;padding:22px;color:#2A2018;border:1.5px solid rgba(179,64,46,0.35)">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;color:#B3402E;margin-bottom:10px">STREFA NIEODWRACALNA</div>
+            <div style="font-size:15px;font-weight:600">Usuń konto</div>
+            <p style="margin:6px 0 16px;font-size:13.5px;line-height:1.55;color:#8C7F6C">Usunięcie konta trwale usuwa Twoje produkty, przepisy, dzienne cele, plany posiłków i listy zakupów.</p>
+            <button onClick="{{ openDelete }}" style="border:none;background:rgba(179,64,46,0.1);color:#B3402E;font-weight:700;font-size:14px;padding:11px 20px;border-radius:999px;cursor:pointer" style-hover="background:rgba(179,64,46,0.16)">Usuń konto</button>
+          </div>
+        </sc-if>
+
+      </main>
+    </div>
+
+    <!-- Modal: zmiana hasła -->
+    <sc-if value="{{ changePwOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;z-index:80;background:rgba(20,15,11,0.66);display:flex;align-items:center;justify-content:center;padding:20px;animation:jd-fade 0.2s ease-out">
+        <div role="dialog" aria-label="Zmień hasło" style="width:100%;max-width:440px;background:#F8F1E3;border-radius:22px;padding:clamp(24px,4vw,32px);color:#2A2018;box-shadow:0 30px 70px -20px rgba(0,0,0,0.6);animation:jd-rise 0.28s ease-out;max-height:92vh;overflow-y:auto">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px">
+            <h2 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:25px">Zmień hasło</h2>
+            <button onClick="{{ closeModal }}" aria-label="Zamknij" style="border:none;background:rgba(42,32,24,0.06);width:32px;height:32px;border-radius:50%;cursor:pointer;color:#5C5040;font-size:16px">✕</button>
+          </div>
+          <sc-if value="{{ bShow }}" hint-placeholder-val="{{ false }}">
+            <div role="status" style="margin:0 0 16px;border-radius:12px;padding:11px 14px;background:{{ bBg }};border-left:3px solid {{ bAccent }}"><div style="font-size:13px;font-weight:700;color:{{ bTitleFg }}">{{ bTitle }}</div><div style="margin-top:2px;font-size:12.5px;color:#6B5D4A">{{ bText }}</div></div>
+          </sc-if>
+          <form onSubmit="{{ submitChangePw }}">
+            <label style="display:block;font-size:12.5px;font-weight:600;color:#5C5040;margin-bottom:6px" for="cp-cur">Obecne hasło</label>
+            <input id="cp-cur" type="password" autoComplete="current-password" value="{{ vCur }}" onInput="{{ onCur }}" placeholder="Obecne hasło" style="width:100%;padding:12px 14px;border-radius:11px;border:1.5px solid #D8CCB4;background:#FFFDF8;color:#2A2018;outline:none" />
+            <label style="display:block;font-size:12.5px;font-weight:600;color:#5C5040;margin:16px 0 6px" for="cp-new">Nowe hasło</label>
+            <div style="position:relative">
+              <input id="cp-new" type="{{ pwType }}" autoComplete="new-password" value="{{ vPw }}" onInput="{{ onPw }}" placeholder="Nowe hasło" style="width:100%;padding:12px 46px 12px 14px;border-radius:11px;border:1.5px solid {{ pwBd }};background:#FFFDF8;color:#2A2018;outline:none" />
+              <button type="button" onClick="{{ togglePw }}" aria-label="{{ pwToggleAria }}" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);border:none;background:none;padding:8px;cursor:pointer;color:#8C7F6C"><span aria-hidden="true" style="font-size:12px;font-weight:700">{{ pwToggleLabel }}</span></button>
+            </div>
+            <div style="margin-top:10px;background:#FFFDF8;border:1px solid #E7DCC4;border-radius:12px;padding:11px 14px">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <sc-for list="{{ reqs }}" as="r" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:{{ r.fg }};font-weight:{{ r.weight }}"><span aria-hidden="true" style="width:16px;height:16px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;background:{{ r.markBg }};color:{{ r.markFg }}">{{ r.mark }}</span>{{ r.label }}</div></sc-for>
+              </div>
+            </div>
+            <label style="display:block;font-size:12.5px;font-weight:600;color:#5C5040;margin:16px 0 6px" for="cp-new2">Powtórz nowe hasło</label>
+            <input id="cp-new2" type="{{ pw2Type }}" autoComplete="new-password" value="{{ vPw2 }}" onInput="{{ onPw2 }}" placeholder="Powtórz nowe hasło" aria-invalid="{{ pw2Invalid }}" style="width:100%;padding:12px 14px;border-radius:11px;border:1.5px solid {{ pw2Bd }};background:#FFFDF8;color:#2A2018;outline:none" />
+            <sc-if value="{{ ePw2 }}" hint-placeholder-val="{{ false }}"><div role="alert" style="margin-top:6px;font-size:12.5px;color:#B3402E">⚠ {{ ePw2 }}</div></sc-if>
+            <div style="margin-top:14px;font-size:12.5px;line-height:1.5;color:#8C7F6C;background:rgba(42,32,24,0.04);border-radius:10px;padding:10px 12px">Po zmianie hasła wylogujemy pozostałe sesje. Na tym urządzeniu zostaniesz zalogowana.</div>
+            <div style="display:flex;gap:10px;margin-top:18px">
+              <button type="button" onClick="{{ closeModal }}" style="flex:1;border:1.5px solid #D8CCB4;background:transparent;color:#5C5040;font-weight:600;font-size:14.5px;padding:13px;border-radius:999px;cursor:pointer">Anuluj</button>
+              <button type="submit" disabled="{{ busy }}" style="flex:1.4;border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:14.5px;padding:13px;border-radius:999px;cursor:{{ busyCursor }};display:flex;align-items:center;justify-content:center;gap:8px;opacity:{{ busyOpacity }}"><sc-if value="{{ busy }}" hint-placeholder-val="{{ false }}"><span style="width:14px;height:14px;border:2px solid rgba(255,248,236,0.4);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span></sc-if>{{ changePwBtnLabel }}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Modal: usuń konto -->
+    <sc-if value="{{ deleteOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;z-index:80;background:rgba(20,15,11,0.66);display:flex;align-items:center;justify-content:center;padding:20px;animation:jd-fade 0.2s ease-out">
+        <div role="dialog" aria-label="Usuń konto" style="width:100%;max-width:460px;background:#F8F1E3;border-radius:22px;padding:clamp(24px,4vw,32px);color:#2A2018;box-shadow:0 30px 70px -20px rgba(0,0,0,0.6);animation:jd-rise 0.28s ease-out;max-height:92vh;overflow-y:auto">
+          <div style="width:48px;height:48px;margin-bottom:14px;border-radius:50%;background:rgba(179,64,46,0.12);display:flex;align-items:center;justify-content:center;color:#B3402E"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg></div>
+          <h2 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:26px">Usunąć konto na stałe?</h2>
+          <p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:#6B5D4A">Ta operacja jest nieodwracalna. Z konta <strong style="color:#2A2018">{{ cEmail }}</strong> zostaną trwale usunięte:</p>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px">
+            <sc-for list="{{ delItems }}" as="d" hint-placeholder-count="5"><div style="display:flex;align-items:center;gap:9px;font-size:13.5px;color:#5C5040"><span aria-hidden="true" style="color:#B3402E">✕</span>{{ d }}</div></sc-for>
+          </div>
+
+          <sc-if value="{{ bShow }}" hint-placeholder-val="{{ false }}">
+            <div role="status" style="margin:0 0 16px;border-radius:12px;padding:11px 14px;background:{{ bBg }};border-left:3px solid {{ bAccent }}"><div style="font-size:13px;font-weight:700;color:{{ bTitleFg }}">{{ bTitle }}</div><div style="margin-top:2px;font-size:12.5px;color:#6B5D4A">{{ bText }}</div></div>
+          </sc-if>
+
+          <sc-if value="{{ deleteProcessing }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:10px;justify-content:center;padding:18px;font-size:14px;color:#8C7F6C"><span style="width:16px;height:16px;border:2px solid rgba(42,32,24,0.2);border-top-color:#B3402E;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span>Usuwamy Twoje konto i dane…</div>
+          </sc-if>
+          <sc-if value="{{ deleteReady }}" hint-placeholder-val="{{ true }}">
+            <label style="display:block;font-size:13px;font-weight:600;color:#5C5040;margin-bottom:6px" for="del-in">Aby potwierdzić, wpisz <strong style="color:#B3402E">USUŃ</strong></label>
+            <input id="del-in" type="text" value="{{ vDel }}" onInput="{{ onDel }}" placeholder="USUŃ" autoComplete="off" style="width:100%;padding:12px 14px;border-radius:11px;border:1.5px solid #D8CCB4;background:#FFFDF8;color:#2A2018;outline:none;letter-spacing:0.08em" />
+            <div style="display:flex;gap:10px;margin-top:18px">
+              <button type="button" onClick="{{ closeModal }}" style="flex:1.2;border:1.5px solid #D8CCB4;background:transparent;color:#5C5040;font-weight:600;font-size:14.5px;padding:13px;border-radius:999px;cursor:pointer">Anuluj</button>
+              <button type="button" onClick="{{ confirmDelete }}" disabled="{{ delDisabled }}" style="flex:1;border:none;background:{{ delBtnBg }};color:#FFF8EC;font-weight:700;font-size:14.5px;padding:13px;border-radius:999px;cursor:{{ delCursor }};opacity:{{ delOpacity }}">Usuń konto</button>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+  </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1160,&quot;height&quot;:860},&quot;mode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;desktop&quot;,&quot;mobile&quot;],&quot;default&quot;:&quot;desktop&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Podgląd&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;signin_empty&quot;,&quot;register_form&quot;,&quot;confirm_required&quot;,&quot;forgot_form&quot;,&quot;reset_form&quot;,&quot;session_expired&quot;,&quot;app_loading&quot;,&quot;settings&quot;,&quot;account_menu&quot;],&quot;default&quot;:&quot;signin_empty&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Podgląd&quot;},&quot;showRail&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Podgląd&quot;}}">
+class Component extends DCLogic {
+  state = {
+    scn: 'signin_empty',
+    mode: 'desktop',
+    f: { email: '', pw: '', pw2: '', cur: '', del: '', terms: false },
+    show: { pw: false, pw2: false },
+    menuOpen: false,
+    changePwOpen: false,
+    deleteOpen: false,
+    cooldown: 0,
+  };
+
+  SAMPLE = 'kasia.nowak@example.com';
+
+  componentDidMount() {
+    if (this.props.startScreen) this.pick(this.props.startScreen);
+    if (this.props.mode) this.setState({ mode: this.props.mode });
+  }
+
+  pick = (scn) => {
+    const seedEmail = /^(signin_bad|signin_needs_confirm|signin_network|confirm_|reset_form|reset_weak|reset_mismatch|reset_saving|register_success)/.test(scn);
+    const clearEmail = /_empty$/.test(scn) || scn === 'register_form' || scn === 'forgot_form';
+    this.setState((s) => {
+      const f = { ...s.f };
+      if (seedEmail && !f.email) f.email = this.SAMPLE;
+      if (clearEmail) { f.email = ''; f.pw = ''; f.pw2 = ''; f.terms = false; }
+      if (scn === 'reset_form') { f.pw = ''; f.pw2 = ''; }
+      return { scn, f, menuOpen: false, changePwOpen: false, deleteOpen: false, cooldown: 0 };
+    });
+    if (this._cd) { clearInterval(this._cd); this._cd = null; }
+  };
+
+  setMode = (m) => this.setState({ mode: m });
+
+  setField = (k, v) => this.setState((s) => ({ f: { ...s.f, [k]: v } }));
+  onEmail = (e) => this.setField('email', e.target.value);
+  onPw = (e) => this.setField('pw', e.target.value);
+  onPw2 = (e) => this.setField('pw2', e.target.value);
+  onCur = (e) => this.setField('cur', e.target.value);
+  onDel = (e) => this.setField('del', e.target.value);
+  onTerms = (e) => this.setField('terms', e.target.checked);
+  toggleShow = (k) => this.setState((s) => ({ show: { ...s.show, [k]: !s.show[k] } }));
+  togglePw = () => this.toggleShow('pw');
+  togglePw2 = () => this.toggleShow('pw2');
+
+  validEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+  reqList = (pw) => ([
+    { label: 'Co najmniej 8 znaków', ok: pw.length >= 8 },
+    { label: 'Wielką i małą literę', ok: /[a-ząćęłńóśźż]/.test(pw) && /[A-ZĄĆĘŁŃÓŚŹŻ]/.test(pw) },
+    { label: 'Co najmniej jedną cyfrę', ok: /\d/.test(pw) },
+  ]);
+  pwStrong = (pw) => this.reqList(pw).every((r) => r.ok);
+
+  goto = (scn) => () => this.pick(scn);
+  gotoSignin = this.goto('signin_empty');
+  gotoRegister = this.goto('register_form');
+  gotoForgot = this.goto('forgot_form');
+  gotoConfirm = this.goto('confirm_required');
+  gotoSettings = () => this.setState({ scn: 'settings', menuOpen: false });
+  backToApp = () => { window.location.href = 'Jadlify - Strona główna v5.dc.html'; };
+
+  toggleMenu = () => this.setState((s) => ({ menuOpen: !s.menuOpen }));
+  openChangePw = () => this.setState({ changePwOpen: true, scn: 'settings', f: { ...this.state.f, pw: '', pw2: '', cur: '' } });
+  openDelete = () => this.setState({ deleteOpen: true, scn: 'settings', f: { ...this.state.f, del: '' } });
+  closeModal = () => this.setState({ changePwOpen: false, deleteOpen: false, scn: 'settings' });
+
+  busyThen = (loadingScn, nextScn, delay, after) => {
+    this.pick(loadingScn);
+    setTimeout(() => {
+      if (after) after(); else this.setState({ scn: nextScn });
+    }, delay || 1100);
+  };
+
+  submitSignin = (e) => {
+    if (e) e.preventDefault();
+    const { email, pw } = this.state.f;
+    if (!this.validEmail(email)) return this.setState({ scn: 'signin_invalid_email' });
+    if (!pw) return this.setState({ scn: 'signin_missing_pw' });
+    this.setState({ scn: 'signin_loading' });
+    setTimeout(() => {
+      this.setState({ scn: 'signin_success' });
+      setTimeout(() => { window.location.href = 'Jadlify - Strona główna v5.dc.html'; }, 900);
+    }, 1200);
+  };
+
+  submitRegister = (e) => {
+    if (e) e.preventDefault();
+    const { email, pw, pw2, terms } = this.state.f;
+    if (!this.validEmail(email)) return this.setState({ scn: 'register_invalid_email' });
+    if (!this.pwStrong(pw)) return this.setState({ scn: 'register_weak' });
+    if (pw !== pw2) return this.setState({ scn: 'register_mismatch' });
+    if (!terms) return this.setState({ scn: 'register_terms' });
+    this.setState({ scn: 'register_loading' });
+    setTimeout(() => this.setState({ scn: 'register_success' }), 1200);
+  };
+
+  submitForgot = (e) => {
+    if (e) e.preventDefault();
+    const { email } = this.state.f;
+    if (!this.validEmail(email)) return this.setState({ scn: 'forgot_invalid' });
+    this.setState({ scn: 'forgot_loading' });
+    setTimeout(() => this.setState({ scn: 'forgot_success' }), 1200);
+  };
+
+  submitReset = (e) => {
+    if (e) e.preventDefault();
+    const { pw, pw2 } = this.state.f;
+    if (!this.pwStrong(pw)) return this.setState({ scn: 'reset_weak' });
+    if (pw !== pw2) return this.setState({ scn: 'reset_mismatch' });
+    this.setState({ scn: 'reset_saving' });
+    setTimeout(() => this.setState({ scn: 'reset_success' }), 1200);
+  };
+
+  submitChangePw = (e) => {
+    if (e) e.preventDefault();
+    const { pw, pw2 } = this.state.f;
+    if (!this.pwStrong(pw)) return this.setState({ scn: 'cp_weak' });
+    if (pw !== pw2) return this.setState({ scn: 'cp_mismatch' });
+    this.setState({ scn: 'cp_saving' });
+    setTimeout(() => this.setState({ scn: 'cp_success' }), 1200);
+  };
+
+  resend = () => {
+    this.setState({ scn: 'confirm_resent', cooldown: 45 });
+    if (this._cd) clearInterval(this._cd);
+    this._cd = setInterval(() => {
+      this.setState((s) => {
+        const c = s.cooldown - 1;
+        if (c <= 0) { clearInterval(this._cd); this._cd = null; return { cooldown: 0 }; }
+        return { cooldown: c };
+      });
+    }, 1000);
+  };
+
+  confirmDelete = () => {
+    if (this.state.f.del.trim().toUpperCase() !== 'USUŃ') return;
+    this.setState({ scn: 'delete_processing' });
+    setTimeout(() => {
+      this.setState({ deleteOpen: false, scn: 'account_deleted' });
+    }, 1600);
+  };
+
+  doSignout = () => this.setState({ scn: 'signed_out', menuOpen: false });
+
+  componentWillUnmount() { if (this._cd) clearInterval(this._cd); }
+
+  banner(type, title, text, extra) { return { type, title, text, ...(extra || {}) }; }
+
+  renderVals() {
+    const s = this.state;
+    const scn = s.scn;
+    const view = scn.split('_')[0];
+    const isMobile = s.mode === 'mobile';
+
+    // ── scenario map ──
+    const B = this.banner.bind(this);
+    const M = {
+      signin_empty: {},
+      signin_invalid_email: { eEmail: 'Wpisz poprawny adres e-mail.' },
+      signin_missing_pw: { ePw: 'Wpisz hasło.' },
+      signin_bad: { banner: B('error', 'Nie udało się zalogować', 'Adres e-mail lub hasło są nieprawidłowe. Spróbuj ponownie.') },
+      signin_needs_confirm: { banner: B('warning', 'Potwierdź adres e-mail', 'Zanim się zalogujesz, kliknij link w wiadomości, którą wysłaliśmy.', { actionLabel: 'Wyślij wiadomość ponownie', actionFn: this.gotoConfirm }) },
+      signin_loading: { busy: true },
+      signin_network: { banner: B('error', 'Brak połączenia', 'Nie możemy połączyć się z serwerem. Sprawdź internet i spróbuj ponownie.') },
+      signin_success: { busy: true, banner: B('success', 'Zalogowano', 'Przenosimy Cię do planu dnia…') },
+
+      register_form: {},
+      register_invalid_email: { eEmail: 'Wpisz poprawny adres e-mail.' },
+      register_weak: { ehint: true },
+      register_mismatch: { ePw2: 'Hasła nie są takie same.' },
+      register_terms: { eTerms: 'Zaznacz, aby zaakceptować regulamin i politykę prywatności.' },
+      register_inuse: { banner: B('error', 'Ten adres jest już zajęty', 'Konto z tym adresem już istnieje. Zaloguj się lub odzyskaj hasło.', { actionLabel: 'Przejdź do logowania', actionFn: this.gotoSignin }) },
+      register_loading: { busy: true },
+      register_fail: { banner: B('error', 'Nie udało się utworzyć konta', 'Coś poszło nie tak po naszej stronie. Spróbuj ponownie za chwilę.') },
+      register_success: {},
+
+      confirm_required: {},
+      confirm_done: {},
+      confirm_expired: {},
+      confirm_invalid: {},
+      confirm_resent: { banner: B('success', 'Wiadomość wysłana', 'Sprawdź skrzynkę — kolejny e-mail jest już w drodze.') },
+      confirm_resendfail: { banner: B('error', 'Nie udało się wysłać', 'Spróbuj ponownie za chwilę lub napisz do nas: pomoc@jadlify.pl') },
+
+      forgot_form: {},
+      forgot_invalid: { eEmail: 'Wpisz poprawny adres e-mail.' },
+      forgot_loading: { busy: true },
+      forgot_success: {},
+      forgot_network: { banner: B('error', 'Brak połączenia', 'Nie możemy wysłać wiadomości. Sprawdź internet i spróbuj ponownie.') },
+
+      reset_form: {},
+      reset_weak: { ehint: true },
+      reset_mismatch: { ePw2: 'Hasła nie są takie same.' },
+      reset_saving: { busy: true },
+      reset_success: {},
+      reset_expired: {},
+      reset_invalid: {},
+      reset_used: {},
+      reset_server: { banner: B('error', 'Coś poszło nie tak', 'Nie udało się zapisać hasła. Spróbuj ponownie lub poproś o nowy link.') },
+
+      session_expired: {},
+      signed_out: {},
+      account_deleted: {},
+      app_loading: {},
+
+      account_menu: {},
+      settings: {},
+      cp_weak: { ehint: true, cp: true },
+      cp_mismatch: { ePw2: 'Hasła nie są takie same.', cp: true },
+      cp_saving: { busy: true, cp: true },
+      cp_success: { banner: B('success', 'Hasło zmienione', 'Twoje nowe hasło jest już aktywne. Pozostałe sesje zostały wylogowane.'), cp: true },
+      delete_confirm: {},
+      delete_processing: {},
+      delete_fail: { banner: B('error', 'Nie udało się usunąć konta', 'Wystąpił problem po naszej stronie. Twoje konto jest nadal aktywne — spróbuj ponownie.') },
+    };
+    const m = M[scn] || {};
+
+    // ── view routing ──
+    const authViews = ['signin', 'register', 'confirm', 'forgot', 'reset'];
+    let realView = view;
+    if (scn === 'register_success') realView = 'register';
+    if (view === 'cp') realView = 'settings';
+    if (view === 'delete') realView = 'settings';
+    if (scn === 'account_menu') realView = 'account';
+    if (scn === 'account_deleted') realView = 'signed';
+
+    const isAuthShell = authViews.includes(realView);
+    const isSignin = realView === 'signin';
+    const isRegister = realView === 'register';
+    const isConfirm = realView === 'confirm';
+    const isForgot = realView === 'forgot';
+    const isReset = realView === 'reset';
+
+    const isCentered = scn === 'session_expired' || scn === 'signed_out' || scn === 'account_deleted';
+    const isAppLoading = scn === 'app_loading';
+    const isMenuView = scn === 'account_menu';
+    const isSettings = realView === 'settings';
+    const isAppView = isMenuView || isSettings;
+
+    // ── banner colors ──
+    const bt = m.banner;
+    const palette = {
+      error: { bg: 'rgba(179,64,46,0.1)', accent: '#B3402E', title: '#8A2E20' },
+      success: { bg: 'rgba(143,191,106,0.16)', accent: '#6E9A4F', title: '#4F7A3A' },
+      warning: { bg: 'rgba(217,126,87,0.14)', accent: '#D97E57', title: '#B04E2E' },
+      info: { bg: 'rgba(42,32,24,0.06)', accent: '#8C7F6C', title: '#5C5040' },
+    };
+    const bp = bt ? palette[bt.type] : palette.info;
+
+    // ── password field helpers ──
+    const pwType = s.show.pw ? 'text' : 'password';
+    const pw2Type = s.show.pw2 ? 'text' : 'password';
+    const emailErr = !!m.eEmail;
+    const pwErr = !!m.ePw;
+    const pw2Err = !!m.ePw2;
+    const reqs = this.reqList(s.f.pw).map((r) => ({
+      label: r.label,
+      mark: r.ok ? '✓' : '•',
+      markBg: r.ok ? '#6E9A4F' : 'rgba(42,32,24,0.08)',
+      markFg: r.ok ? '#FFF8EC' : '#8C7F6C',
+      fg: r.ok ? '#4F7A3A' : (m.ehint ? '#B3402E' : '#6B5D4A'),
+      weight: r.ok ? 600 : 500,
+    }));
+
+    // ── confirm view content ──
+    const cState = { confirm_required: 'req', confirm_done: 'done', confirm_expired: 'expired', confirm_invalid: 'invalid', confirm_resent: 'req', confirm_resendfail: 'req' }[scn] || 'req';
+    const cMap = {
+      req: { icon: '✉', iconBg: 'rgba(217,126,87,0.16)', iconFg: '#C75B38', title: 'Sprawdź swoją skrzynkę', text: 'Wysłaliśmy wiadomość z linkiem potwierdzającym na adres ' + (s.f.email || this.SAMPLE) + '. Kliknij link, aby aktywować konto.', primaryShow: true, showChange: true },
+      done: { icon: '✓', iconBg: 'rgba(143,191,106,0.18)', iconFg: '#4F7A3A', title: 'Adres potwierdzony', text: 'Twój adres e-mail został potwierdzony. Możesz się teraz zalogować i zacząć planować.', primaryShow: true, showChange: false, primaryLabel: 'Przejdź do logowania', primaryFn: this.gotoSignin },
+      expired: { icon: '⏱', iconBg: 'rgba(179,64,46,0.1)', iconFg: '#B3402E', title: 'Link wygasł', text: 'Ten link potwierdzający stracił ważność. Wyślij nowy, aby dokończyć rejestrację.', primaryShow: true, showChange: true, primaryLabel: 'Wyślij nowy link' },
+      invalid: { icon: '!', iconBg: 'rgba(179,64,46,0.1)', iconFg: '#B3402E', title: 'Nieprawidłowy link', text: 'Nie rozpoznajemy tego linku potwierdzającego. Poproś o nowy lub wróć do logowania.', primaryShow: true, showChange: true, primaryLabel: 'Wyślij nowy link' },
+    };
+    const cv = cMap[cState];
+    const resendDisabled = s.cooldown > 0;
+    const mm = String(Math.floor(s.cooldown / 60));
+    const ss = String(s.cooldown % 60).padStart(2, '0');
+    const resendLabel = resendDisabled ? ('Wyślij ponownie za ' + mm + ':' + ss) : (cv.primaryLabel || 'Wyślij wiadomość ponownie');
+
+    // ── reset bad-link states ──
+    const resetBadMap = {
+      reset_expired: { title: 'Link wygasł', text: 'Ten link do zmiany hasła stracił ważność. Poproś o nowy — wyślemy świeży link na Twój adres.' },
+      reset_invalid: { title: 'Nieprawidłowy link', text: 'Nie rozpoznajemy tego linku. Upewnij się, że otworzyłaś pełny link z wiadomości, albo poproś o nowy.' },
+      reset_used: { title: 'Link został już użyty', text: 'Ten link do zmiany hasła został już wykorzystany. Jeśli to nie Ty, poproś o nowy link.' },
+    };
+    const rb = resetBadMap[scn];
+
+    // ── centered screens ──
+    const centeredMap = {
+      session_expired: { icon: '⏱', iconBg: 'rgba(217,126,87,0.16)', iconFg: '#C75B38', title: 'Twoja sesja wygasła', text: 'Ze względów bezpieczeństwa wylogowaliśmy Cię po okresie nieaktywności. Zaloguj się ponownie, aby kontynuować.', destShow: true, dest: 'Plan posiłków', primaryLabel: 'Zaloguj się', primaryFn: this.gotoSignin },
+      signed_out: { icon: '👋', iconBg: 'rgba(42,32,24,0.06)', iconFg: '#5C5040', title: 'Wylogowano', text: 'Twoje dane są bezpieczne i prywatne. Do zobaczenia przy kolejnym posiłku!', destShow: false, primaryLabel: 'Zaloguj się ponownie', primaryFn: this.gotoSignin },
+      account_deleted: { icon: '✓', iconBg: 'rgba(143,191,106,0.18)', iconFg: '#4F7A3A', title: 'Konto usunięte', text: 'Rozpoczęliśmy usuwanie Twojego konta i danych. Zostałaś wylogowana. Dziękujemy, że korzystałaś z Jadlify.', destShow: false, primaryLabel: 'Wróć do logowania', primaryFn: this.gotoSignin },
+    };
+    const ct = centeredMap[scn] || centeredMap.session_expired;
+
+    // ── rail groups ──
+    const mk = (id, label) => ({ id, label });
+    const rawGroups = [
+      { title: 'LOGOWANIE', items: [mk('signin_empty', 'Pusty formularz'), mk('signin_invalid_email', 'Błędny e-mail'), mk('signin_missing_pw', 'Brak hasła'), mk('signin_bad', 'Błędne dane'), mk('signin_needs_confirm', 'Wymaga potwierdzenia'), mk('signin_loading', 'Ładowanie'), mk('signin_network', 'Błąd sieci'), mk('signin_success', 'Sukces')] },
+      { title: 'REJESTRACJA', items: [mk('register_form', 'Formularz'), mk('register_invalid_email', 'Błędny e-mail'), mk('register_weak', 'Słabe hasło'), mk('register_mismatch', 'Hasła różne'), mk('register_inuse', 'E-mail zajęty'), mk('register_loading', 'Ładowanie'), mk('register_fail', 'Błąd rejestracji'), mk('register_success', 'Sukces')] },
+      { title: 'POTWIERDZENIE E-MAIL', items: [mk('confirm_required', 'Wymagane'), mk('confirm_resent', 'Wysłano ponownie'), mk('confirm_resendfail', 'Błąd wysyłki'), mk('confirm_done', 'Potwierdzone'), mk('confirm_expired', 'Link wygasł'), mk('confirm_invalid', 'Link błędny')] },
+      { title: 'ODZYSKIWANIE HASŁA', items: [mk('forgot_form', 'Formularz'), mk('forgot_success', 'Sukces (ogólny)'), mk('forgot_invalid', 'Błędny e-mail'), mk('forgot_network', 'Błąd sieci')] },
+      { title: 'RESET HASŁA', items: [mk('reset_form', 'Formularz'), mk('reset_weak', 'Słabe hasło'), mk('reset_mismatch', 'Hasła różne'), mk('reset_success', 'Sukces'), mk('reset_expired', 'Link wygasł'), mk('reset_invalid', 'Link błędny'), mk('reset_used', 'Link użyty'), mk('reset_server', 'Błąd serwera')] },
+      { title: 'SESJA I APLIKACJA', items: [mk('app_loading', 'Przywracanie sesji'), mk('session_expired', 'Sesja wygasła'), mk('signed_out', 'Wylogowano')] },
+      { title: 'KONTO', items: [mk('account_menu', 'Menu konta'), mk('settings', 'Ustawienia konta'), mk('cp_weak', 'Zmiana hasła'), mk('cp_success', 'Hasło zmienione'), mk('delete_confirm', 'Usuń konto'), mk('delete_processing', 'Usuwanie…'), mk('delete_fail', 'Błąd usuwania'), mk('account_deleted', 'Konto usunięte')] },
+    ];
+    const groups = rawGroups.map((g) => ({
+      title: g.title,
+      items: g.items.map((it) => {
+        const active = it.id === scn;
+        return {
+          label: it.label,
+          pick: () => this.pick(it.id),
+          bg: active ? 'rgba(217,126,87,0.2)' : 'transparent',
+          fg: active ? '#F2E9D8' : 'rgba(242,233,216,0.62)',
+          weight: active ? 700 : 500,
+          dot: active ? '#D97E57' : 'rgba(242,233,216,0.22)',
+        };
+      }),
+    }));
+
+    // ── mode-dependent layout ──
+    const cEmail = s.f.email || this.SAMPLE;
+
+    // handle modal open flags derived from scenario for rail control
+    const changePwOpen = s.changePwOpen || m.cp === true;
+    const deleteOpen = s.deleteOpen || scn === 'delete_confirm' || scn === 'delete_processing' || scn === 'delete_fail';
+    const deleteProcessing = scn === 'delete_processing';
+    const deleteReady = !deleteProcessing;
+    const delOk = s.f.del.trim().toUpperCase() === 'USUŃ';
+
+    const railShow = this.props.showRail ?? true;
+
+    return {
+      railShow,
+      pageShift: (railShow && !isMobile) ? 'padding-left:250px' : (railShow ? 'padding-left:0' : ''),
+      groups,
+      setDesktop: () => this.setMode('desktop'),
+      setMobile: () => this.setMode('mobile'),
+      dtBg: !isMobile ? '#C75B38' : 'transparent', dtFg: !isMobile ? '#FFF8EC' : 'rgba(242,233,216,0.7)',
+      mtBg: isMobile ? '#C75B38' : 'transparent', mtFg: isMobile ? '#FFF8EC' : 'rgba(242,233,216,0.7)',
+
+      isDesktop: !isMobile, isMobile,
+      isAppLoading, isAuthShell, isCentered, isAppView,
+      isSignin, isRegister, isConfirm, isForgot, isReset,
+
+      // shell layout
+      shellMax: isMobile ? '430px' : (isAuthShell ? '960px' : '430px'),
+      shellDir: isMobile ? 'column' : 'row',
+      brandFlex: isMobile ? '0 0 auto' : '1 1 0',
+      brandAlign: isMobile ? 'auto' : 'center',
+      brandMax: isMobile ? '100%' : '400px',
+      brandTextAlign: isMobile ? 'center' : 'left',
+      statementSize: isMobile ? '22px' : 'clamp(26px,2.6vw,34px)',
+      statementMargin: isMobile ? '14px auto 0' : '20px 0 0',
+      cardMax: isMobile ? '430px' : '420px',
+
+      // form state
+      vEmail: s.f.email, vPw: s.f.pw, vPw2: s.f.pw2, vCur: s.f.cur, vDel: s.f.del,
+      vTerms: s.f.terms,
+      onEmail: this.onEmail, onPw: this.onPw, onPw2: this.onPw2, onCur: this.onCur, onDel: this.onDel, onTerms: this.onTerms,
+      pwType, pw2Type,
+      togglePw: this.togglePw, togglePw2: this.togglePw2,
+      pwToggleLabel: s.show.pw ? 'Ukryj' : 'Pokaż',
+      pw2ToggleLabel: s.show.pw2 ? 'Ukryj' : 'Pokaż',
+      pwToggleAria: s.show.pw ? 'Ukryj hasło' : 'Pokaż hasło',
+      pw2ToggleAria: s.show.pw2 ? 'Ukryj hasło' : 'Pokaż hasło',
+
+      eEmail: m.eEmail || '', ePw: m.ePw || '', ePw2: m.ePw2 || '', eTerms: m.eTerms || '',
+      emailInvalid: emailErr, pwInvalid: pwErr, pw2Invalid: pw2Err,
+      emailBd: emailErr ? '#B3402E' : '#D8CCB4',
+      pwBd: pwErr ? '#B3402E' : '#D8CCB4',
+      pw2Bd: pw2Err ? '#B3402E' : '#D8CCB4',
+      reqs,
+
+      // banner
+      bShow: !!bt, bBg: bp.bg, bAccent: bp.accent, bTitleFg: bp.title,
+      bTitle: bt ? bt.title : '', bText: bt ? bt.text : '',
+      bAction: !!(bt && bt.actionLabel), bActionLabel: bt ? (bt.actionLabel || '') : '', bActionFn: bt && bt.actionFn ? bt.actionFn : () => {},
+
+      // busy
+      busy: !!m.busy,
+      busyCursor: m.busy ? 'progress' : 'pointer',
+      busyOpacity: m.busy ? 0.85 : 1,
+      signinBtnLabel: scn === 'signin_success' ? 'Zalogowano' : (m.busy ? 'Logowanie…' : 'Zaloguj się'),
+      registerBtnLabel: m.busy ? 'Tworzenie konta…' : 'Utwórz konto',
+      forgotBtnLabel: m.busy ? 'Wysyłanie…' : 'Wyślij link do zmiany hasła',
+      resetBtnLabel: m.busy ? 'Zapisywanie…' : 'Ustaw nowe hasło',
+      changePwBtnLabel: m.busy ? 'Zapisywanie…' : 'Zapisz hasło',
+
+      // handlers
+      submitSignin: this.submitSignin, submitRegister: this.submitRegister,
+      submitForgot: this.submitForgot, submitReset: this.submitReset,
+      submitChangePw: this.submitChangePw, confirmDelete: this.confirmDelete,
+      gotoSignin: this.gotoSignin, gotoRegister: this.gotoRegister, gotoForgot: this.gotoForgot, gotoConfirm: this.gotoConfirm,
+      gotoSettings: this.gotoSettings, backToApp: this.backToApp,
+      toggleMenu: this.toggleMenu, openChangePw: this.openChangePw, openDelete: this.openDelete, closeModal: this.closeModal,
+      doSignout: this.doSignout,
+
+      // register
+      regSuccess: scn === 'register_success',
+      regForm: scn !== 'register_success',
+
+      // confirm
+      cIconEl: cv.icon, cIconBg: cv.iconBg, cIconFg: cv.iconFg,
+      cTitle: cv.title, cText: cv.text,
+      cPrimaryShow: cv.primaryShow,
+      cShowChange: cv.showChange,
+      cPrimaryLabel: cState === 'req' ? resendLabel : (cv.primaryLabel || resendLabel),
+      cPrimaryFn: cv.primaryFn || this.resend,
+      resendDisabled: cState === 'req' ? resendDisabled : false,
+      resendCursor: (cState === 'req' && resendDisabled) ? 'not-allowed' : 'pointer',
+      resendOpacity: (cState === 'req' && resendDisabled) ? 0.55 : 1,
+
+      // forgot
+      forgotSuccess: scn === 'forgot_success',
+      forgotForm: scn !== 'forgot_success',
+
+      // reset
+      resetForm: scn === 'reset_form' || scn === 'reset_weak' || scn === 'reset_mismatch' || scn === 'reset_saving' || scn === 'reset_server',
+      resetSuccess: scn === 'reset_success',
+      resetBad: !!rb,
+      resetBadTitle: rb ? rb.title : '', resetBadText: rb ? rb.text : '',
+
+      cEmail,
+
+      // centered
+      centeredLabel: ct.title,
+      ctIcon: ct.icon, ctIconBg: ct.iconBg, ctIconFg: ct.iconFg,
+      ctTitle: ct.title, ctText: ct.text,
+      ctDestShow: ct.destShow, ctDest: ct.dest || '',
+      ctPrimaryLabel: ct.primaryLabel, ctPrimaryFn: ct.primaryFn,
+
+      // app views
+      appLabel: isMenuView ? 'Menu konta' : 'Ustawienia konta',
+      isMenuView, isSettings,
+      menuOpen: s.menuOpen,
+      acctBd: s.menuOpen ? 'rgba(242,233,216,0.3)' : 'rgba(242,233,216,0.16)',
+      acctBg: s.menuOpen ? 'rgba(242,233,216,0.08)' : 'transparent',
+
+      // modals
+      changePwOpen,
+      deleteOpen,
+      deleteProcessing, deleteReady,
+      delItems: ['Wszystkie produkty', 'Wszystkie przepisy', 'Dzienne cele kalorii i makro', 'Plany posiłków', 'Listy zakupów'],
+      delDisabled: !delOk,
+      delBtnBg: delOk ? '#B3402E' : 'rgba(179,64,46,0.4)',
+      delCursor: delOk ? 'pointer' : 'not-allowed',
+      delOpacity: delOk ? 1 : 0.7,
+    };
+  }
+}
+</script>
+</body>
+</html>

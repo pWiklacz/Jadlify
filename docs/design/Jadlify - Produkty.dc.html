@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Archivo:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: #1F1712; }
+  button, select, input { font: inherit; }
+  a { color: #D97E57; }
+  a:hover { color: #C75B38; }
+  @keyframes jd-pulse { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+  @keyframes jd-spin { to { transform: rotate(360deg); } }
+  @keyframes jd-toast { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  @keyframes jd-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</helmet>
+<div data-screen-label="Produkty Jadlify" style="min-height:100vh;background:radial-gradient(1100px 500px at 50% -120px,#2C2015 0%,#1F1712 70%);font-family:'Archivo',system-ui,sans-serif;color:#F2E9D8;display:flex;flex-direction:column">
+
+  <!-- ── Nagłówek: desktop ───────────────────────────── -->
+  <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+    <header style="border-bottom:1px solid rgba(242,233,216,0.08);padding:20px clamp(20px,4vw,52px) 0">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px">
+        <div style="display:flex;justify-content:flex-start">
+          <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;border:1px solid rgba(242,233,216,0.16);font-size:11px;font-weight:700;letter-spacing:0.12em;color:{{ statusFg }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ statusDot }}"></span>{{ statusLabel }}</span>
+        </div>
+        <a href="Jadlify - Strona główna v5.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;color:#F2E9D8">
+          <svg width="34" height="34" viewBox="0 0 32 32" fill="none" stroke="#D97E57" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="16" cy="16" r="8.2"></circle>
+            <circle cx="16" cy="16" r="3.4"></circle>
+            <path d="M4.4 10.5v4a1.6 1.6 0 0 0 3.2 0v-4"></path>
+            <path d="M6 10.5V25"></path>
+            <path d="M26.6 10.5c-1.7 1.9-1.7 5 0 6.6V25"></path>
+          </svg>
+          <span style="font-family:'Instrument Serif',serif;font-size:26px;line-height:1;letter-spacing:0.01em">Jadlify</span>
+          <span style="font-size:9px;font-weight:700;letter-spacing:0.26em;color:rgba(242,233,216,0.45)">PLANER POSIŁKÓW I MAKRO</span>
+        </a>
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px">
+          <a href="#" onClick="{{ goKonto }}" aria-label="Moje konto" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid rgba(242,233,216,0.16);color:rgba(242,233,216,0.75);text-decoration:none" style-hover="background:rgba(242,233,216,0.08);color:#F2E9D8">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"></circle><path d="M4.5 17c0-3 2.5-4.6 5.5-4.6s5.5 1.6 5.5 4.6"></path></svg></a>
+          <a href="#" onClick="{{ goWyloguj }}" style="font-size:13px;font-weight:600;color:rgba(242,233,216,0.55);text-decoration:none;padding:8px 4px" style-hover="color:#F2E9D8">Wyloguj</a>
+        </div>
+      </div>
+      <nav style="display:flex;justify-content:center;align-items:center;gap:4px;padding:14px 0 16px;flex-wrap:wrap">
+        <a href="Jadlify - Strona główna v5.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Strona główna</a>
+        <a href="#" onClick="{{ goProdukty }}" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:600;color:#F2E9D8;background:rgba(242,233,216,0.1);text-decoration:none">Produkty</a>
+        <a href="Jadlify - Przepisy.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Przepisy</a>
+        <a href="#" onClick="{{ goPlan }}" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Plan posiłków</a>
+        <a href="#" onClick="{{ goCele }}" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Dzienne cele</a>
+        <a href="Jadlify - Lista zakupów.dc.html" style="padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;color:rgba(242,233,216,0.6);text-decoration:none" style-hover="color:#F2E9D8;background:rgba(242,233,216,0.06)">Lista zakupów</a>
+      </nav>
+    </header>
+  </sc-if>
+
+  <!-- ── Nagłówek: mobile ────────────────────────────── -->
+  <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+    <header style="background:#1F1712;border-bottom:1px solid rgba(242,233,216,0.08)">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:12px 16px 6px">
+        <div></div>
+        <a href="Jadlify - Strona główna v5.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;color:#F2E9D8">
+          <svg width="26" height="26" viewBox="0 0 32 32" fill="none" stroke="#D97E57" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="16" cy="16" r="8.2"></circle>
+            <circle cx="16" cy="16" r="3.4"></circle>
+            <path d="M4.4 10.5v4a1.6 1.6 0 0 0 3.2 0v-4"></path>
+            <path d="M6 10.5V25"></path>
+            <path d="M26.6 10.5c-1.7 1.9-1.7 5 0 6.6V25"></path>
+          </svg>
+          <span style="font-family:'Instrument Serif',serif;font-size:20px;line-height:1">Jadlify</span>
+        </a>
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:6px">
+          <a href="#" onClick="{{ goKonto }}" aria-label="Moje konto" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid rgba(242,233,216,0.16);color:rgba(242,233,216,0.75);text-decoration:none">
+            <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"></circle><path d="M4.5 17c0-3 2.5-4.6 5.5-4.6s5.5 1.6 5.5 4.6"></path></svg></a>
+          <a href="#" onClick="{{ goWyloguj }}" style="font-size:12.5px;font-weight:600;color:rgba(242,233,216,0.55);text-decoration:none;padding:8px 2px">Wyloguj</a>
+        </div>
+      </div>
+      <nav style="display:flex;gap:6px;overflow-x:auto;padding:6px 16px 12px;justify-content:safe center">
+        <a href="Jadlify - Strona główna v5.dc.html" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Strona główna</a>
+        <a href="#" onClick="{{ goProdukty }}" style="flex:none;padding:7px 13px;border-radius:999px;background:rgba(242,233,216,0.12);color:#F2E9D8;text-decoration:none;font-size:13px;font-weight:600">Produkty</a>
+        <a href="Jadlify - Przepisy.dc.html" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Przepisy</a>
+        <a href="#" onClick="{{ goPlan }}" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Plan posiłków</a>
+        <a href="#" onClick="{{ goCele }}" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Dzienne cele</a>
+        <a href="Jadlify - Lista zakupów.dc.html" style="flex:none;padding:7px 13px;border-radius:999px;color:rgba(242,233,216,0.6);text-decoration:none;font-size:13px;font-weight:500">Lista zakupów</a>
+      </nav>
+    </header>
+  </sc-if>
+
+  <main style="width:100%;max-width:1140px;margin:0 auto;padding:clamp(18px,3vw,32px) clamp(16px,3.4vw,44px) 130px">
+
+    <!-- ── Ładowanie ──────────────────────────────────── -->
+    <sc-if value="{{ showLoading }}" hint-placeholder-val="{{ false }}">
+      <div aria-label="Ładowanie produktów">
+        <div style="height:44px;width:min(300px,60%);border-radius:12px;background:rgba(242,233,216,0.07);animation:jd-pulse 1.4s ease-in-out infinite"></div>
+        <div style="height:46px;width:min(520px,100%);border-radius:999px;background:rgba(242,233,216,0.06);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.1s;margin-top:20px"></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-top:18px">
+          <div style="height:180px;border-radius:18px;background:rgba(242,233,216,0.07);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.15s"></div>
+          <div style="height:180px;border-radius:18px;background:rgba(242,233,216,0.06);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.3s"></div>
+          <div style="height:180px;border-radius:18px;background:rgba(242,233,216,0.06);animation:jd-pulse 1.4s ease-in-out infinite;animation-delay:0.45s"></div>
+        </div>
+        <div style="margin-top:18px;font-size:13.5px;color:rgba(242,233,216,0.5);display:flex;align-items:center;gap:9px">
+          <span style="width:14px;height:14px;border:2px solid rgba(242,233,216,0.25);border-top-color:#D97E57;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span>
+          Wczytujemy Twoje produkty…
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ── Błąd pobierania ────────────────────────────── -->
+    <sc-if value="{{ showError }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Błąd pobierania produktów" style="max-width:520px;margin:40px auto;background:#F8F1E3;border-radius:20px;padding:32px;text-align:center;color:#2A2018;animation:jd-rise 0.4s ease-out">
+        <div style="width:46px;height:46px;margin:0 auto 14px;border-radius:50%;background:rgba(179,64,46,0.1);display:flex;align-items:center;justify-content:center;color:#B3402E">
+          <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 18 17H2z"></path><path d="M10 8.5v3.5"></path><circle cx="10" cy="14.4" r="0.5" fill="currentColor"></circle></svg>
+        </div>
+        <h2 style="margin:0 0 6px;font-family:'Instrument Serif',serif;font-weight:400;font-size:24px">Nie udało się pobrać produktów</h2>
+        <p style="margin:0 0 20px;font-size:14.5px;line-height:1.55;color:#8C7F6C">Wystąpił problem z połączeniem. Twój katalog jest bezpieczny — spróbuj ponownie.</p>
+        <button onClick="{{ retryLoad }}" style="border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:14.5px;padding:12px 24px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">Wczytaj ponownie</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showContent }}" hint-placeholder-val="{{ true }}">
+
+      <!-- ════════ EKRAN: INDEKS PRODUKTÓW ════════ -->
+      <sc-if value="{{ scrIndex }}" hint-placeholder-val="{{ true }}">
+        <section data-screen-label="Indeks produktów">
+          <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 20px;margin:0 0 20px">
+            <div style="min-width:230px">
+              <h1 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(30px,3.4vw,40px);line-height:1.05">Produkty</h1>
+              <div style="margin-top:5px;font-size:14px;color:rgba(242,233,216,0.55);max-width:560px;line-height:1.5">Twój prywatny katalog produktów z wartościami odżywczymi <b style="color:rgba(242,233,216,0.75)">na 100 g</b> — z nich budujesz przepisy, a kategorie porządkują listę zakupów.</div>
+            </div>
+            <div style="flex:1"></div>
+            <sc-if value="{{ idxCtaShow }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ startCreate }}" style="display:flex;align-items:center;gap:8px;border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:14px;padding:12px 22px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 4v12M4 10h12"></path></svg>
+                Dodaj produkt</button>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ toolbarShow }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 12px">
+              <div style="flex:1 1 260px;min-width:220px;position:relative">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="rgba(242,233,216,0.45)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="position:absolute;left:15px;top:50%;transform:translateY(-50%);pointer-events:none"><circle cx="9" cy="9" r="5.5"></circle><path d="m13.5 13.5 3.5 3.5"></path></svg>
+                <input type="text" value="{{ searchVal }}" onChange="{{ onSearch }}" placeholder="Szukaj po nazwie lub kodzie kreskowym…" aria-label="Szukaj produktu po nazwie lub kodzie kreskowym" style="width:100%;min-height:46px;border:1px solid rgba(242,233,216,0.16);background:rgba(242,233,216,0.06);border-radius:999px;padding:10px 48px 10px 40px;font-size:14px;color:#F2E9D8;outline:none" style-focus="border:1.5px solid #D97E57">
+                <sc-if value="{{ searchHasText }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ clearSearch }}" aria-label="Wyczyść wyszukiwanie" title="Wyczyść wyszukiwanie" style="position:absolute;right:5px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:none;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(242,233,216,0.6)" style-hover="background:rgba(242,233,216,0.1);color:#F2E9D8">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"></path></svg></button>
+                </sc-if>
+              </div>
+              <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:rgba(242,233,216,0.55)">Kategoria:
+                <select value="{{ catVal }}" onChange="{{ onCat }}" style="min-height:44px;max-width:210px;border:1px solid rgba(242,233,216,0.16);background:rgba(242,233,216,0.06);color:#F2E9D8;border-radius:999px;padding:8px 14px;font-size:13.5px;cursor:pointer;outline:none">
+                  <option value="all" style="color:#2A2018">Wszystkie</option>
+                  <option value="warzywa" style="color:#2A2018">Warzywa</option>
+                  <option value="owoce" style="color:#2A2018">Owoce</option>
+                  <option value="mieso" style="color:#2A2018">Mięso i ryby</option>
+                  <option value="nabial" style="color:#2A2018">Nabiał</option>
+                  <option value="zbozowe" style="color:#2A2018">Produkty zbożowe i pieczywo</option>
+                  <option value="sypkie" style="color:#2A2018">Produkty sypkie i spiżarnia</option>
+                  <option value="mrozonki" style="color:#2A2018">Mrożonki</option>
+                  <option value="napoje" style="color:#2A2018">Napoje</option>
+                  <option value="inne" style="color:#2A2018">Inne</option>
+                  <option value="none" style="color:#2A2018">Bez kategorii</option>
+                </select>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:rgba(242,233,216,0.55)">Sortuj:
+                <select value="{{ sortVal }}" onChange="{{ onSort }}" style="min-height:44px;border:1px solid rgba(242,233,216,0.16);background:rgba(242,233,216,0.06);color:#F2E9D8;border-radius:999px;padding:8px 14px;font-size:13.5px;cursor:pointer;outline:none">
+                  <option value="updated" style="color:#2A2018">Ostatnio aktualizowane</option>
+                  <option value="alpha" style="color:#2A2018">Alfabetycznie (A–Z)</option>
+                  <option value="kcal" style="color:#2A2018">Kalorie na 100 g (rosnąco)</option>
+                  <option value="cat" style="color:#2A2018">Według kategorii</option>
+                </select>
+              </label>
+              <span style="font-size:13px;color:rgba(242,233,216,0.55);font-variant-numeric:tabular-nums">{{ countLabel }}</span>
+            </div>
+
+            <sc-if value="{{ filtersActive }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 16px">
+                <span style="font-size:12px;font-weight:700;letter-spacing:0.1em;color:rgba(242,233,216,0.45)">FILTRY:</span>
+                <sc-if value="{{ filterSearchShow }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ clearSearch }}" title="Usuń filtr wyszukiwania" style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(217,126,87,0.5);background:rgba(217,126,87,0.12);color:#E8A480;font-size:12.5px;font-weight:600;min-height:36px;padding:6px 12px;border-radius:999px;cursor:pointer" style-hover="background:rgba(217,126,87,0.2)">{{ filterSearchLabel }}
+                    <svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"></path></svg></button>
+                </sc-if>
+                <sc-if value="{{ filterCatShow }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ clearCat }}" title="Usuń filtr kategorii" style="display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(217,126,87,0.5);background:rgba(217,126,87,0.12);color:#E8A480;font-size:12.5px;font-weight:600;min-height:36px;padding:6px 12px;border-radius:999px;cursor:pointer" style-hover="background:rgba(217,126,87,0.2)">{{ filterCatLabel }}
+                    <svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"></path></svg></button>
+                </sc-if>
+                <button onClick="{{ clearAll }}" style="border:none;background:transparent;color:rgba(242,233,216,0.55);font-size:12.5px;font-weight:600;min-height:36px;padding:6px 8px;cursor:pointer;text-decoration:underline;text-underline-offset:3px" style-hover="color:#F2E9D8">Wyczyść wszystko</button>
+              </div>
+            </sc-if>
+          </sc-if>
+
+          <!-- Pusty katalog -->
+          <sc-if value="{{ idxEmpty }}" hint-placeholder-val="{{ false }}">
+            <div data-screen-label="Pusty katalog produktów" style="max-width:560px;margin:28px auto 0;background:#F8F1E3;border-radius:22px;padding:clamp(26px,4vw,40px);text-align:center;color:#2A2018;animation:jd-rise 0.4s ease-out">
+              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#C75B38" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 0 12px" aria-hidden="true"><path d="M5 8h14l-1.2 12a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z"></path><path d="M8.5 10V6.5a3.5 3.5 0 0 1 7 0V10"></path></svg>
+              <h2 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:26px">Twój katalog jest jeszcze pusty</h2>
+              <p style="margin:0 auto 22px;max-width:440px;font-size:14.5px;line-height:1.6;color:#8C7F6C">Produkty to podstawa Jadlify — z ich wartości na 100 g budujesz przepisy i liczysz makro. Dodaj pierwszy produkt: wpisz dane ręcznie albo wklej kod kreskowy z opakowania, a spróbujemy pobrać dane za Ciebie.</p>
+              <button onClick="{{ startCreate }}" style="border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:15px;min-height:48px;padding:13px 26px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">Dodaj pierwszy produkt</button>
+              <div style="margin-top:14px;font-size:12.5px;color:#8C7F6C">Kod kreskowy jest opcjonalny — zawsze możesz uzupełnić wszystko ręcznie.</div>
+            </div>
+          </sc-if>
+
+          <!-- Brak wyników -->
+          <sc-if value="{{ idxNoMatch }}" hint-placeholder-val="{{ false }}">
+            <div data-screen-label="Brak pasujących produktów" style="max-width:520px;margin:24px auto 0;background:#F8F1E3;border:1.5px dashed #DCCFB2;border-radius:18px;padding:28px 24px;text-align:center;color:#2A2018">
+              <svg width="26" height="26" viewBox="0 0 20 20" fill="none" stroke="#A79A83" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" style="margin:0 0 8px"><circle cx="9" cy="9" r="5.5"></circle><path d="m13.5 13.5 3.5 3.5"></path><path d="M7 9h4"></path></svg>
+              <div style="font-weight:700;font-size:15px">{{ noMatchLabel }}</div>
+              <p style="margin:4px auto 14px;max-width:380px;font-size:13.5px;line-height:1.5;color:#6E6250">Sprawdź pisownię lub kod, zmień kategorię albo wyczyść filtry, aby zobaczyć wszystkie produkty.</p>
+              <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px">
+                <button onClick="{{ clearAll }}" style="border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:13.5px;min-height:44px;padding:10px 18px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Wyczyść wyszukiwanie i filtry</button>
+                <button onClick="{{ startCreate }}" style="border:none;background:#2A2018;color:#F8F1E3;font-weight:600;font-size:13.5px;min-height:44px;padding:10px 20px;border-radius:999px;cursor:pointer" style-hover="background:#1F1712">Dodaj nowy produkt</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- Siatka produktów -->
+          <sc-if value="{{ idxGridShow }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px">
+              <sc-for list="{{ prodCards }}" as="pc" hint-placeholder-count="6">
+                <div onClick="{{ pc.open }}" style="background:#F8F1E3;border-radius:18px;padding:18px 18px 12px;color:#2A2018;display:flex;flex-direction:column;gap:8px;cursor:pointer;border:1px solid rgba(0,0,0,0.05);animation:jd-rise 0.35s ease-out" style-hover="box-shadow:0 16px 36px rgba(0,0,0,0.32)">
+                  <div style="display:flex;align-items:flex-start;gap:8px">
+                    <button onClick="{{ pc.open }}" style="border:none;background:transparent;padding:0;text-align:left;cursor:pointer;flex:1 1 auto;min-width:0">
+                      <span style="display:block;font-family:'Instrument Serif',serif;font-size:21px;line-height:1.18;color:#2A2018;overflow-wrap:anywhere">{{ pc.name }}</span>
+                    </button>
+                    <sc-if value="{{ pc.bcShow }}" hint-placeholder-val="{{ false }}">
+                      <span title="Produkt ma zapisany kod kreskowy" aria-label="Produkt ma zapisany kod kreskowy" style="flex:none;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#EFE5D2;color:#6E6250">
+                        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M3.5 5v10M6.5 5v10M9 5v10M12 5v10M14.5 5v10M16.5 5v10"></path></svg>
+                      </span>
+                    </sc-if>
+                  </div>
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px">
+                    <sc-if value="{{ pc.catShow }}" hint-placeholder-val="{{ true }}">
+                      <span style="font-size:10px;font-weight:700;letter-spacing:0.1em;padding:4px 10px;border-radius:999px;background:rgba(95,124,78,0.12);color:#4C6340;border:1px solid rgba(95,124,78,0.3)">{{ pc.catLabel }}</span>
+                    </sc-if>
+                    <sc-if value="{{ pc.catNone }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size:10px;font-weight:700;letter-spacing:0.1em;padding:4px 10px;border-radius:999px;background:#EFE5D2;color:#8C7F6C;border:1px solid #E5DAC3">BEZ KATEGORII</span>
+                    </sc-if>
+                    <sc-if value="{{ pc.brandShow }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size:12px;color:#8C7F6C">{{ pc.brand }}</span>
+                    </sc-if>
+                  </div>
+                  <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:2px">
+                    <span style="font-family:'Instrument Serif',serif;font-size:30px;line-height:1;font-variant-numeric:tabular-nums">{{ pc.kcal }}</span>
+                    <span style="font-size:11px;font-weight:700;letter-spacing:0.1em;color:#8C7F6C">KCAL / 100 G</span>
+                  </div>
+                  <div style="font-size:13px;color:#5C5140;font-variant-numeric:tabular-nums">{{ pc.macroLine }} <span style="color:#A79A83">/ 100 g</span></div>
+                  <div style="display:flex;align-items:center;gap:2px;border-top:1px dotted #DCCFB2;padding-top:6px;margin-top:2px">
+                    <span style="font-size:12.5px;color:#8C7F6C">{{ pc.updated }}</span>
+                    <span style="flex:1"></span>
+                    <button onClick="{{ pc.edit }}" aria-label="Edytuj produkt {{ pc.name }}" title="Edytuj" style="width:40px;height:40px;border:none;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C7F6C" style-hover="background:#EFE5D2;color:#2A2018">
+                      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13.7 13 4.7l2.3 2.3-9 9L3 17z"></path><path d="M11.5 6.2l2.3 2.3"></path></svg></button>
+                    <button onClick="{{ pc.del }}" aria-label="Usuń produkt {{ pc.name }}" title="Usuń" style="width:40px;height:40px;border:none;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C7F6C" style-hover="background:rgba(179,64,46,0.1);color:#B3402E">
+                      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12"></path><path d="M8 6V4.5h4V6"></path><path d="M6 6l1 10.5h6L14 6"></path><path d="M9 9v4.5M11 9v4.5"></path></svg></button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </section>
+      </sc-if>
+
+      <!-- ════════ EKRAN: SZCZEGÓŁY PRODUKTU ════════ -->
+      <sc-if value="{{ scrDetails }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Szczegóły produktu">
+          <button onClick="{{ backToIndex }}" style="display:inline-flex;align-items:center;gap:7px;border:none;background:transparent;color:rgba(242,233,216,0.6);font-size:13px;font-weight:600;padding:8px 4px;cursor:pointer;margin:0 0 8px" style-hover="color:#F2E9D8">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 4 6.5 10l6 6"></path></svg>
+            Wszystkie produkty</button>
+
+          <section aria-label="Nagłówek produktu" style="background:#F8F1E3;border-radius:22px;padding:clamp(20px,3vw,28px);color:#2A2018;animation:jd-rise 0.35s ease-out">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px">
+              <span style="font-size:10.5px;font-weight:700;letter-spacing:0.16em;padding:5px 12px;border-radius:999px;background:rgba(217,126,87,0.14);color:#C75B38;border:1px solid rgba(199,91,56,0.35)">PRODUKT</span>
+              <div style="flex:1"></div>
+              <span style="font-size:12.5px;color:#8C7F6C">{{ detUpdated }}</span>
+            </div>
+            <h1 style="margin:12px 0 4px;font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(26px,3.2vw,36px);line-height:1.1;overflow-wrap:anywhere">{{ detName }}</h1>
+            <sc-if value="{{ detBrandShow }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:13.5px;color:#8C7F6C">{{ detBrand }}</div>
+            </sc-if>
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:12px">
+              <sc-if value="{{ detCatShow }}" hint-placeholder-val="{{ true }}">
+                <span style="font-size:10.5px;font-weight:700;letter-spacing:0.1em;padding:5px 12px;border-radius:999px;background:rgba(95,124,78,0.12);color:#4C6340;border:1px solid rgba(95,124,78,0.3)">{{ detCatLabel }}</span>
+              </sc-if>
+              <sc-if value="{{ detCatNone }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:10.5px;font-weight:700;letter-spacing:0.1em;padding:5px 12px;border-radius:999px;background:#EFE5D2;color:#8C7F6C;border:1px solid #E5DAC3">BEZ KATEGORII</span>
+              </sc-if>
+              <sc-if value="{{ detBcShow }}" hint-placeholder-val="{{ false }}">
+                <span style="display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;background:#FCF7EC;color:#5C5140;border:1px solid #EADFC8;font-variant-numeric:tabular-nums">
+                  <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M3.5 5v10M6.5 5v10M9 5v10M12 5v10M14.5 5v10M16.5 5v10"></path></svg>
+                  {{ detBc }}</span>
+              </sc-if>
+              <sc-if value="{{ detPackShow }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;background:#FCF7EC;color:#5C5140;border:1px solid #EADFC8;font-variant-numeric:tabular-nums">{{ detPackLabel }}</span>
+              </sc-if>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:18px">
+              <button onClick="{{ detEdit }}" style="display:flex;align-items:center;gap:8px;border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:14px;min-height:48px;padding:12px 22px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13.7 13 4.7l2.3 2.3-9 9L3 17z"></path><path d="M11.5 6.2l2.3 2.3"></path></svg>
+                Edytuj produkt</button>
+              <div style="flex:1"></div>
+              <button onClick="{{ detDelete }}" style="border:1px solid rgba(179,64,46,0.35);background:transparent;color:#B3402E;font-weight:600;font-size:13.5px;min-height:48px;padding:12px 18px;border-radius:999px;cursor:pointer" style-hover="background:rgba(179,64,46,0.08)">Usuń produkt</button>
+            </div>
+          </section>
+
+          <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:16px;align-items:flex-start">
+            <!-- Makro na 100 g -->
+            <section aria-label="Wartości odżywcze" style="flex:1 1 300px;min-width:280px;background:#F8F1E3;border-radius:20px;padding:20px;color:#2A2018">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 12px">WARTOŚCI ODŻYWCZE</div>
+              <div style="border:1.5px solid rgba(199,91,56,0.45);background:rgba(199,91,56,0.06);border-radius:16px;padding:16px">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#C75B38">NA 100 G</div>
+                <div style="display:flex;align-items:baseline;gap:7px;margin-top:8px">
+                  <span style="font-family:'Instrument Serif',serif;font-size:40px;line-height:1;font-variant-numeric:tabular-nums">{{ detKcal }}</span>
+                  <span style="font-size:13px;font-weight:700;color:#8C7F6C">kcal</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px">
+                  <div><div style="font-size:10px;font-weight:700;letter-spacing:0.12em;color:#8C7F6C">BIAŁKO</div><div style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px">{{ detB }}</div></div>
+                  <div><div style="font-size:10px;font-weight:700;letter-spacing:0.12em;color:#8C7F6C">TŁUSZCZ</div><div style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px">{{ detT }}</div></div>
+                  <div><div style="font-size:10px;font-weight:700;letter-spacing:0.12em;color:#8C7F6C">WĘGLOW.</div><div style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px">{{ detW }}</div></div>
+                </div>
+              </div>
+              <sc-if value="{{ detPackCalcShow }}" hint-placeholder-val="{{ false }}">
+                <div style="border:1px solid #EADFC8;background:#FCF7EC;border-radius:16px;padding:14px 16px;margin-top:10px">
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px">
+                    <span style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250">{{ detPackCalcTitle }}</span>
+                    <span style="font-size:9.5px;font-weight:700;letter-spacing:0.1em;padding:3px 8px;border-radius:999px;background:#EFE5D2;color:#8C7F6C">WARTOŚĆ WYLICZONA</span>
+                  </div>
+                  <div style="margin-top:7px;font-size:14px;font-variant-numeric:tabular-nums;color:#2A2018"><b>{{ detPackKcal }} kcal</b> <span style="color:#5C5140">· {{ detPackLine }}</span></div>
+                  <div style="margin-top:6px;font-size:12px;line-height:1.5;color:#8C7F6C">Przeliczenie z danych na 100 g — wartości bazowe produktu pozostają zawsze na 100 g.</div>
+                </div>
+              </sc-if>
+              <div style="margin-top:12px;font-size:12.5px;line-height:1.55;color:#8C7F6C">Wszystkie wartości opisują 100 g produktu — na nich Jadlify liczy makro przepisów.</div>
+            </section>
+
+            <!-- Rozszerzone wartości + przepisy -->
+            <div style="flex:1.4 1 360px;min-width:280px;display:flex;flex-direction:column;gap:16px">
+              <section aria-label="Dodatkowe wartości odżywcze" style="background:#F8F1E3;border-radius:20px;padding:20px;color:#2A2018">
+                <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 4px">
+                  <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250">DODATKOWE WARTOŚCI ODŻYWCZE</div>
+                  <span style="font-size:10px;font-weight:700;letter-spacing:0.12em;padding:3px 9px;border-radius:999px;background:rgba(199,91,56,0.1);color:#C75B38;border:1px solid rgba(199,91,56,0.3)">NA 100 G</span>
+                </div>
+                <sc-if value="{{ detExtShow }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:4px 28px;margin-top:8px">
+                    <sc-for list="{{ detExtGroups }}" as="g" hint-placeholder-count="2">
+                      <div>
+                        <div style="font-size:10.5px;font-weight:700;letter-spacing:0.14em;color:#A79A83;margin:12px 0 2px">{{ g.label }}</div>
+                        <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="2">
+                          <div style="display:flex;align-items:baseline;gap:8px;padding:7px 0;border-bottom:1px dotted #DCCFB2">
+                            <span style="font-size:13.5px;color:#5C5140">{{ r.name }}</span>
+                            <div style="flex:1;border-bottom:2px dotted #DCCFB2;align-self:center;min-width:16px"></div>
+                            <span style="font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap">{{ r.val }}</span>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ detExtEmpty }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:10px;background:#FCF7EC;border:1.5px dashed #DCCFB2;border-radius:14px;padding:16px 18px;font-size:13.5px;line-height:1.55;color:#8C7F6C">Brak dodatkowych danych odżywczych. Możesz je uzupełnić w edycji produktu — nie są wymagane.</div>
+                </sc-if>
+              </section>
+
+              <section aria-label="Przepisy używające produktu" style="background:#F8F1E3;border-radius:20px;padding:20px;color:#2A2018">
+                <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 8px">
+                  <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250">UŻYWANY W PRZEPISACH</div>
+                  <span style="font-size:12.5px;color:#8C7F6C;font-variant-numeric:tabular-nums">{{ detUsageCountLabel }}</span>
+                </div>
+                <sc-if value="{{ detUsageShow }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-direction:column">
+                    <sc-for list="{{ detUsageRows }}" as="u" hint-placeholder-count="2">
+                      <a href="Jadlify - Przepisy.dc.html" style="display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px dotted #DCCFB2;text-decoration:none;color:#2A2018" style-hover="background:#FCF7EC">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C75B38" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"></path><path d="M9 8h6M9 12h4"></path></svg>
+                        <span style="flex:1 1 auto;min-width:0;font-size:14px;font-weight:600;overflow-wrap:anywhere">{{ u.name }}</span>
+                        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#8C7F6C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none" aria-hidden="true"><path d="M7.5 4l6 6-6 6"></path></svg>
+                      </a>
+                    </sc-for>
+                  </div>
+                  <div style="margin-top:10px;background:#FCF7EC;border:1px solid #EADFC8;border-radius:12px;padding:11px 13px;font-size:12.5px;line-height:1.55;color:#8C7F6C">Istniejące składniki w tych przepisach <b style="color:#5C5140">zachowują wartości zapisane podczas dodawania</b> — edycja produktu ich nie przelicza. Aby odświeżyć wartości, edytuj składnik w danym przepisie. Nowe przepisy i nowo dodane składniki użyją najnowszych danych produktu. Wygenerowane wcześniej listy zakupów pozostają bez zmian.</div>
+                </sc-if>
+                <sc-if value="{{ detUsageEmpty }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:13.5px;line-height:1.55;color:#8C7F6C">Ten produkt nie jest jeszcze używany w żadnym przepisie.</div>
+                </sc-if>
+              </section>
+            </div>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- ════════ EKRAN: FORMULARZ PRODUKTU ════════ -->
+      <sc-if value="{{ scrForm }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Formularz produktu" style="max-width:720px;margin:0 auto">
+          <button onClick="{{ formBack }}" style="display:inline-flex;align-items:center;gap:7px;border:none;background:transparent;color:rgba(242,233,216,0.6);font-size:13px;font-weight:600;padding:8px 4px;cursor:pointer;margin:0 0 8px" style-hover="color:#F2E9D8">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 4 6.5 10l6 6"></path></svg>
+            {{ formBackLabel }}</button>
+          <h1 style="margin:0 0 14px;font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(28px,3.2vw,36px);line-height:1.05">{{ formTitle }}</h1>
+
+          <sc-if value="{{ fCtxShow }}" hint-placeholder-val="{{ false }}">
+            <div data-screen-label="Kontekst: dodawanie z przepisu" style="display:flex;gap:10px;align-items:flex-start;background:rgba(242,233,216,0.06);border:1px solid rgba(242,233,216,0.14);border-radius:14px;padding:12px 15px;margin:0 0 14px;font-size:13px;line-height:1.55;color:rgba(242,233,216,0.75)">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#D97E57" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><circle cx="10" cy="10" r="7"></circle><path d="M10 6.5v4"></path><circle cx="10" cy="13.6" r="0.5" fill="currentColor"></circle></svg>
+              <span>Dodawanie rozpoczęte z formularza przepisu <b>„Sałatka z serkiem wiejskim”</b> — szkic przepisu (nazwa, porcje i 2 składniki) został zachowany. Po zapisaniu wrócisz do przepisu, a nowy produkt będzie już wybrany jako składnik.</span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ fEditUsedShow }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:10px;align-items:flex-start;background:rgba(199,145,42,0.1);border:1px solid rgba(199,145,42,0.4);border-radius:14px;padding:12px 15px;margin:0 0 14px;font-size:13px;line-height:1.55;color:#D9B25E">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><path d="M10 3 18 17H2z"></path><path d="M10 8.5v3.5"></path><circle cx="10" cy="14.4" r="0.5" fill="currentColor"></circle></svg>
+              <span><b>{{ fEditUsedLabel }}</b> Istniejące składniki zachowują wartości zapisane podczas dodawania — edycja produktu ich nie przelicza. Aby je zaktualizować, edytuj składnik w przepisie. Nowe przepisy i nowo dodane składniki użyją najnowszych danych. Wygenerowane wcześniej listy zakupów pozostają bez zmian.</span>
+            </div>
+          </sc-if>
+
+          <div style="background:#F8F1E3;border-radius:22px;padding:clamp(18px,3vw,26px);color:#2A2018">
+
+            <!-- 1. Tożsamość -->
+            <label for="jd-p-name" style="display:block;font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">NAZWA PRODUKTU</label>
+            <input id="jd-p-name" type="text" value="{{ fNameVal }}" onChange="{{ onFName }}" placeholder="Np. Serek wiejski" style="width:100%;min-height:46px;border:{{ fNameBorder }};background:#FCF7EC;border-radius:12px;padding:10px 14px;font-size:14.5px;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+            <sc-if value="{{ fNameErrShow }}" hint-placeholder-val="{{ false }}">
+              <div id="jd-p-name-err" role="alert" style="margin-top:6px;font-size:12.5px;font-weight:600;color:#B3402E">▲ Podaj nazwę produktu.</div>
+            </sc-if>
+
+            <label for="jd-p-brand" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:18px 0 8px">MARKA <span style="color:#A79A83;letter-spacing:0.06em">(OPCJONALNIE)</span>
+              <span title="Pole spoza obecnego modelu danych — wymaga wsparcia backendu przy wdrożeniu" style="font-size:9px;font-weight:700;letter-spacing:0.1em;padding:3px 8px;border-radius:999px;background:rgba(95,124,78,0.12);color:#4C6340;border:1px solid rgba(95,124,78,0.3)">ROZSZERZENIE MODELU</span>
+            </label>
+            <input id="jd-p-brand" type="text" value="{{ fBrandVal }}" onChange="{{ onFBrand }}" placeholder="Np. Piątnica" style="width:100%;min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:12px;padding:10px 14px;font-size:14.5px;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+            <div style="margin-top:6px;font-size:12px;line-height:1.45;color:#8C7F6C">Marka pomaga rozróżniać podobne produkty i bywa wypełniana z danych kodu kreskowego. To celowe rozszerzenie modelu Jadlify — przy wdrożeniu wymaga obsługi po stronie backendu i zapisu danych.</div>
+
+            <!-- 2. Kod kreskowy -->
+            <div style="margin:22px 0 0;border:1px solid #EADFC8;background:#FCF7EC;border-radius:16px;padding:16px">
+              <label for="jd-p-bc" style="display:block;font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 4px">KOD KRESKOWY <span style="color:#A79A83;letter-spacing:0.06em">(OPCJONALNIE)</span></label>
+              <p style="margin:0 0 10px;font-size:12.5px;line-height:1.5;color:#8C7F6C">Wpisz lub wklej kod z opakowania — spróbujemy pobrać dane produktu i wypełnić puste pola. To tylko ułatwienie: wszystko możesz uzupełnić ręcznie, a każde pobrane pole da się edytować.</p>
+              <div style="display:flex;flex-wrap:wrap;gap:8px">
+                <input id="jd-p-bc" type="text" inputmode="numeric" value="{{ fBcVal }}" onChange="{{ onFBc }}" placeholder="Np. 5900531000019" style="flex:1 1 200px;min-width:0;min-height:46px;border:{{ fBcBorder }};background:#F8F1E3;border-radius:12px;padding:10px 14px;font-size:14px;font-variant-numeric:tabular-nums;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+                <button onClick="{{ lookupRun }}" disabled="{{ lookupDis }}" style="flex:none;display:flex;align-items:center;gap:8px;border:1px solid #2A2018;background:#2A2018;color:#F8F1E3;font-weight:600;font-size:13.5px;min-height:46px;padding:10px 20px;border-radius:999px;cursor:{{ lookupCursor }};opacity:{{ lookupOp }}" style-hover="background:#1F1712">
+                  <sc-if value="{{ lkLoading }}" hint-placeholder-val="{{ false }}">
+                    <span aria-hidden="true" style="flex:none;width:13px;height:13px;border:2px solid rgba(248,241,227,0.35);border-top-color:#F8F1E3;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span>
+                  </sc-if>
+                  <sc-if value="{{ lkNotLoading }}" hint-placeholder-val="{{ true }}">
+                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="5.5"></circle><path d="m13.5 13.5 3.5 3.5"></path></svg>
+                  </sc-if>
+                  <span>{{ lookupLabel }}</span>
+                </button>
+              </div>
+              <sc-if value="{{ fBcErrShow }}" hint-placeholder-val="{{ false }}">
+                <div id="jd-p-bc-err" role="alert" style="margin-top:8px;font-size:12.5px;font-weight:600;color:#B3402E">▲ Kod kreskowy powinien składać się z 8–14 cyfr (bez liter i spacji).</div>
+              </sc-if>
+
+              <sc-if value="{{ lkLoading }}" hint-placeholder-val="{{ false }}">
+                <div role="status" style="display:flex;gap:9px;align-items:center;margin-top:10px;font-size:13px;color:#6E6250">
+                  <span aria-hidden="true" style="width:13px;height:13px;border:2px solid #DCCFB2;border-top-color:#C75B38;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span>
+                  Szukamy danych dla kodu {{ lkQueryBc }}…
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ lkOkShow }}" hint-placeholder-val="{{ false }}">
+                <div role="status" style="display:flex;gap:9px;align-items:flex-start;background:rgba(95,124,78,0.1);border:1px solid rgba(95,124,78,0.35);border-radius:12px;padding:10px 13px;margin-top:10px;font-size:13px;line-height:1.5;color:#4C6340">
+                  <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><path d="M4 10.5l4 4L16 5.5"></path></svg>
+                  <span><b>Znaleziono dane produktu.</b> Puste pola zostały wypełnione — sprawdź wartości, w razie potrzeby popraw je i zapisz produkt.</span>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ lkPartialShow }}" hint-placeholder-val="{{ false }}">
+                <div role="status" style="display:flex;gap:9px;align-items:flex-start;background:rgba(199,145,42,0.1);border:1px solid rgba(199,145,42,0.4);border-radius:12px;padding:10px 13px;margin-top:10px;font-size:13px;line-height:1.5;color:#8A6414">
+                  <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><circle cx="10" cy="10" r="7"></circle><path d="M10 6.5v4"></path><circle cx="10" cy="13.6" r="0.5" fill="currentColor"></circle></svg>
+                  <span><b>Znaleziono częściowe dane.</b> Uzupełnij ręcznie: {{ lkMissingLabel }}. Brakujące pola są oznaczone poniżej.</span>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ lkNotFoundShow }}" hint-placeholder-val="{{ false }}">
+                <div role="status" style="display:flex;gap:9px;align-items:flex-start;background:#F8F1E3;border:1.5px dashed #DCCFB2;border-radius:12px;padding:10px 13px;margin-top:10px;font-size:13px;line-height:1.5;color:#6E6250">
+                  <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#A79A83" stroke-width="1.6" stroke-linecap="round" style="flex:none;margin-top:2px" aria-hidden="true"><circle cx="9" cy="9" r="5.5"></circle><path d="m13.5 13.5 3.5 3.5"></path><path d="M7 9h4"></path></svg>
+                  <span>Nie znaleziono danych dla tego kodu. Uzupełnij produkt ręcznie — kod zostanie zapisany razem z produktem.</span>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ lkErrShow }}" hint-placeholder-val="{{ false }}">
+                <div role="status" style="display:flex;gap:9px;align-items:flex-start;background:rgba(199,145,42,0.1);border:1px solid rgba(199,145,42,0.4);border-radius:12px;padding:10px 13px;margin-top:10px;font-size:13px;line-height:1.5;color:#8A6414">
+                  <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><path d="M10 3 18 17H2z"></path><path d="M10 8.5v3.5"></path><circle cx="10" cy="14.4" r="0.5" fill="currentColor"></circle></svg>
+                  <span>Automatyczne wyszukiwanie jest chwilowo niedostępne. Kod został zachowany — możesz kontynuować i uzupełnić dane ręcznie albo spróbować ponownie za chwilę.</span>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ lkDupShow }}" hint-placeholder-val="{{ false }}">
+                <div data-screen-label="Kod już w katalogu" role="status" style="background:rgba(217,126,87,0.08);border:1px solid rgba(199,91,56,0.35);border-radius:12px;padding:12px 13px;margin-top:10px">
+                  <div style="display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.5;color:#8F4A2E">
+                    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><circle cx="10" cy="10" r="7"></circle><path d="M10 6.5v4"></path><circle cx="10" cy="13.6" r="0.5" fill="currentColor"></circle></svg>
+                    <span>Ten kod jest już przypisany do produktu <b>„{{ lkDupName }}”</b> w Twoim katalogu. Nie utworzymy duplikatu — możesz otworzyć istniejący produkt i w razie potrzeby go edytować.</span>
+                  </div>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+                    <button onClick="{{ lkDupOpen }}" style="border:none;background:#2A2018;color:#F8F1E3;font-weight:600;font-size:13px;min-height:42px;padding:9px 18px;border-radius:999px;cursor:pointer" style-hover="background:#1F1712">Otwórz istniejący produkt</button>
+                    <button onClick="{{ lkDismiss }}" style="border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:13px;min-height:42px;padding:9px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Zostań w formularzu</button>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+
+            <!-- 3. Wymagane makro -->
+            <div style="margin:22px 0 0;border:{{ fReqBorder }};background:rgba(199,91,56,0.05);border-radius:16px;padding:16px">
+              <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:8px">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#C75B38">WARTOŚCI ODŻYWCZE NA 100 G</div>
+                <span style="font-size:12px;color:#8C7F6C">— wymagane</span>
+              </div>
+              <p style="margin:4px 0 12px;font-size:12.5px;line-height:1.5;color:#8C7F6C">Wpisz wartości z etykiety w przeliczeniu na 100 g produktu. Mogą wynosić 0, dopuszczalne są ułamki (np. 4,5).</p>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">
+                <sc-for list="{{ reqFields }}" as="r" hint-placeholder-count="4">
+                  <div>
+                    <label for="{{ r.id }}" style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#5C5140;margin:0 0 5px">{{ r.label }}
+                      <sc-if value="{{ r.needShow }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:9px;font-weight:700;letter-spacing:0.08em;padding:2px 7px;border-radius:999px;background:rgba(199,145,42,0.15);color:#8A6414;border:1px solid rgba(199,145,42,0.4)">DO UZUPEŁNIENIA</span>
+                      </sc-if>
+                    </label>
+                    <input id="{{ r.id }}" type="text" inputmode="decimal" value="{{ r.val }}" onChange="{{ r.on }}" placeholder="0" style="width:100%;min-height:46px;text-align:right;border:{{ r.border }};background:#FCF7EC;border-radius:12px;padding:8px 12px;font-size:14px;font-variant-numeric:tabular-nums;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+                  </div>
+                </sc-for>
+              </div>
+              <sc-if value="{{ reqErrShow }}" hint-placeholder-val="{{ false }}">
+                <div role="alert" style="margin-top:8px;font-size:12.5px;font-weight:600;color:#B3402E">▲ Uzupełnij wszystkie cztery wartości na 100 g — liczby 0 lub większe (bez wartości ujemnych).</div>
+              </sc-if>
+            </div>
+
+            <!-- 4. Kategoria i opakowanie -->
+            <div style="display:flex;flex-wrap:wrap;gap:16px 28px;margin:22px 0 0">
+              <div style="flex:1.4 1 260px;min-width:220px">
+                <label for="jd-p-cat" style="display:block;font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">KATEGORIA <span style="color:#A79A83;letter-spacing:0.06em">(OPCJONALNIE)</span></label>
+                <select id="jd-p-cat" value="{{ fCatVal }}" onChange="{{ onFCat }}" style="width:100%;min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;color:#2A2018;border-radius:12px;padding:10px 12px;font-size:14px;cursor:pointer;outline:none" style-focus="border:1.5px solid #C75B38">
+                  <option value="">Bez kategorii</option>
+                  <option value="warzywa">Warzywa</option>
+                  <option value="owoce">Owoce</option>
+                  <option value="mieso">Mięso i ryby</option>
+                  <option value="nabial">Nabiał</option>
+                  <option value="zbozowe">Produkty zbożowe i pieczywo</option>
+                  <option value="sypkie">Produkty sypkie i spiżarnia</option>
+                  <option value="mrozonki">Mrożonki</option>
+                  <option value="napoje">Napoje</option>
+                  <option value="inne">Inne</option>
+                </select>
+                <div style="margin-top:6px;font-size:12px;line-height:1.45;color:#8C7F6C">Kategoria pomaga grupować produkty na liście zakupów. Możesz ją pominąć.</div>
+                <sc-if value="{{ catSugShow }}" hint-placeholder-val="{{ false }}">
+                  <div role="status" style="margin-top:6px;font-size:12px;line-height:1.45;color:#8A6414">Kategoria „{{ catSugLabel }}” to propozycja na podstawie kodu kreskowego — możesz ją zmienić lub usunąć.</div>
+                </sc-if>
+              </div>
+              <div style="flex:1 1 200px;min-width:180px">
+                <label for="jd-p-pack" style="display:block;font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">OPAKOWANIE <span style="color:#A79A83;letter-spacing:0.06em">(OPCJONALNIE)</span></label>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <input id="jd-p-pack" type="text" inputmode="decimal" value="{{ fPackVal }}" onChange="{{ onFPack }}" placeholder="Np. 250" style="flex:1 1 auto;min-width:0;min-height:46px;text-align:right;border:{{ fPackBorder }};background:#FCF7EC;border-radius:12px;padding:8px 12px;font-size:14px;font-variant-numeric:tabular-nums;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+                  <span style="flex:none;font-size:13px;color:#6E6250">g</span>
+                </div>
+                <div style="margin-top:6px;font-size:12px;line-height:1.45;color:#8C7F6C">Rozmiar całego opakowania w gramach — pokażemy dodatkowo wyliczone wartości dla opakowania.</div>
+                <sc-if value="{{ fPackErrShow }}" hint-placeholder-val="{{ false }}">
+                  <div role="alert" style="margin-top:6px;font-size:12.5px;font-weight:600;color:#B3402E">▲ Rozmiar opakowania musi być liczbą większą od zera.</div>
+                </sc-if>
+              </div>
+            </div>
+
+            <!-- 5. Rozszerzone wartości -->
+            <sc-if value="{{ extClosed }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ toggleExt }}" aria-expanded="false" style="margin-top:22px;width:100%;display:flex;align-items:center;gap:10px;border:1.5px dashed #DCCFB2;background:transparent;border-radius:12px;min-height:48px;padding:10px 16px;text-align:left;font-size:13.5px;font-weight:600;color:#6E6250;cursor:pointer" style-hover="border-color:#C75B38;color:#C75B38;background:rgba(199,91,56,0.05)">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12"></path></svg>
+                <span style="flex:1">Dodatkowe wartości odżywcze <span style="font-weight:500;color:#A79A83">(opcjonalne, na 100 g)</span></span>
+                <span style="font-size:12px;font-weight:600;color:#A79A83;font-variant-numeric:tabular-nums">{{ extCountLabel }}</span>
+              </button>
+            </sc-if>
+            <sc-if value="{{ extOpen }}" hint-placeholder-val="{{ false }}">
+              <div data-screen-label="Rozszerzone wartości odżywcze — formularz" style="margin-top:22px;border:1px solid #EADFC8;background:#FCF7EC;border-radius:16px;padding:16px">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250">DODATKOWE WARTOŚCI ODŻYWCZE</div>
+                  <span style="font-size:10px;font-weight:700;letter-spacing:0.12em;padding:3px 9px;border-radius:999px;background:rgba(199,91,56,0.1);color:#C75B38;border:1px solid rgba(199,91,56,0.3)">NA 100 G</span>
+                  <div style="flex:1"></div>
+                  <button onClick="{{ toggleExt }}" aria-expanded="true" style="border:none;background:transparent;font-size:12.5px;font-weight:600;color:#8C7F6C;cursor:pointer;padding:8px 4px;text-decoration:underline;text-underline-offset:3px" style-hover="color:#2A2018">Zwiń</button>
+                </div>
+                <p style="margin:6px 0 4px;font-size:12.5px;line-height:1.5;color:#8C7F6C">Wszystkie pola są opcjonalne i nie blokują zapisania produktu. Wartości podawaj w przeliczeniu na 100 g.</p>
+                <sc-for list="{{ extGroups }}" as="g" hint-placeholder-count="4">
+                  <div>
+                    <div style="font-size:10.5px;font-weight:700;letter-spacing:0.14em;color:#A79A83;margin:14px 0 8px">{{ g.label }}</div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+                      <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+                        <div>
+                          <label for="{{ r.id }}" style="display:block;font-size:12px;font-weight:600;color:#5C5140;margin:0 0 5px">{{ r.label }} <span style="color:#A79A83">({{ r.unit }})</span></label>
+                          <input id="{{ r.id }}" type="text" inputmode="decimal" value="{{ r.val }}" onChange="{{ r.on }}" placeholder="—" style="width:100%;min-height:46px;text-align:right;border:{{ r.border }};background:#F8F1E3;border-radius:12px;padding:8px 12px;font-size:14px;font-variant-numeric:tabular-nums;color:#2A2018;outline:none" style-focus="border:1.5px solid #C75B38">
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ extErrShow }}" hint-placeholder-val="{{ false }}">
+                  <div role="alert" style="margin-top:10px;font-size:12.5px;font-weight:600;color:#B3402E">▲ Dodatkowe wartości muszą być liczbami 0 lub większymi — popraw zaznaczone pola albo zostaw je puste.</div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <!-- 6. Stopka -->
+            <div style="margin-top:22px;border-top:1px dotted #DCCFB2;padding-top:16px">
+              <sc-if value="{{ saveErrShow }}" hint-placeholder-val="{{ false }}">
+                <div role="alert" style="display:flex;gap:9px;align-items:flex-start;background:rgba(179,64,46,0.08);border:1px solid rgba(179,64,46,0.4);border-radius:12px;padding:10px 13px;margin:0 0 12px;font-size:13px;line-height:1.5;color:#8F3222">
+                  <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><path d="M10 3 18 17H2z"></path><path d="M10 8.5v3.5"></path><circle cx="10" cy="14.4" r="0.5" fill="currentColor"></circle></svg>
+                  <span><b>Nie udało się zapisać produktu.</b> Wszystkie wpisane dane zostały zachowane — sprawdź połączenie i spróbuj ponownie.</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{ validHintShow }}" hint-placeholder-val="{{ false }}">
+                <div role="alert" style="margin:0 0 10px;font-size:12.5px;font-weight:600;color:#B3402E">Popraw zaznaczone pola, aby zapisać produkt.</div>
+              </sc-if>
+              <sc-if value="{{ saveHintShow }}" hint-placeholder-val="{{ false }}">
+                <div style="margin:0 0 10px;font-size:12.5px;line-height:1.5;color:#8C7F6C">Aby zapisać produkt, podaj nazwę oraz wszystkie cztery wartości na 100 g. Wpisz 0 tylko wtedy, gdy produkt faktycznie nie zawiera danego składnika.</div>
+              </sc-if>
+              <div style="display:flex;flex-wrap:wrap;gap:10px">
+                <button onClick="{{ cancelForm }}" disabled="{{ fSavingDis }}" style="flex:1 1 140px;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">{{ cancelLabel }}</button>
+                <button onClick="{{ saveProduct }}" disabled="{{ saveDisabled }}" aria-disabled="{{ saveAria }}" style="flex:2 1 200px;display:flex;align-items:center;justify-content:center;gap:9px;border:none;background:{{ saveBg }};color:#FFF8EC;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:{{ saveCursor }};opacity:{{ saveOp }}">
+                  <sc-if value="{{ fSaving }}" hint-placeholder-val="{{ false }}">
+                    <span aria-hidden="true" style="flex:none;width:14px;height:14px;border:2px solid rgba(255,248,236,0.35);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span>
+                    <span>Zapisywanie…</span>
+                  </sc-if>
+                  <sc-if value="{{ fNotSaving }}" hint-placeholder-val="{{ true }}"><span>{{ saveLabel }}</span></sc-if>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </sc-if>
+
+      <!-- ════════ EKRAN: POWRÓT DO PRZEPISU ════════ -->
+      <sc-if value="{{ scrReturn }}" hint-placeholder-val="{{ false }}">
+        <section data-screen-label="Powrót do formularza przepisu" style="max-width:720px;margin:0 auto">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 14px">
+            <h1 style="margin:0;font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(28px,3.2vw,36px);line-height:1.05">Nowy przepis</h1>
+            <span style="font-size:10px;font-weight:700;letter-spacing:0.14em;padding:4px 11px;border-radius:999px;border:1px solid rgba(242,233,216,0.2);color:rgba(242,233,216,0.6)">SZKIC PRZYWRÓCONY</span>
+          </div>
+
+          <sc-if value="{{ rtOkShow }}" hint-placeholder-val="{{ true }}">
+            <div role="status" style="display:flex;gap:10px;align-items:center;background:rgba(95,124,78,0.14);border:1px solid rgba(143,191,106,0.4);border-radius:14px;padding:12px 15px;margin:0 0 14px;font-size:13px;line-height:1.5;color:#AFCB90">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M4 10.5l4 4L16 5.5"></path></svg>
+              <span>Produkt <b>„{{ rtProdName }}”</b> został zapisany w katalogu i wybrany jako składnik. Podaj jego gramaturę, aby dokończyć przepis.</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ rtCancelShow }}" hint-placeholder-val="{{ false }}">
+            <div role="status" style="display:flex;gap:10px;align-items:center;background:rgba(242,233,216,0.06);border:1px solid rgba(242,233,216,0.14);border-radius:14px;padding:12px 15px;margin:0 0 14px;font-size:13px;line-height:1.5;color:rgba(242,233,216,0.75)">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#D97E57" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="10" cy="10" r="7"></circle><path d="M10 6.5v4"></path><circle cx="10" cy="13.6" r="0.5" fill="currentColor"></circle></svg>
+              <span>Dodawanie produktu zostało anulowane. Twój szkic przepisu pozostał bez zmian — nic nie przepadło.</span>
+            </div>
+          </sc-if>
+
+          <div style="background:#F8F1E3;border-radius:22px;padding:clamp(18px,3vw,26px);color:#2A2018">
+            <div style="display:flex;flex-wrap:wrap;gap:16px 28px">
+              <div style="flex:1 1 280px;min-width:240px">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">NAZWA PRZEPISU</div>
+                <div style="min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:12px;padding:12px 14px;font-size:14.5px">Sałatka z serkiem wiejskim</div>
+              </div>
+              <div style="flex:none">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:0 0 8px">LICZBA PORCJI</div>
+                <div style="min-height:46px;border:1px solid #E5DAC3;background:#FCF7EC;border-radius:999px;padding:12px 24px;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;width:max-content">2</div>
+              </div>
+            </div>
+
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:#6E6250;margin:22px 0 10px">SKŁADNIKI</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="border:1px solid #EADFC8;border-radius:14px;padding:12px 14px;background:#FCF7EC;display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+                <span style="flex:1 1 200px;min-width:0;font-size:13.5px;font-weight:600">Pomidor <span style="display:block;font-size:11.5px;font-weight:400;color:#8C7F6C;font-variant-numeric:tabular-nums">18 kcal / 100 g</span></span>
+                <span style="flex:none;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums">240 g</span>
+              </div>
+              <div style="border:1px solid #EADFC8;border-radius:14px;padding:12px 14px;background:#FCF7EC;display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+                <span style="flex:1 1 200px;min-width:0;font-size:13.5px;font-weight:600">Jajko kurze (całe) <span style="display:block;font-size:11.5px;font-weight:400;color:#8C7F6C;font-variant-numeric:tabular-nums">140 kcal / 100 g</span></span>
+                <span style="flex:none;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums">110 g</span>
+              </div>
+              <sc-if value="{{ rtOkShow }}" hint-placeholder-val="{{ true }}">
+                <div style="border:1.5px solid rgba(199,91,56,0.5);border-radius:14px;padding:12px 14px;background:rgba(199,91,56,0.05);display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+                  <span style="flex:1 1 200px;min-width:0;font-size:13.5px;font-weight:600">{{ rtProdName }}
+                    <span style="display:block;font-size:11px;font-weight:700;letter-spacing:0.08em;color:#C75B38;margin-top:2px">NOWY PRODUKT — WYBRANY AUTOMATYCZNIE</span></span>
+                  <div style="flex:none;display:flex;align-items:center;gap:6px">
+                    <input type="text" inputmode="decimal" value="{{ rtGramsVal }}" onChange="{{ onRtGrams }}" aria-label="Gramatura nowego składnika w gramach" placeholder="0" style="width:84px;min-height:46px;text-align:right;border:1.5px solid #C75B38;background:#F8F1E3;border-radius:12px;padding:8px 10px;font-size:14px;font-variant-numeric:tabular-nums;color:#2A2018;outline:none">
+                    <span style="font-size:13px;color:#6E6250">g</span>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ rtCancelShow }}" hint-placeholder-val="{{ false }}">
+                <div style="border:1.5px dashed #DCCFB2;border-radius:14px;padding:12px 14px;background:transparent;display:flex;align-items:center;gap:8px">
+                  <span style="flex:1;font-size:13.5px;color:#A79A83">Wybierz produkt…</span>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="margin-top:20px;border-top:1px dotted #DCCFB2;padding-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+              <button onClick="{{ rtDemoSave }}" style="flex:2 1 200px;border:none;background:#C75B38;color:#FFF8EC;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#B04E2E">Zapisz przepis</button>
+              <button onClick="{{ rtBackProducts }}" style="flex:1 1 160px;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Wróć do produktów</button>
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:12.5px;line-height:1.55;color:rgba(242,233,216,0.5);text-align:center">To podgląd powrotu do tworzenia przepisu — pełny formularz znajdziesz w widoku <a href="Jadlify - Przepisy.dc.html" style="color:#D97E57">Przepisy</a>.</div>
+        </section>
+      </sc-if>
+    </sc-if>
+  </main>
+
+  <!-- ── Pasek zapisu: mobile ────────────────────────── -->
+  <sc-if value="{{ barShow }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:0;right:0;bottom:0;z-index:40;background:#1F1712;border-top:1px solid rgba(242,233,216,0.14);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px">
+      <div style="flex:1 1 auto;min-width:0">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.14em;color:rgba(242,233,216,0.5)">NA 100 G</div>
+        <div style="font-size:13.5px;font-weight:700;color:#F2E9D8;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ barLine }}</div>
+      </div>
+      <button onClick="{{ saveProduct }}" disabled="{{ saveDisabled }}" aria-disabled="{{ saveAria }}" style="flex:none;display:flex;align-items:center;gap:8px;border:none;background:{{ saveBg }};color:#FFF8EC;font-weight:600;font-size:14px;min-height:46px;padding:11px 20px;border-radius:999px;cursor:{{ saveCursor }};opacity:{{ saveOp }}">
+        <sc-if value="{{ fSaving }}" hint-placeholder-val="{{ false }}">
+          <span aria-hidden="true" style="flex:none;width:13px;height:13px;border:2px solid rgba(255,248,236,0.35);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span>
+        </sc-if>
+        <span>{{ barSaveLabel }}</span>
+      </button>
+    </div>
+  </sc-if>
+
+  <!-- ── Dialog: usuwanie produktu ───────────────────── -->
+  <sc-if value="{{ delOpen }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Potwierdzenie usunięcia produktu" style="position:fixed;inset:0;z-index:50;background:rgba(18,12,8,0.6);display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ closeDelBg }}">
+      <div role="dialog" aria-modal="true" aria-label="{{ delTitle }}" style="width:min(500px,100%);max-height:calc(100dvh - 40px);overflow:auto;background:#F8F1E3;border-radius:20px;padding:26px;color:#2A2018;animation:jd-rise 0.25s ease-out" onClick="{{ stopClick }}">
+        <sc-if value="{{ delBlockedShow }}" hint-placeholder-val="{{ false }}">
+          <div style="width:44px;height:44px;margin:0 0 12px;border-radius:50%;background:rgba(199,145,42,0.14);display:flex;align-items:center;justify-content:center;color:#8A6414">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 18 17H2z"></path><path d="M10 8.5v3.5"></path><circle cx="10" cy="14.4" r="0.5" fill="currentColor"></circle></svg>
+          </div>
+          <h2 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:24px">Nie można jeszcze usunąć produktu</h2>
+          <p style="margin:0 0 10px;font-size:14px;line-height:1.6;color:#5C5140"><b>„{{ delName }}”</b> jest składnikiem {{ delUsedLabel }}. Usunięcie go teraz uszkodziłoby te przepisy, dlatego jest zablokowane.</p>
+          <div style="background:#FCF7EC;border:1px solid #EADFC8;border-radius:14px;padding:6px 14px;margin:0 0 10px">
+            <sc-for list="{{ delRecipes }}" as="dr" hint-placeholder-count="2">
+              <a href="Jadlify - Przepisy.dc.html" style="display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px dotted #DCCFB2;text-decoration:none;color:#2A2018;font-size:13.5px;font-weight:600">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C75B38" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"></path><path d="M9 8h6M9 12h4"></path></svg>
+                <span style="flex:1;min-width:0;overflow-wrap:anywhere">{{ dr.name }}</span>
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="#8C7F6C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none" aria-hidden="true"><path d="M7.5 4l6 6-6 6"></path></svg>
+              </a>
+            </sc-for>
+          </div>
+          <p style="margin:0 0 18px;font-size:13.5px;line-height:1.6;color:#8C7F6C">Usuń najpierw ten składnik z powyższych przepisów (lub usuń przepisy), a potem wróć tutaj. Te przepisy zachowują wartości zapisane podczas dodawania składnika — usunięcie produktu ich nie zmienia. Wygenerowane wcześniej listy zakupów również pozostaną bez zmian.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <button onClick="{{ closeDel }}" style="flex:1 1 120px;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Zamknij</button>
+            <a href="Jadlify - Przepisy.dc.html" style="flex:1 1 180px;display:flex;align-items:center;justify-content:center;border:none;background:#2A2018;color:#F8F1E3;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer;text-decoration:none" style-hover="background:#1F1712">Przejdź do przepisów</a>
+          </div>
+        </sc-if>
+        <sc-if value="{{ delFreeShow }}" hint-placeholder-val="{{ true }}">
+          <div style="width:44px;height:44px;margin:0 0 12px;border-radius:50%;background:rgba(179,64,46,0.1);display:flex;align-items:center;justify-content:center;color:#B3402E">
+            <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12"></path><path d="M8 6V4.5h4V6"></path><path d="M6 6l1 10.5h6L14 6"></path><path d="M9 9v4.5M11 9v4.5"></path></svg>
+          </div>
+          <h2 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:24px">Usunąć produkt?</h2>
+          <p style="margin:0 0 6px;font-size:14px;line-height:1.6;color:#5C5140"><b>„{{ delName }}”</b> zostanie trwale usunięty z Twojego katalogu. Nie jest używany w żadnym przepisie.</p>
+          <p style="margin:0 0 18px;font-size:13.5px;line-height:1.6;color:#8C7F6C">Wygenerowane wcześniej listy zakupów są zapisem z chwili utworzenia i pozostaną bez zmian.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <button onClick="{{ closeDel }}" disabled="{{ delDeletingDis }}" style="flex:1 1 120px;border:1px solid #E5DAC3;background:transparent;color:#6E6250;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#EFE5D2">Anuluj</button>
+            <button onClick="{{ delConfirm }}" disabled="{{ delDeletingDis }}" style="flex:1 1 160px;display:flex;align-items:center;justify-content:center;gap:9px;border:none;background:#B3402E;color:#FFF8EC;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#9C3626">
+              <sc-if value="{{ delDeleting }}" hint-placeholder-val="{{ false }}">
+                <span aria-hidden="true" style="flex:none;width:14px;height:14px;border:2px solid rgba(255,248,236,0.35);border-top-color:#FFF8EC;border-radius:50%;display:inline-block;animation:jd-spin 0.8s linear infinite"></span>
+                <span>Usuwanie…</span>
+              </sc-if>
+              <sc-if value="{{ delNotDeleting }}" hint-placeholder-val="{{ true }}"><span>Usuń produkt</span></sc-if>
+            </button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ── Dialog: niezapisane zmiany ──────────────────── -->
+  <sc-if value="{{ leaveOpen }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Ostrzeżenie o niezapisanych zmianach" style="position:fixed;inset:0;z-index:55;background:rgba(18,12,8,0.6);display:flex;align-items:center;justify-content:center;padding:20px" onClick="{{ leaveStayBg }}">
+      <div role="dialog" aria-modal="true" aria-label="Niezapisane zmiany" style="width:min(440px,100%);background:#F8F1E3;border-radius:20px;padding:26px;color:#2A2018;animation:jd-rise 0.25s ease-out" onClick="{{ stopClick }}">
+        <h2 style="margin:0 0 8px;font-family:'Instrument Serif',serif;font-weight:400;font-size:24px">Masz niezapisane zmiany</h2>
+        <p style="margin:0 0 18px;font-size:14px;line-height:1.6;color:#5C5140">Jeśli opuścisz ten formularz, zmiany w produkcie zostaną utracone. Możesz zostać i dokończyć edycję albo odrzucić zmiany.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px">
+          <button onClick="{{ leaveDiscard }}" style="flex:1 1 150px;border:1px solid rgba(179,64,46,0.35);background:transparent;color:#B3402E;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:rgba(179,64,46,0.08)">Odrzuć zmiany</button>
+          <button onClick="{{ leaveStay }}" style="flex:1 1 150px;border:none;background:#2A2018;color:#F8F1E3;font-weight:600;font-size:14px;min-height:48px;padding:12px 16px;border-radius:999px;cursor:pointer" style-hover="background:#1F1712">Zostań w formularzu</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ── Toast ───────────────────────────────────────── -->
+  <sc-if value="{{ toastShow }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;background:{{ toastBg }};color:#FFF8EC;border-radius:999px;padding:11px 18px;font-size:13.5px;font-weight:500;box-shadow:0 12px 32px rgba(0,0,0,0.4);animation:jd-toast 0.22s ease-out;max-width:calc(100vw - 32px)">
+      <sc-if value="{{ toastIsOk }}" hint-placeholder-val="{{ true }}">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M4 10.5l4 4L16 5.5"></path></svg>
+      </sc-if>
+      <span>{{ toastMsg }}</span>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;scenariusz&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Kilka produktów&quot;,&quot;Pusty katalog&quot;,&quot;Dodawanie z przepisu&quot;],&quot;default&quot;:&quot;Kilka produktów&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Scenariusz demo&quot;},&quot;stanSystemu&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Normalny&quot;,&quot;Ładowanie&quot;,&quot;Błąd pobierania&quot;],&quot;default&quot;:&quot;Normalny&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Scenariusz demo&quot;},&quot;wynikKodu&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Pełne dane&quot;,&quot;Częściowe dane&quot;,&quot;Nie znaleziono&quot;,&quot;Błąd usługi&quot;,&quot;Kod już w katalogu&quot;],&quot;default&quot;:&quot;Pełne dane&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Wyszukiwanie kodu&quot;},&quot;bladZapisu&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Scenariusz demo&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+
+    this.CATS = [
+      { key: 'warzywa', label: 'Warzywa' },
+      { key: 'owoce', label: 'Owoce' },
+      { key: 'mieso', label: 'Mięso i ryby' },
+      { key: 'nabial', label: 'Nabiał' },
+      { key: 'zbozowe', label: 'Produkty zbożowe i pieczywo' },
+      { key: 'sypkie', label: 'Produkty sypkie i spiżarnia' },
+      { key: 'mrozonki', label: 'Mrożonki' },
+      { key: 'napoje', label: 'Napoje' },
+      { key: 'inne', label: 'Inne' }
+    ];
+
+    this.EXTF = [
+      { key: 'satFat', label: 'Tłuszcze nasycone', unit: 'g', grp: 'TŁUSZCZE' },
+      { key: 'monoFat', label: 'Tłuszcze jednonienasycone', unit: 'g', grp: 'TŁUSZCZE' },
+      { key: 'polyFat', label: 'Tłuszcze wielonienasycone', unit: 'g', grp: 'TŁUSZCZE' },
+      { key: 'transFat', label: 'Tłuszcze trans', unit: 'g', grp: 'TŁUSZCZE' },
+      { key: 'sugars', label: 'Cukry', unit: 'g', grp: 'WĘGLOWODANY' },
+      { key: 'fiber', label: 'Błonnik', unit: 'g', grp: 'WĘGLOWODANY' },
+      { key: 'salt', label: 'Sól', unit: 'g', grp: 'MINERAŁY' },
+      { key: 'sodium', label: 'Sód', unit: 'mg', grp: 'MINERAŁY' },
+      { key: 'potassium', label: 'Potas', unit: 'mg', grp: 'MINERAŁY' },
+      { key: 'calcium', label: 'Wapń', unit: 'mg', grp: 'MINERAŁY' },
+      { key: 'iron', label: 'Żelazo', unit: 'mg', grp: 'MINERAŁY' },
+      { key: 'vitA', label: 'Witamina A', unit: 'µg', grp: 'WITAMINY' },
+      { key: 'vitC', label: 'Witamina C', unit: 'mg', grp: 'WITAMINY' },
+      { key: 'vitD', label: 'Witamina D', unit: 'µg', grp: 'WITAMINY' }
+    ];
+
+    this.PRODUCTS = [
+      { id: 'p1', name: 'Pierś z kurczaka', brand: '', cat: 'mieso', kcal: 110, b: 22, t: 2, w: 0, bc: '', pack: null, ext: {}, upd: 0, updLabel: 'Zaktualizowano dzisiaj' },
+      { id: 'p2', name: 'Ryż basmati (suchy)', brand: '', cat: 'sypkie', kcal: 350, b: 8, t: 1, w: 78, bc: '5901234567890', pack: 1000, ext: {}, upd: 3, updLabel: '3 dni temu' },
+      { id: 'p3', name: 'Cukinia', brand: '', cat: 'warzywa', kcal: 17, b: 1.2, t: 0.3, w: 3.1, bc: '', pack: null, ext: {}, upd: 9, updLabel: '9 dni temu' },
+      { id: 'p4', name: 'Papryka czerwona', brand: '', cat: 'warzywa', kcal: 31, b: 1, t: 0.3, w: 6, bc: '', pack: null, ext: { vitC: 128 }, upd: 15, updLabel: '2 tygodnie temu' },
+      { id: 'p5', name: 'Jajko kurze (całe)', brand: '', cat: '', kcal: 140, b: 12.5, t: 9.7, w: 0.7, bc: '', pack: null, ext: {}, upd: 6, updLabel: '6 dni temu' },
+      { id: 'p6', name: 'Pomidor', brand: '', cat: 'warzywa', kcal: 18, b: 0.9, t: 0.2, w: 3.9, bc: '', pack: null, ext: {}, upd: 4, updLabel: '4 dni temu' },
+      { id: 'p7', name: 'Płatki owsiane górskie', brand: 'Melvit', cat: 'zbozowe', kcal: 366, b: 11.9, t: 7.2, w: 69.3, bc: '5900617003046', pack: 500, ext: { satFat: 1.3, sugars: 1.2, fiber: 10.3, salt: 0.01, potassium: 380, iron: 3.9 }, upd: 1, updLabel: 'Zaktualizowano wczoraj' },
+      { id: 'p8', name: 'Mleko 2%', brand: 'Łaciate', cat: 'nabial', kcal: 50, b: 3.4, t: 2, w: 4.9, bc: '5900820000011', pack: 1000, ext: { satFat: 1.2, sugars: 4.9, calcium: 120, vitD: 1 }, upd: 2, updLabel: '2 dni temu' },
+      { id: 'p9', name: 'Banan', brand: '', cat: 'owoce', kcal: 89, b: 1.1, t: 0.3, w: 22.8, bc: '', pack: null, ext: { sugars: 12.2, fiber: 2.6, potassium: 358, vitC: 8.7 }, upd: 5, updLabel: '5 dni temu' },
+      { id: 'p10', name: 'Twaróg półtłusty', brand: 'Piątnica', cat: 'nabial', kcal: 120, b: 18.7, t: 4.7, w: 3.5, bc: '5900531000019', pack: 250, ext: {}, upd: 2, updLabel: '2 dni temu' },
+      { id: 'p13', name: 'Oliwa z oliwek', brand: '', cat: 'sypkie', kcal: 884, b: 0, t: 100, w: 0, bc: '', pack: null, ext: { satFat: 14, monoFat: 73, polyFat: 11 }, upd: 20, updLabel: 'miesiąc temu' },
+      { id: 'p15', name: 'Filet z łososia', brand: '', cat: 'mieso', kcal: 208, b: 20, t: 13, w: 0, bc: '', pack: null, ext: { satFat: 3.1, monoFat: 3.8, polyFat: 3.9, vitD: 11 }, upd: 7, updLabel: 'tydzień temu' },
+      { id: 'p18', name: 'Masło orzechowe 100%', brand: 'Sante', cat: 'sypkie', kcal: 588, b: 25, t: 50, w: 20, bc: '5900617011234', pack: 350, ext: { satFat: 7.6, sugars: 5.9, fiber: 8, salt: 0.02, potassium: 650, iron: 2.2 }, upd: 11, updLabel: '11 dni temu' },
+      { id: 'p21', name: 'Groszek zielony mrożony', brand: '', cat: 'mrozonki', kcal: 72, b: 5, t: 0.4, w: 12, bc: '5901234500017', pack: 450, ext: {}, upd: 13, updLabel: '13 dni temu' }
+    ];
+
+    this.USAGE = {
+      p1: ['Kurczak z ryżem i warzywami'],
+      p2: ['Kurczak z ryżem i warzywami'],
+      p3: ['Kurczak z ryżem i warzywami'],
+      p4: ['Kurczak z ryżem i warzywami', 'Omlet z warzywami'],
+      p5: ['Omlet z warzywami'],
+      p6: ['Omlet z warzywami'],
+      p7: ['Owsianka z bananem i masłem orzechowym'],
+      p8: ['Owsianka z bananem i masłem orzechowym'],
+      p9: ['Owsianka z bananem i masłem orzechowym', 'Twaróg z jogurtem i bananem'],
+      p10: ['Twaróg z jogurtem i bananem'],
+      p13: ['Kurczak z ryżem i warzywami', 'Omlet z warzywami', 'Pieczony łosoś z ziemniakami i brokułem'],
+      p15: ['Makaron z łososiem i śmietaną', 'Pieczony łosoś z ziemniakami i brokułem'],
+      p18: ['Owsianka z bananem i masłem orzechowym']
+    };
+
+    this.LOOKUP_FULL = { name: 'Serek wiejski', brand: 'Piątnica', kcal: '97', b: '11', t: '4,5', w: '2', cat: 'nabial', pack: '200', ext: { satFat: '2,9', sugars: '1,5', salt: '0,7', calcium: '90' } };
+    this.LOOKUP_PARTIAL = { name: 'Chleb żytni razowy', brand: '', kcal: '214', b: '5,9', t: '', w: '', cat: 'zbozowe', pack: '', ext: {} };
+
+    const fromRecipe = (props.scenariusz || '') === 'Dodawanie z przepisu';
+    this.state = {
+      isMobile: typeof window !== 'undefined' && window.innerWidth <= 940,
+      screen: fromRecipe ? 'form' : 'index',
+      search: '', cat: 'all', sort: 'updated',
+      extraProducts: [], overrides: {}, deleted: {},
+      detailId: null,
+      form: fromRecipe ? this.freshForm('create', true, null) : null,
+      rt: null, rtGrams: '',
+      del: null, leave: null, toast: null,
+      reloading: false, loadFixed: false,
+      keySeq: 1
+    };
+  }
+
+  componentDidMount() {
+    this._onResize = () => {
+      const m = window.innerWidth <= 940;
+      if (m !== this.state.isMobile) this.setState({ isMobile: m });
+    };
+    window.addEventListener('resize', this._onResize);
+    try {
+      const q = new URLSearchParams(window.location.search);
+      if (q.get('utworz') === 'produkt') { this._planReturn = q.get('powrot') === 'plan'; this.openCreate(); }
+    } catch (e) {}
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this._onResize);
+    clearTimeout(this._t1); clearTimeout(this._t2); clearTimeout(this._t3); clearTimeout(this._t4);
+  }
+  componentDidUpdate(prevProps) {
+    if (prevProps.scenariusz !== this.props.scenariusz) {
+      if (this.props.scenariusz === 'Dodawanie z przepisu') {
+        this.setState({ screen: 'form', form: this.freshForm('create', true, null), rt: null, del: null, leave: null, detailId: null });
+      } else {
+        this.setState({ screen: 'index', form: null, rt: null, del: null, leave: null, detailId: null });
+      }
+    }
+  }
+
+  // ── dane ──
+  blankVals() { return { name: '', brand: '', bc: '', kcal: '', b: '', t: '', w: '', cat: '', pack: '' }; }
+  blankExt() { const o = {}; this.EXTF.forEach((f) => { o[f.key] = ''; }); return o; }
+  freshForm(mode, fromRecipe, editId) {
+    return { mode: mode, fromRecipe: !!fromRecipe, editId: editId || null, vals: this.blankVals(), ext: this.blankExt(), extOpen: false, lookup: { status: 'idle' }, errs: {}, saving: false, saveErr: false, dirty: false, catSug: '' };
+  }
+  productsAll() {
+    const scen = this.props.scenariusz || 'Kilka produktów';
+    const base = scen === 'Pusty katalog' ? [] : this.PRODUCTS;
+    const out = [];
+    base.concat(this.state.extraProducts).forEach((p) => {
+      if (this.state.deleted[p.id]) return;
+      out.push(this.state.overrides[p.id] || p);
+    });
+    return out;
+  }
+  productById(id) {
+    let f = null;
+    this.productsAll().forEach((p) => { if (p.id === id) f = p; });
+    return f;
+  }
+  usageOf(id) { return this.USAGE[id] || []; }
+  catLabel(key) {
+    let l = '';
+    this.CATS.forEach((c) => { if (c.key === key) l = c.label; });
+    return l;
+  }
+  catIndex(key) {
+    let i = 99;
+    this.CATS.forEach((c, n) => { if (c.key === key) i = n; });
+    return i;
+  }
+
+  // ── pomocnicze ──
+  fmtInt(x) { return Math.round(x).toLocaleString('pl-PL'); }
+  fmtDec(x) { return (Math.round(x * 10) / 10).toLocaleString('pl-PL'); }
+  numToStr(x) { return (x === null || x === undefined || x === '') ? '' : String(x).replace('.', ','); }
+  parseNum(s) {
+    const t = String(s == null ? '' : s).trim().replace(',', '.').replace(/\s/g, '');
+    if (t === '') return null;
+    const n = Number(t);
+    return isNaN(n) ? NaN : n;
+  }
+  pol(n, a, b, c) {
+    if (n === 1) return a;
+    const m10 = n % 10, m100 = n % 100;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return b;
+    return c;
+  }
+  norm(s) {
+    return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l');
+  }
+  showToast(msg, ok) {
+    clearTimeout(this._t3);
+    this.setState({ toast: { msg: msg, ok: ok !== false } });
+    this._t3 = setTimeout(() => this.setState({ toast: null }), 2800);
+  }
+  stub(name) {
+    this.showToast('Widok „' + name + '” nie jest częścią tej makiety.', true);
+  }
+
+  // ── nawigacja z ochroną szkicu ──
+  guard(go) {
+    const f = this.state.form;
+    if (this.state.screen === 'form' && f && f.dirty && !f.saving) {
+      this.setState({ leave: { go: go } });
+    } else { go(); }
+  }
+  closeFormTo(target) {
+    if (this._planReturn && this.state.form && this.state.form.mode === 'create') { window.location.href = 'Jadlify - Plan posiłków.dc.html'; return; }
+    const f = this.state.form;
+    if (f && f.fromRecipe) {
+      this.setState({ screen: 'return', form: null, rt: { prodName: '', cancelled: true }, rtGrams: '' });
+    } else if (f && f.mode === 'edit' && f.editId && target !== 'index') {
+      this.setState({ screen: 'details', detailId: f.editId, form: null });
+    } else {
+      this.setState({ screen: 'index', form: null });
+    }
+  }
+
+  // ── formularz ──
+  openCreate() { this.setState({ screen: 'form', form: this.freshForm('create', false, null), rt: null }); }
+  openEdit(id) {
+    const p = this.productById(id);
+    if (!p) return;
+    const f = this.freshForm('edit', false, id);
+    f.vals = { name: p.name, brand: p.brand || '', bc: p.bc || '', kcal: this.numToStr(p.kcal), b: this.numToStr(p.b), t: this.numToStr(p.t), w: this.numToStr(p.w), cat: p.cat || '', pack: p.pack ? this.numToStr(p.pack) : '' };
+    const ext = this.blankExt();
+    this.EXTF.forEach((fld) => { if (p.ext && p.ext[fld.key] !== undefined) ext[fld.key] = this.numToStr(p.ext[fld.key]); });
+    f.ext = ext;
+    f.extOpen = Object.keys(p.ext || {}).length > 0;
+    this.setState({ screen: 'form', form: f, rt: null });
+  }
+  setVal(key, value) {
+    const f = this.state.form;
+    if (!f) return;
+    const vals = Object.assign({}, f.vals); vals[key] = value;
+    const errs = Object.assign({}, f.errs); delete errs[key];
+    this.setState({ form: Object.assign({}, f, { vals: vals, errs: errs, dirty: true }) });
+  }
+  setExt(key, value) {
+    const f = this.state.form;
+    if (!f) return;
+    const ext = Object.assign({}, f.ext); ext[key] = value;
+    const errs = Object.assign({}, f.errs); delete errs['ext_' + key];
+    this.setState({ form: Object.assign({}, f, { ext: ext, errs: errs, dirty: true }) });
+  }
+  patchForm(patch) {
+    const f = this.state.form;
+    if (!f) return;
+    this.setState({ form: Object.assign({}, f, patch) });
+  }
+
+  // ── wyszukiwanie kodu ──
+  runLookup() {
+    const f = this.state.form;
+    if (!f || (f.lookup && f.lookup.status === 'loading')) return;
+    const bc = String(f.vals.bc || '').replace(/\s/g, '');
+    if (!/^[0-9]{8,14}$/.test(bc)) {
+      const errs = Object.assign({}, f.errs, { bc: true });
+      this.patchForm({ errs: errs, lookup: { status: 'idle' } });
+      return;
+    }
+    const errs = Object.assign({}, f.errs); delete errs.bc;
+    this.patchForm({ errs: errs, lookup: { status: 'loading', bc: bc } });
+    clearTimeout(this._t2);
+    this._t2 = setTimeout(() => this.finishLookup(bc), 1000);
+  }
+  finishLookup(bc) {
+    const f = this.state.form;
+    if (!f || !f.lookup || f.lookup.status !== 'loading') return;
+    const mode = this.props.wynikKodu || 'Pełne dane';
+    let dup = null;
+    this.productsAll().forEach((p) => { if (p.bc && p.bc === bc && p.id !== f.editId) dup = p; });
+    if (!dup && mode === 'Kod już w katalogu') {
+      this.productsAll().forEach((p) => { if (!dup && p.bc && p.id !== f.editId) dup = p; });
+    }
+    if (dup) { this.patchForm({ lookup: { status: 'dup', dupId: dup.id } }); return; }
+    if (mode === 'Błąd usługi') { this.patchForm({ lookup: { status: 'error' } }); return; }
+    if (mode === 'Nie znaleziono') { this.patchForm({ lookup: { status: 'notfound' } }); return; }
+
+    const src = mode === 'Częściowe dane' ? this.LOOKUP_PARTIAL : this.LOOKUP_FULL;
+    const vals = Object.assign({}, f.vals);
+    let catSug = '';
+    ['name', 'brand', 'kcal', 'b', 't', 'w', 'pack'].forEach((k) => {
+      if (!String(vals[k] || '').trim() && String(src[k] || '').trim()) vals[k] = src[k];
+    });
+    if (!vals.cat && src.cat) { vals.cat = src.cat; catSug = src.cat; }
+    const ext = Object.assign({}, f.ext);
+    Object.keys(src.ext || {}).forEach((k) => { if (!String(ext[k] || '').trim()) ext[k] = src.ext[k]; });
+    const missing = [];
+    if (!String(vals.kcal).trim()) missing.push('kcal');
+    if (!String(vals.b).trim()) missing.push('b');
+    if (!String(vals.t).trim()) missing.push('t');
+    if (!String(vals.w).trim()) missing.push('w');
+    const status = missing.length > 0 ? 'partial' : 'ok';
+    const extOpen = f.extOpen || Object.keys(src.ext || {}).length > 0;
+    this.patchForm({ vals: vals, ext: ext, extOpen: extOpen, dirty: true, catSug: catSug, lookup: { status: status, missing: missing } });
+  }
+
+  // ── walidacja + zapis ──
+  validate(f) {
+    const errs = {};
+    if (!String(f.vals.name || '').trim()) errs.name = true;
+    const bc = String(f.vals.bc || '').replace(/\s/g, '');
+    if (bc && !/^[0-9]{8,14}$/.test(bc)) errs.bc = true;
+    ['kcal', 'b', 't', 'w'].forEach((k) => {
+      const n = this.parseNum(f.vals[k]);
+      if (n === null || isNaN(n) || n < 0) errs[k] = true;
+    });
+    if (String(f.vals.pack || '').trim()) {
+      const n = this.parseNum(f.vals.pack);
+      if (n === null || isNaN(n) || n <= 0) errs.pack = true;
+    }
+    this.EXTF.forEach((fld) => {
+      const raw = String(f.ext[fld.key] || '').trim();
+      if (!raw) return;
+      const n = this.parseNum(raw);
+      if (n === null || isNaN(n) || n < 0) errs['ext_' + fld.key] = true;
+    });
+    return errs;
+  }
+  saveProduct() {
+    const f = this.state.form;
+    if (!f || f.saving) return;
+    const errs = this.validate(f);
+    if (Object.keys(errs).length > 0) {
+      this.patchForm({ errs: errs, tried: true });
+      return;
+    }
+    this.patchForm({ errs: {}, saving: true, saveErr: false });
+    clearTimeout(this._t1);
+    this._t1 = setTimeout(() => {
+      const cur = this.state.form;
+      if (!cur) return;
+      if (this.props.bladZapisu) { this.patchForm({ saving: false, saveErr: true }); return; }
+      const ext = {};
+      this.EXTF.forEach((fld) => {
+        const raw = String(cur.ext[fld.key] || '').trim();
+        if (raw) ext[fld.key] = this.parseNum(raw);
+      });
+      const packN = String(cur.vals.pack || '').trim() ? this.parseNum(cur.vals.pack) : null;
+      const prod = {
+        id: cur.mode === 'edit' ? cur.editId : ('x' + this.state.keySeq),
+        name: String(cur.vals.name).trim(),
+        brand: String(cur.vals.brand || '').trim(),
+        cat: cur.vals.cat || '',
+        kcal: this.parseNum(cur.vals.kcal), b: this.parseNum(cur.vals.b), t: this.parseNum(cur.vals.t), w: this.parseNum(cur.vals.w),
+        bc: String(cur.vals.bc || '').replace(/\s/g, ''),
+        pack: packN, ext: ext,
+        upd: -1, updLabel: 'Zaktualizowano przed chwilą'
+      };
+      if (cur.mode === 'edit') {
+        const ov = Object.assign({}, this.state.overrides); ov[prod.id] = prod;
+        this.setState({ overrides: ov, screen: 'details', detailId: prod.id, form: null });
+        this.showToast('Produkt „' + prod.name + '” został zapisany.');
+      } else if (cur.fromRecipe) {
+        this.setState({ extraProducts: this.state.extraProducts.concat([prod]), keySeq: this.state.keySeq + 1, screen: 'return', form: null, rt: { prodName: prod.name, cancelled: false }, rtGrams: '' });
+      } else if (this._planReturn) {
+        window.location.href = 'Jadlify - Plan posiłków.dc.html?nowyProdukt=' + encodeURIComponent(prod.name) + '&kcal=' + prod.kcal + '&b=' + prod.b + '&t=' + prod.t + '&w=' + prod.w;
+        return;
+      } else {
+        this.setState({ extraProducts: this.state.extraProducts.concat([prod]), keySeq: this.state.keySeq + 1, screen: 'details', detailId: prod.id, form: null });
+        this.showToast('Produkt „' + prod.name + '” został dodany do katalogu.');
+      }
+    }, 1000);
+  }
+
+  // ── render ──
+  renderVals() {
+    const self = this;
+    const st = this.state;
+    const sys = this.props.stanSystemu || 'Normalny';
+
+    const showLoading = (sys === 'Ładowanie' && !st.loadFixed) || st.reloading;
+    const showError = sys === 'Błąd pobierania' && !st.loadFixed && !st.reloading;
+    const showContent = !showLoading && !showError;
+
+    // ── indeks ──
+    const all = this.productsAll();
+    const q = st.search.trim();
+    const nq = this.norm(q);
+    const dq = q.replace(/\s/g, '');
+    let filtered = all.filter((p) => {
+      if (nq && this.norm(p.name).indexOf(nq) < 0 && this.norm(p.brand).indexOf(nq) < 0 && !(p.bc && dq && p.bc.indexOf(dq) >= 0)) return false;
+      if (st.cat === 'none' && p.cat) return false;
+      if (st.cat !== 'all' && st.cat !== 'none' && p.cat !== st.cat) return false;
+      return true;
+    });
+    const sort = st.sort;
+    filtered = filtered.slice().sort((a, b) => {
+      if (sort === 'alpha') return a.name.localeCompare(b.name, 'pl');
+      if (sort === 'kcal') return a.kcal - b.kcal || a.name.localeCompare(b.name, 'pl');
+      if (sort === 'cat') {
+        const ai = a.cat ? this.catIndex(a.cat) : 99, bi = b.cat ? this.catIndex(b.cat) : 99;
+        return ai - bi || a.name.localeCompare(b.name, 'pl');
+      }
+      return a.upd - b.upd || a.name.localeCompare(b.name, 'pl');
+    });
+
+    const prodCards = filtered.map((p) => ({
+      open: () => self.setState({ screen: 'details', detailId: p.id }),
+      edit: (e) => { e.stopPropagation(); self.openEdit(p.id); },
+      del: (e) => { e.stopPropagation(); self.setState({ del: { pid: p.id } }); },
+      name: p.name,
+      brandShow: !!p.brand, brand: p.brand,
+      catShow: !!p.cat, catNone: !p.cat,
+      catLabel: this.catLabel(p.cat).toUpperCase(),
+      bcShow: !!p.bc,
+      kcal: this.fmtInt(p.kcal),
+      macroLine: 'B ' + this.fmtDec(p.b) + ' g · T ' + this.fmtDec(p.t) + ' g · W ' + this.fmtDec(p.w) + ' g',
+      updated: p.updLabel
+    }));
+
+    const filtersActive = !!q || st.cat !== 'all';
+    const catFilterLabel = st.cat === 'none' ? 'Bez kategorii' : this.catLabel(st.cat);
+    const idxEmpty = all.length === 0;
+    const idxNoMatch = all.length > 0 && filtered.length === 0;
+    const n = filtered.length;
+    const countLabel = n + ' ' + this.pol(n, 'produkt', 'produkty', 'produktów');
+
+    // ── szczegóły ──
+    const det = st.detailId ? this.productById(st.detailId) : null;
+    let detExtGroups = [], detHasExt = false, detUsage = [], detPack = null;
+    if (det) {
+      const grouped = {};
+      this.EXTF.forEach((fld) => {
+        const v = det.ext ? det.ext[fld.key] : undefined;
+        if (v === undefined || v === null) return;
+        detHasExt = true;
+        if (!grouped[fld.grp]) grouped[fld.grp] = [];
+        grouped[fld.grp].push({ name: fld.label, val: this.fmtDec(v) + ' ' + fld.unit });
+      });
+      detExtGroups = ['TŁUSZCZE', 'WĘGLOWODANY', 'MINERAŁY', 'WITAMINY'].filter((g) => grouped[g]).map((g) => ({ label: g, rows: grouped[g] }));
+      detUsage = this.usageOf(det.id).map((name) => ({ name: name }));
+      if (det.pack) {
+        const f = det.pack / 100;
+        detPack = { kcal: this.fmtInt(det.kcal * f), line: 'B ' + this.fmtDec(det.b * f) + ' g · T ' + this.fmtDec(det.t * f) + ' g · W ' + this.fmtDec(det.w * f) + ' g' };
+      }
+    }
+    const detUsageN = det ? this.usageOf(det.id).length : 0;
+
+    // ── formularz ──
+    const f = st.form;
+    const lk = f ? (f.lookup || { status: 'idle' }) : { status: 'idle' };
+    const errB = (bad) => bad ? '1.5px solid #B3402E' : '1px solid #E5DAC3';
+    const REQ = [
+      { k: 'kcal', label: 'Kalorie (kcal / 100 g)', id: 'jd-p-kcal' },
+      { k: 'b', label: 'Białko (g / 100 g)', id: 'jd-p-b' },
+      { k: 't', label: 'Tłuszcz (g / 100 g)', id: 'jd-p-t' },
+      { k: 'w', label: 'Węglowodany (g / 100 g)', id: 'jd-p-w' }
+    ];
+    const reqFields = f ? REQ.map((r) => ({
+      id: r.id, label: r.label,
+      val: f.vals[r.k],
+      on: (e) => self.setVal(r.k, e.target.value),
+      border: errB(!!f.errs[r.k]),
+      needShow: lk.status === 'partial' && (lk.missing || []).indexOf(r.k) >= 0 && !String(f.vals[r.k] || '').trim()
+    })) : [];
+    const reqErr = f ? ['kcal', 'b', 't', 'w'].some((k) => f.errs[k]) : false;
+
+    const extFilled = f ? this.EXTF.filter((fld) => String(f.ext[fld.key] || '').trim()).length : 0;
+    const extGroups = f ? ['TŁUSZCZE', 'WĘGLOWODANY', 'MINERAŁY', 'WITAMINY'].map((g) => ({
+      label: g === 'TŁUSZCZE' ? 'TŁUSZCZE (G / 100 G)' : g === 'WĘGLOWODANY' ? 'WĘGLOWODANY (G / 100 G)' : g + ' (NA 100 G)',
+      rows: this.EXTF.filter((fld) => fld.grp === g).map((fld) => ({
+        id: 'jd-ext-' + fld.key, label: fld.label, unit: fld.unit,
+        val: f.ext[fld.key],
+        on: (e) => self.setExt(fld.key, e.target.value),
+        border: f.errs['ext_' + fld.key] ? '1.5px solid #B3402E' : '1px solid #E5DAC3'
+      }))
+    })) : [];
+    const extErr = f ? this.EXTF.some((fld) => f.errs['ext_' + fld.key]) : false;
+
+    const errCount = f ? Object.keys(f.errs).length : 0;
+    const usageN = f && f.mode === 'edit' && f.editId ? this.usageOf(f.editId).length : 0;
+    const dupProd = lk.status === 'dup' ? this.productById(lk.dupId) : null;
+
+    const missNames = { kcal: 'kalorie', b: 'białko', t: 'tłuszcz', w: 'węglowodany' };
+    const lkMissingLabel = lk.status === 'partial' ? (lk.missing || []).map((k) => missNames[k]).join(', ') : '';
+
+    const reqOk = f ? ['kcal', 'b', 't', 'w'].every((k) => {
+      const nn = this.parseNum(f.vals[k]);
+      return nn !== null && !isNaN(nn) && nn >= 0;
+    }) : false;
+    const nameOk = f ? !!String(f.vals.name || '').trim() : false;
+    const reqComplete = reqOk && nameOk;
+    const barLine = f && reqOk
+      ? this.fmtInt(this.parseNum(f.vals.kcal)) + ' kcal · B ' + this.fmtDec(this.parseNum(f.vals.b)) + ' · T ' + this.fmtDec(this.parseNum(f.vals.t)) + ' · W ' + this.fmtDec(this.parseNum(f.vals.w)) + ' g'
+      : 'Uzupełnij wymagane wartości';
+
+    // ── usuwanie ──
+    const del = st.del;
+    const delProd = del ? this.productById(del.pid) : null;
+    const delUsage = delProd ? this.usageOf(delProd.id) : [];
+    const delBlocked = delUsage.length > 0;
+
+    // ── toast ──
+    const toast = st.toast;
+
+    const goStub = (name) => (e) => { e.preventDefault(); self.stub(name); };
+    const goHref = (href) => (e) => { if (e) e.preventDefault(); window.location.href = href; };
+
+    return {
+      isMobile: st.isMobile, isDesktop: !st.isMobile,
+      statusLabel: 'MAKIETA · PRODUKTY', statusDot: '#8FBF6A', statusFg: 'rgba(242,233,216,0.7)',
+      goPlan: goHref('Jadlify - Plan posiłków.dc.html'),
+      goCele: goHref('Jadlify - Dzienne cele.dc.html'),
+      goKonto: goStub('Moje konto'),
+      goWyloguj: goStub('Wylogowanie'),
+      goProdukty: (e) => { e.preventDefault(); self.guard(() => self.setState({ screen: 'index', form: null, detailId: null, rt: null })); },
+
+      showLoading: showLoading, showError: showError, showContent: showContent,
+      retryLoad: () => {
+        self.setState({ reloading: true });
+        clearTimeout(self._t4);
+        self._t4 = setTimeout(() => self.setState({ reloading: false, loadFixed: true }), 1100);
+      },
+
+      scrIndex: showContent && st.screen === 'index',
+      scrDetails: showContent && st.screen === 'details' && !!det,
+      scrForm: showContent && st.screen === 'form' && !!f,
+      scrReturn: showContent && st.screen === 'return' && !!st.rt,
+
+      // indeks
+      idxCtaShow: all.length > 0,
+      startCreate: () => self.openCreate(),
+      toolbarShow: all.length > 0,
+      searchVal: st.search,
+      onSearch: (e) => self.setState({ search: e.target.value }),
+      searchHasText: st.search.length > 0,
+      clearSearch: () => self.setState({ search: '' }),
+      catVal: st.cat,
+      onCat: (e) => self.setState({ cat: e.target.value }),
+      sortVal: st.sort,
+      onSort: (e) => self.setState({ sort: e.target.value }),
+      countLabel: countLabel,
+      filtersActive: filtersActive,
+      filterSearchShow: !!q,
+      filterSearchLabel: 'Szukane: „' + q + '”',
+      filterCatShow: st.cat !== 'all',
+      filterCatLabel: 'Kategoria: ' + catFilterLabel,
+      clearCat: () => self.setState({ cat: 'all' }),
+      clearAll: () => self.setState({ search: '', cat: 'all' }),
+      idxEmpty: idxEmpty,
+      idxNoMatch: idxNoMatch,
+      noMatchLabel: q ? 'Brak produktów dla „' + q + '”' : 'Brak produktów w tej kategorii',
+      idxGridShow: !idxEmpty && !idxNoMatch,
+      prodCards: prodCards,
+
+      // szczegóły
+      backToIndex: () => self.setState({ screen: 'index', detailId: null }),
+      detName: det ? det.name : '',
+      detBrandShow: !!(det && det.brand), detBrand: det ? det.brand : '',
+      detUpdated: det ? det.updLabel : '',
+      detCatShow: !!(det && det.cat), detCatNone: !!det && !det.cat,
+      detCatLabel: det ? this.catLabel(det.cat).toUpperCase() : '',
+      detBcShow: !!(det && det.bc), detBc: det ? det.bc : '',
+      detPackShow: !!(det && det.pack), detPackLabel: det && det.pack ? 'Opakowanie: ' + this.fmtInt(det.pack) + ' g' : '',
+      detKcal: det ? this.fmtInt(det.kcal) : '',
+      detB: det ? this.fmtDec(det.b) + ' g' : '',
+      detT: det ? this.fmtDec(det.t) + ' g' : '',
+      detW: det ? this.fmtDec(det.w) + ' g' : '',
+      detPackCalcShow: !!detPack,
+      detPackCalcTitle: det && det.pack ? 'CAŁE OPAKOWANIE · ' + this.fmtInt(det.pack) + ' G' : '',
+      detPackKcal: detPack ? detPack.kcal : '',
+      detPackLine: detPack ? detPack.line : '',
+      detExtShow: detHasExt, detExtGroups: detExtGroups, detExtEmpty: !detHasExt,
+      detUsageShow: detUsage.length > 0, detUsageEmpty: detUsage.length === 0,
+      detUsageRows: detUsage,
+      detUsageCountLabel: detUsageN > 0 ? detUsageN + ' ' + this.pol(detUsageN, 'przepis', 'przepisy', 'przepisów') : '',
+      detEdit: () => { if (det) self.openEdit(det.id); },
+      detDelete: () => { if (det) self.setState({ del: { pid: det.id } }); },
+
+      // formularz
+      formBack: () => self.guard(() => self.closeFormTo('back')),
+      formBackLabel: f && f.fromRecipe ? 'Wróć do przepisu' : (f && f.mode === 'edit' ? 'Szczegóły produktu' : 'Wszystkie produkty'),
+      formTitle: f && f.mode === 'edit' ? 'Edytuj produkt' : 'Nowy produkt',
+      fCtxShow: !!(f && f.fromRecipe),
+      fEditUsedShow: usageN > 0,
+      fEditUsedLabel: 'Ten produkt jest używany w ' + usageN + ' ' + this.pol(usageN, 'przepisie', 'przepisach', 'przepisach') + '.',
+      fNameVal: f ? f.vals.name : '',
+      onFName: (e) => self.setVal('name', e.target.value),
+      fNameBorder: errB(!!(f && f.errs.name)),
+      fNameErrShow: !!(f && f.errs.name),
+      fBrandVal: f ? f.vals.brand : '',
+      onFBrand: (e) => self.setVal('brand', e.target.value),
+
+      fBcVal: f ? f.vals.bc : '',
+      onFBc: (e) => self.setVal('bc', e.target.value),
+      fBcBorder: errB(!!(f && f.errs.bc)),
+      fBcErrShow: !!(f && f.errs.bc),
+      lookupRun: () => self.runLookup(),
+      lookupDis: lk.status === 'loading' || !(f && String(f.vals.bc || '').trim()),
+      lookupCursor: lk.status === 'loading' || !(f && String(f.vals.bc || '').trim()) ? 'not-allowed' : 'pointer',
+      lookupOp: !(f && String(f.vals.bc || '').trim()) ? 0.5 : 1,
+      lookupLabel: lk.status === 'loading' ? 'Szukam…' : 'Wyszukaj',
+      lkLoading: lk.status === 'loading',
+      lkNotLoading: lk.status !== 'loading',
+      lkQueryBc: lk.bc || '',
+      lkOkShow: lk.status === 'ok',
+      lkPartialShow: lk.status === 'partial',
+      lkMissingLabel: lkMissingLabel,
+      lkNotFoundShow: lk.status === 'notfound',
+      lkErrShow: lk.status === 'error',
+      lkDupShow: lk.status === 'dup' && !!dupProd,
+      lkDupName: dupProd ? dupProd.name : '',
+      lkDupOpen: () => { if (dupProd) self.guard(() => self.setState({ screen: 'details', detailId: dupProd.id, form: null })); },
+      lkDismiss: () => self.patchForm({ lookup: { status: 'idle' } }),
+
+      reqFields: reqFields,
+      reqErrShow: reqErr,
+      fReqBorder: reqErr ? '1.5px solid #B3402E' : '1.5px solid rgba(199,91,56,0.45)',
+
+      fCatVal: f ? f.vals.cat : '',
+      onFCat: (e) => { self.setVal('cat', e.target.value); self.patchForm({ catSug: '' }); },
+      catSugShow: !!(f && f.catSug && f.vals.cat === f.catSug),
+      catSugLabel: f && f.catSug ? this.catLabel(f.catSug) : '',
+      fPackVal: f ? f.vals.pack : '',
+      onFPack: (e) => self.setVal('pack', e.target.value),
+      fPackBorder: errB(!!(f && f.errs.pack)),
+      fPackErrShow: !!(f && f.errs.pack),
+
+      extClosed: !(f && f.extOpen),
+      extOpen: !!(f && f.extOpen),
+      toggleExt: () => self.patchForm({ extOpen: !(f && f.extOpen) }),
+      extCountLabel: extFilled > 0 ? 'uzupełnione: ' + extFilled + ' z 14' : '14 pól w 4 grupach',
+      extGroups: extGroups,
+      extErrShow: extErr,
+
+      saveErrShow: !!(f && f.saveErr),
+      validHintShow: errCount > 0,
+      cancelForm: () => self.guard(() => self.closeFormTo('cancel')),
+      cancelLabel: f && f.fromRecipe ? 'Anuluj i wróć do przepisu' : 'Anuluj',
+      fSavingDis: !!(f && f.saving),
+      saveProduct: () => self.saveProduct(),
+      saveHintShow: !!(f && !f.saving && !reqComplete),
+      saveDisabled: !!(f && (f.saving || !reqComplete)),
+      saveAria: f && (f.saving || !reqComplete) ? 'true' : 'false',
+      saveBg: f && f.saving ? '#D98B67' : '#C75B38',
+      saveOp: f && !f.saving && !reqComplete ? 0.5 : 1,
+      saveCursor: f && f.saving ? 'wait' : (f && !reqComplete ? 'not-allowed' : 'pointer'),
+      fSaving: !!(f && f.saving),
+      fNotSaving: !(f && f.saving),
+      saveLabel: f && f.mode === 'edit' ? 'Zapisz zmiany' : 'Zapisz produkt',
+      barShow: showContent && st.screen === 'form' && !!f && st.isMobile,
+      barLine: barLine,
+      barSaveLabel: f && f.saving ? 'Zapisywanie…' : (f && f.mode === 'edit' ? 'Zapisz zmiany' : 'Zapisz produkt'),
+
+      // powrót do przepisu
+      rtOkShow: !!(st.rt && !st.rt.cancelled),
+      rtCancelShow: !!(st.rt && st.rt.cancelled),
+      rtProdName: st.rt ? st.rt.prodName : '',
+      rtGramsVal: st.rtGrams,
+      onRtGrams: (e) => self.setState({ rtGrams: e.target.value }),
+      rtDemoSave: () => self.stub('Zapisywanie przepisu'),
+      rtBackProducts: () => self.setState({ screen: 'index', rt: null }),
+
+      // usuwanie
+      delOpen: !!del && !!delProd,
+      delTitle: delBlocked ? 'Nie można jeszcze usunąć produktu' : 'Usunąć produkt?',
+      delName: delProd ? delProd.name : '',
+      delBlockedShow: delBlocked,
+      delFreeShow: !delBlocked,
+      delUsedLabel: delUsage.length + ' ' + this.pol(delUsage.length, 'przepisu', 'przepisów', 'przepisów'),
+      delRecipes: delUsage.map((name) => ({ name: name })),
+      closeDel: () => self.setState({ del: null }),
+      closeDelBg: (e) => { if (e.target === e.currentTarget) self.setState({ del: null }); },
+      delConfirm: () => {
+        if (!delProd || (del && del.deleting)) return;
+        self.setState({ del: Object.assign({}, del, { deleting: true }) });
+        clearTimeout(self._t1);
+        self._t1 = setTimeout(() => {
+          const dd = Object.assign({}, self.state.deleted); dd[delProd.id] = true;
+          self.setState({ deleted: dd, del: null, screen: 'index', detailId: null });
+          self.showToast('Produkt „' + delProd.name + '” został usunięty.');
+        }, 800);
+      },
+      delDeleting: !!(del && del.deleting),
+      delNotDeleting: !(del && del.deleting),
+      delDeletingDis: !!(del && del.deleting),
+      stopClick: (e) => e.stopPropagation(),
+
+      // niezapisane zmiany
+      leaveOpen: !!st.leave,
+      leaveStay: () => self.setState({ leave: null }),
+      leaveStayBg: (e) => { if (e.target === e.currentTarget) self.setState({ leave: null }); },
+      leaveDiscard: () => {
+        const go = st.leave && st.leave.go;
+        self.setState({ leave: null });
+        if (go) go();
+      },
+
+      // toast
+      toastShow: !!toast,
+      toastMsg: toast ? toast.msg : '',
+      toastBg: toast && toast.ok ? '#4C6340' : '#8F3222',
+      toastIsOk: !!(toast && toast.ok)
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 using Jadlify.Application.Recipes;
+using Jadlify.Domain.Nutrition;
 using Jadlify.Domain.Recipes;
 using Jadlify.SharedKernel;
 
@@ -32,15 +33,49 @@ internal sealed class FakeRecipeRepository : IRecipeRepository
     public Task<IReadOnlyList<Recipe>> ListAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<Recipe>>([.. _recipes]);
 
+    public Task<RecipeCatalogResult> GetCatalogAsync(
+        string? search,
+        RecipeCatalogSort sort,
+        int skip,
+        int take,
+        CancellationToken cancellationToken = default)
+    {
+        IEnumerable<Recipe> matches = _recipes;
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            matches = matches.Where(recipe =>
+                recipe.Name.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase));
+        }
+
+        List<Recipe> ordered = [.. sort == RecipeCatalogSort.CaloriesPerServingAsc
+            ? matches
+                .OrderBy(recipe => MacroCalculator.RecipePerServing(recipe).Calories)
+                .ThenBy(recipe => recipe.Name, StringComparer.Ordinal)
+            : matches.OrderBy(recipe => recipe.Name, StringComparer.Ordinal)];
+
+        return Task.FromResult(new RecipeCatalogResult(
+            [.. ordered.Skip(skip).Take(take)],
+            ordered.Count));
+    }
+
     public Task<IReadOnlyList<Recipe>> ListByIdsAsync(
         IReadOnlyCollection<Guid> ids,
         CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<Recipe>>([.. _recipes.Where(recipe => ids.Contains(recipe.Id))]);
 
+    /// <summary>
+    /// Counts calls so tests can assert that a range read batches recipes once rather than
+    /// resolving them per day or per entry.
+    /// </summary>
+    public int ListByIdsWithIngredientsCallCount { get; private set; }
+
     public Task<IReadOnlyList<Recipe>> ListByIdsWithIngredientsAsync(
         IReadOnlyCollection<Guid> ids,
-        CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<Recipe>>([.. _recipes.Where(recipe => ids.Contains(recipe.Id))]);
+        CancellationToken cancellationToken = default)
+    {
+        ListByIdsWithIngredientsCallCount++;
+        return Task.FromResult<IReadOnlyList<Recipe>>([.. _recipes.Where(recipe => ids.Contains(recipe.Id))]);
+    }
 
     public Task<Result> UpdateAsync(Recipe recipe, CancellationToken cancellationToken = default)
     {

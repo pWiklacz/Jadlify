@@ -27,6 +27,14 @@ public sealed class CreateProductCommandValidator : AbstractValidator<CreateProd
                 .Matches(ProductValidationBounds.BarcodePattern)
                 .WithMessage("Barcode must be 8 to 14 digits."));
 
+        When(x => !string.IsNullOrEmpty(x.Brand), () =>
+            RuleFor(x => x.Brand!)
+                .MaximumLength(ProductValidationBounds.MaxBrandLength));
+
+        When(x => x.Category.HasValue, () =>
+            RuleFor(x => x.Category!.Value)
+                .IsInEnum());
+
         this.ApplyExtendedNutritionRules(
             x => x.PackageSizeGrams,
             x => x.SaturatedFat,

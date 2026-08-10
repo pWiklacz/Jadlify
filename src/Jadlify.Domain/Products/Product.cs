@@ -18,7 +18,9 @@ public sealed class Product
         MacroNutrients per100Grams,
         string? barcode = null,
         decimal? packageSizeGrams = null,
-        NutritionFacts? details = null)
+        NutritionFacts? details = null,
+        string? brand = null,
+        ProductCategory? category = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(per100Grams);
@@ -33,6 +35,8 @@ public sealed class Product
         Barcode = barcode;
         PackageSizeGrams = packageSizeGrams;
         Details = details ?? NutritionFacts.Empty;
+        Brand = brand;
+        Category = category;
     }
 
     public Guid Id { get; }
@@ -40,6 +44,12 @@ public sealed class Product
     public string Name { get; private set; }
 
     public string? Barcode { get; private set; }
+
+    /// <summary>Optional manufacturer/brand, free text; <c>null</c> when unknown.</summary>
+    public string? Brand { get; private set; }
+
+    /// <summary>Optional taxonomy bucket; <c>null</c> is a valid "Bez kategorii" state.</summary>
+    public ProductCategory? Category { get; private set; }
 
     public MacroNutrients Per100Grams { get; private set; }
 

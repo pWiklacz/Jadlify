@@ -18,6 +18,7 @@ export interface ApiClient {
   get<T>(path: string): Promise<T>
   post<T>(path: string, body: unknown): Promise<T>
   put<T>(path: string, body: unknown): Promise<T>
+  patch<T>(path: string, body: unknown): Promise<T>
   del(path: string): Promise<void>
 }
 
@@ -64,6 +65,7 @@ export function createApiClient(getAccessToken: AccessTokenResolver): ApiClient 
     get: <T>(path: string) => request<T>(path, { method: 'GET' }),
     post: <T>(path: string, body: unknown) => request<T>(path, { method: 'POST' }, body),
     put: <T>(path: string, body: unknown) => request<T>(path, { method: 'PUT' }, body),
+    patch: <T>(path: string, body: unknown) => request<T>(path, { method: 'PATCH' }, body),
     del: (path: string) => request<void>(path, { method: 'DELETE' }),
   }
 }

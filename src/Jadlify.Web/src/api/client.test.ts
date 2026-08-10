@@ -98,6 +98,24 @@ describe('createApiClient', () => {
     expect(init.body).toBe(JSON.stringify({ name: 'Oats' }))
   })
 
+  it('patches a JSON body and returns the parsed response', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ version: 3 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const client = createApiClient(async () => null)
+    const result = await client.patch<{ version: number }>('/api/shopping-lists/l-1/items/i-1', {
+      isBought: true,
+      expectedVersion: 2,
+    })
+
+    expect(result).toEqual({ version: 3 })
+    const [path, init] = fetchMock.mock.calls[0]
+    expect(path).toBe('/api/shopping-lists/l-1/items/i-1')
+    expect(init.method).toBe('PATCH')
+    expect(init.body).toBe(JSON.stringify({ isBought: true, expectedVersion: 2 }))
+    expect(new Headers(init.headers).get('Content-Type')).toBe('application/json')
+  })
+
   it('issues a DELETE without a body and resolves to void', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }))
     vi.stubGlobal('fetch', fetchMock)

@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Jadlify.Application.Products;
+using Jadlify.Domain.Products;
 
 namespace Jadlify.Infrastructure.OpenFoodFacts;
 
@@ -22,7 +23,23 @@ internal sealed class OpenFoodFactsBarcodeLookup : IBarcodeProductLookup
 
     // Only request the fields we snapshot — a full product object is huge (off-api-reference §4).
     private const string Fields =
-        "product_name,product_name_pl,brands,quantity,product_quantity,nutriments";
+        "product_name,product_name_pl,brands,quantity,product_quantity,categories_tags,nutriments";
+
+    // Best-effort taxonomy suggestion from OFF category tags (e.g. "en:vegetables"). Tags are
+    // lowercase, language-prefixed, and hierarchical; the rules are scanned in a fixed precedence
+    // (food type before storage form, so "frozen vegetables" suggests Vegetables). The first
+    // keyword hit wins; an unrecognized set maps to null — never an error (FR-006).
+    private static readonly (string[] Keywords, ProductCategory Category)[] CategoryRules =
+    [
+        (["vegetable"], ProductCategory.Vegetables),
+        (["fruit", "berries"], ProductCategory.Fruits),
+        (["meat", "poultry", "chicken", "beef", "pork", "fish", "seafood", "sausage"], ProductCategory.MeatAndFish),
+        (["dairy", "dairies", "milk", "cheese", "yogurt", "yoghurt"], ProductCategory.Dairy),
+        (["cereal", "bread", "pasta", "rice", "grain", "bakery"], ProductCategory.GrainsAndBread),
+        (["beverage", "drink", "water", "juice", "soda", "tea", "coffee"], ProductCategory.Beverages),
+        (["spread", "condiment", "sauce", "spice", "legume", "pulse", "sugar", "flour", "canned", "snack"], ProductCategory.PantryAndDryGoods),
+        (["frozen"], ProductCategory.Frozen),
+    ];
 
     // Leading mass at the start of a free-text quantity (e.g. "400 g", "1,5 kg"). Only g/kg
     // are mapped — the grams model has no place for volumes (ml/cl/l), which fall through to null.
@@ -94,6 +111,7 @@ internal sealed class OpenFoodFactsBarcodeLookup : IBarcodeProductLookup
             Fat: nutriments?.FatPer100g,
             Carbohydrates: nutriments?.CarbohydratesPer100g,
             PackageSizeGrams: ResolvePackageSizeGrams(product),
+            Category: ResolveCategory(product),
             SaturatedFat: nutriments?.SaturatedFatPer100g,
             MonounsaturatedFat: nutriments?.MonounsaturatedFatPer100g,
             PolyunsaturatedFat: nutriments?.PolyunsaturatedFatPer100g,
@@ -108,6 +126,36 @@ internal sealed class OpenFoodFactsBarcodeLookup : IBarcodeProductLookup
             VitaminA: nutriments?.VitaminAPer100g,
             VitaminC: nutriments?.VitaminCPer100g,
             VitaminD: nutriments?.VitaminDPer100g);
+    }
+
+    private static ProductCategory? ResolveCategory(OpenFoodFactsProduct product)
+    {
+        if (product.CategoriesTags is not { Count: > 0 } tags)
+        {
+            return null;
+        }
+
+        // Rule order is the precedence; within a rule, any tag containing any keyword matches.
+        foreach ((string[] keywords, ProductCategory category) in CategoryRules)
+        {
+            foreach (string? tag in tags)
+            {
+                if (string.IsNullOrEmpty(tag))
+                {
+                    continue;
+                }
+
+                foreach (string keyword in keywords)
+                {
+                    if (tag.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return category;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     private static decimal? ResolvePackageSizeGrams(OpenFoodFactsProduct product)

@@ -1,6 +1,7 @@
 using Jadlify.Domain.Planning;
 using Jadlify.Domain.Products;
 using Jadlify.Domain.Recipes;
+using Jadlify.Domain.Shopping;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jadlify.Infrastructure.Persistence;
@@ -21,6 +22,8 @@ public sealed class JadlifyDbContext : DbContext
     public DbSet<DailyMacroGoal> DailyMacroGoals => Set<DailyMacroGoal>();
 
     public DbSet<MealPlanEntry> MealPlanEntries => Set<MealPlanEntry>();
+
+    public DbSet<ShoppingList> ShoppingLists => Set<ShoppingList>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

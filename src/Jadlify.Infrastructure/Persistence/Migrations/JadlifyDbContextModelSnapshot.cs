@@ -59,13 +59,20 @@ namespace Jadlify.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("meal_type");
 
-                    b.Property<int>("Portions")
-                        .HasColumnType("integer")
-                        .HasColumnName("portions");
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(12, 3)
+                        .HasColumnType("numeric(12,3)")
+                        .HasColumnName("quantity");
 
-                    b.Property<Guid>("RecipeId")
+                    b.Property<Guid?>("RecipeId")
                         .HasColumnType("uuid")
                         .HasColumnName("recipe_id");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("source");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -78,7 +85,10 @@ namespace Jadlify.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId", "Date");
 
-                    b.ToTable("meal_plan_entries", (string)null);
+                    b.ToTable("meal_plan_entries", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_meal_plan_entries_exactly_one_source", "quantity > 0 AND (\n    (source = 'Recipe' AND recipe_id IS NOT NULL AND product_id IS NULL)\n    OR (source = 'Product' AND recipe_id IS NULL AND product_id IS NOT NULL)\n)");
+                        });
                 });
 
             modelBuilder.Entity("Jadlify.Domain.Products.Product", b =>
@@ -91,6 +101,16 @@ namespace Jadlify.Infrastructure.Persistence.Migrations
                     b.Property<string>("Barcode")
                         .HasColumnType("text")
                         .HasColumnName("barcode");
+
+                    b.Property<string>("Brand")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("brand");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("category");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -112,6 +132,8 @@ namespace Jadlify.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.HasIndex("UserId", "Barcode");
+
+                    b.HasIndex("UserId", "Category", "Name");
 
                     b.ToTable("products", (string)null);
                 });
@@ -142,6 +164,145 @@ namespace Jadlify.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("recipes", (string)null);
+                });
+
+            modelBuilder.Entity("Jadlify.Domain.Shopping.ShoppingList", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("SourceFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("source_fingerprint");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("user_id");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_shopping_lists_active_per_user")
+                        .HasFilter("status = 'Active'");
+
+                    b.HasIndex("UserId", "Status")
+                        .HasDatabaseName("ix_shopping_lists_user_id_status");
+
+                    b.ToTable("shopping_lists", (string)null);
+                });
+
+            modelBuilder.Entity("Jadlify.Domain.Shopping.ShoppingListItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("product_category");
+
+                    b.Property<decimal>("Grams")
+                        .HasPrecision(12, 3)
+                        .HasColumnType("numeric(12,3)")
+                        .HasColumnName("grams");
+
+                    b.Property<bool>("IsBought")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_bought");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("product_name");
+
+                    b.Property<Guid>("ShoppingListId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("shopping_list_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_shopping_list_items_product_id");
+
+                    b.HasIndex("ShoppingListId")
+                        .HasDatabaseName("ix_shopping_list_items_shopping_list_id");
+
+                    b.ToTable("shopping_list_items", (string)null);
+                });
+
+            modelBuilder.Entity("Jadlify.Domain.Shopping.ShoppingListItemSource", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<decimal>("Grams")
+                        .HasPrecision(12, 3)
+                        .HasColumnType("numeric(12,3)")
+                        .HasColumnName("grams");
+
+                    b.Property<string>("MealType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("meal_type");
+
+                    b.Property<Guid>("ShoppingListItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("shopping_list_item_id");
+
+                    b.Property<string>("SourceLabel")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("source_label");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShoppingListItemId")
+                        .HasDatabaseName("ix_shopping_list_item_sources_shopping_list_item_id");
+
+                    b.ToTable("shopping_list_item_sources", (string)null);
                 });
 
             modelBuilder.Entity("Jadlify.Domain.Planning.DailyMacroGoal", b =>
@@ -188,8 +349,75 @@ namespace Jadlify.Infrastructure.Persistence.Migrations
                     b.HasOne("Jadlify.Domain.Recipes.Recipe", null)
                         .WithMany()
                         .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.OwnsOne("Jadlify.Domain.Planning.PlannedProductSnapshot", "Product", b1 =>
+                        {
+                            b1.Property<Guid>("MealPlanEntryId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Category")
+                                .HasMaxLength(40)
+                                .HasColumnType("character varying(40)")
+                                .HasColumnName("product_category");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("product_name");
+
+                            b1.Property<Guid>("ProductId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("product_id");
+
+                            b1.HasKey("MealPlanEntryId");
+
+                            b1.HasIndex("ProductId");
+
+                            b1.ToTable("meal_plan_entries");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MealPlanEntryId");
+
+                            b1.OwnsOne("Jadlify.Domain.Nutrition.MacroNutrients", "Per100Grams", b2 =>
+                                {
+                                    b2.Property<Guid>("PlannedProductSnapshotMealPlanEntryId")
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<decimal>("Calories")
+                                        .HasPrecision(10, 2)
+                                        .HasColumnType("numeric(10,2)")
+                                        .HasColumnName("product_calories_per_100g");
+
+                                    b2.Property<decimal>("Carbohydrates")
+                                        .HasPrecision(10, 2)
+                                        .HasColumnType("numeric(10,2)")
+                                        .HasColumnName("product_carbohydrates_per_100g");
+
+                                    b2.Property<decimal>("Fat")
+                                        .HasPrecision(10, 2)
+                                        .HasColumnType("numeric(10,2)")
+                                        .HasColumnName("product_fat_per_100g");
+
+                                    b2.Property<decimal>("Protein")
+                                        .HasPrecision(10, 2)
+                                        .HasColumnType("numeric(10,2)")
+                                        .HasColumnName("product_protein_per_100g");
+
+                                    b2.HasKey("PlannedProductSnapshotMealPlanEntryId");
+
+                                    b2.ToTable("meal_plan_entries");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("PlannedProductSnapshotMealPlanEntryId");
+                                });
+
+                            b1.Navigation("Per100Grams")
+                                .IsRequired();
+                        });
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Jadlify.Domain.Products.Product", b =>
@@ -409,6 +637,57 @@ namespace Jadlify.Infrastructure.Persistence.Migrations
                         });
 
                     b.Navigation("Ingredients");
+                });
+
+            modelBuilder.Entity("Jadlify.Domain.Shopping.ShoppingList", b =>
+                {
+                    b.OwnsMany("Jadlify.Domain.Shopping.ShoppingListSourceDay", "SourceDays", b1 =>
+                        {
+                            b1.Property<Guid>("ShoppingListId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("shopping_list_id");
+
+                            b1.Property<DateOnly>("Date")
+                                .HasColumnType("date")
+                                .HasColumnName("date");
+
+                            b1.HasKey("ShoppingListId", "Date");
+
+                            b1.ToTable("shopping_list_source_days", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("ShoppingListId");
+                        });
+
+                    b.Navigation("SourceDays");
+                });
+
+            modelBuilder.Entity("Jadlify.Domain.Shopping.ShoppingListItem", b =>
+                {
+                    b.HasOne("Jadlify.Domain.Shopping.ShoppingList", null)
+                        .WithMany("Items")
+                        .HasForeignKey("ShoppingListId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Jadlify.Domain.Shopping.ShoppingListItemSource", b =>
+                {
+                    b.HasOne("Jadlify.Domain.Shopping.ShoppingListItem", null)
+                        .WithMany("Sources")
+                        .HasForeignKey("ShoppingListItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Jadlify.Domain.Shopping.ShoppingList", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Jadlify.Domain.Shopping.ShoppingListItem", b =>
+                {
+                    b.Navigation("Sources");
                 });
 #pragma warning restore 612, 618
         }
