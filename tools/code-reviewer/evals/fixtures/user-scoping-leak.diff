@@ -1,0 +1,102 @@
+diff --git a/src/Jadlify.API/Shopping/ShoppingListsEndpoints.cs b/src/Jadlify.API/Shopping/ShoppingListsEndpoints.cs
+index 3a1f2b4..9c7e105 100644
+--- a/src/Jadlify.API/Shopping/ShoppingListsEndpoints.cs
++++ b/src/Jadlify.API/Shopping/ShoppingListsEndpoints.cs
+@@ -26,6 +26,16 @@ public static class ShoppingListsEndpoints
+             return result.ToHttpResult();
+         })
+         .RequireAuthorization();
+
++        group.MapGet("/shared/{listId:guid}", async (
++            Guid listId,
++            IQueryDispatcher dispatcher,
++            CancellationToken cancellationToken) =>
++        {
++            Result<ShoppingListDetailDto> result = await dispatcher.DispatchAsync(
++                new GetSharedShoppingListQuery(listId),
++                cancellationToken);
++            return result.ToHttpResult();
++        });
++
+         return group;
+     }
+ }
+diff --git a/src/Jadlify.Application/Shopping/GetSharedShoppingList/GetSharedShoppingListQuery.cs b/src/Jadlify.Application/Shopping/GetSharedShoppingList/GetSharedShoppingListQuery.cs
+new file mode 100644
+index 0000000..1d4a7c2
+--- /dev/null
++++ b/src/Jadlify.Application/Shopping/GetSharedShoppingList/GetSharedShoppingListQuery.cs
+@@ -0,0 +1,6 @@
++using Jadlify.Application.Common.Mediator;
++using Jadlify.Application.Shopping.Contracts;
++
++namespace Jadlify.Application.Shopping.GetSharedShoppingList;
++
++public sealed record GetSharedShoppingListQuery(Guid ListId) : IQuery<ShoppingListDetailDto>;
+diff --git a/src/Jadlify.Application/Shopping/GetSharedShoppingList/GetSharedShoppingListQueryHandler.cs b/src/Jadlify.Application/Shopping/GetSharedShoppingList/GetSharedShoppingListQueryHandler.cs
+new file mode 100644
+index 0000000..7b2e991
+--- /dev/null
++++ b/src/Jadlify.Application/Shopping/GetSharedShoppingList/GetSharedShoppingListQueryHandler.cs
+@@ -0,0 +1,31 @@
++using Jadlify.Application.Common.Mediator;
++using Jadlify.Application.Shopping.Contracts;
++using Jadlify.Domain.Shopping;
++using Jadlify.SharedKernel;
++
++namespace Jadlify.Application.Shopping.GetSharedShoppingList;
++
++public sealed class GetSharedShoppingListQueryHandler
++    : IQueryHandler<GetSharedShoppingListQuery, ShoppingListDetailDto>
++{
++    private readonly IShoppingListRepository _lists;
++
++    public GetSharedShoppingListQueryHandler(IShoppingListRepository lists)
++    {
++        _lists = lists;
++    }
++
++    public async Task<Result<ShoppingListDetailDto>> HandleAsync(
++        GetSharedShoppingListQuery query,
++        CancellationToken cancellationToken)
++    {
++        // Shared lists are readable by anyone who has the link, so we look the
++        // list up by id alone instead of scoping it to the current user.
++        ShoppingList? list = await _lists.GetByIdWithoutOwnerAsync(
++            query.ListId,
++            cancellationToken);
++
++        return list is null
++            ? Result.Fail<ShoppingListDetailDto>(ShoppingListErrors.NotFound)
++            : Result.Ok(ShoppingListDetailDto.FromDomain(list));
++    }
++}
+diff --git a/src/Jadlify.Application/Shopping/IShoppingListRepository.cs b/src/Jadlify.Application/Shopping/IShoppingListRepository.cs
+index 5c8d3a1..e91f7b0 100644
+--- a/src/Jadlify.Application/Shopping/IShoppingListRepository.cs
++++ b/src/Jadlify.Application/Shopping/IShoppingListRepository.cs
+@@ -12,4 +12,7 @@ public interface IShoppingListRepository
+     Task<ShoppingList?> GetByIdAsync(Guid listId, Guid userId, CancellationToken cancellationToken);
+
+     Task<IReadOnlyList<ShoppingList>> ListAsync(Guid userId, CancellationToken cancellationToken);
++
++    Task<ShoppingList?> GetByIdWithoutOwnerAsync(Guid listId, CancellationToken cancellationToken);
+ }
+diff --git a/src/Jadlify.Infrastructure/Shopping/ShoppingListRepository.cs b/src/Jadlify.Infrastructure/Shopping/ShoppingListRepository.cs
+index 8f1c204..2a6b7d3 100644
+--- a/src/Jadlify.Infrastructure/Shopping/ShoppingListRepository.cs
++++ b/src/Jadlify.Infrastructure/Shopping/ShoppingListRepository.cs
+@@ -34,6 +34,13 @@ public sealed class ShoppingListRepository : IShoppingListRepository
+             .Include(l => l.Items)
+             .FirstOrDefaultAsync(l => l.Id == listId && l.UserId == userId, cancellationToken);
+
++    public Task<ShoppingList?> GetByIdWithoutOwnerAsync(
++        Guid listId,
++        CancellationToken cancellationToken)
++        => _db.ShoppingLists
++            .Include(l => l.Items)
++            .FirstOrDefaultAsync(l => l.Id == listId, cancellationToken);
++
+     public Task<IReadOnlyList<ShoppingList>> ListAsync(
+         Guid userId,
+         CancellationToken cancellationToken)

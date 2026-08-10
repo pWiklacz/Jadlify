@@ -1,0 +1,124 @@
+name: AI Code Review
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      model:
+        description: OpenRouter model id to review with
+        required: false
+        default: anthropic/claude-sonnet-5
+
+# The default GITHUB_TOKEN is read-only on pull_request; posting the review
+# comment needs pull-requests: write.
+permissions:
+  contents: read
+  pull-requests: write
+
+# A new push to the PR makes the in-flight review obsolete — cancel it rather
+# than pay for a verdict on a diff nobody will read.
+concurrency:
+  group: ai-code-review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  REVIEWER_DIR: tools/code-reviewer
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Required: the default checkout is shallow and `git diff <base>...HEAD`
+          # would resolve against nothing and return an empty diff.
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ${{ env.REVIEWER_DIR }}/package-lock.json
+
+      # Node 22 ships npm 10, but package-lock.json is written by npm 11. The two
+      # disagree about optional peer dependencies: npm 11 omits the entry for
+      # mongodb's optional peer gcp-metadata@^7.0.1 (mongodb arrives through
+      # promptfoo), npm 10 insists the lockfile contain it and aborts `npm ci`
+      # with "Missing: gcp-metadata@7.0.1 from lock file". The lockfile is not
+      # broken — it is simply not portable across npm majors, so pin the major.
+      - name: Pin npm to the major that generated the lockfile
+        run: npm i -g npm@11
+
+      - name: Install reviewer
+        working-directory: ${{ env.REVIEWER_DIR }}
+        run: npm ci
+
+      # Runs before the model does: a broken diff splitter or comment renderer
+      # should fail here, cheaply and deterministically, rather than after we
+      # have paid for a review built on a mangled diff.
+      - name: Test reviewer
+        working-directory: ${{ env.REVIEWER_DIR }}
+        run: |
+          npm run typecheck
+          npm test
+
+      - name: Compute diff
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref || 'main' }}
+        run: |
+          # Written to a file rather than passed through $GITHUB_OUTPUT: a diff is
+          # multi-line and routinely larger than the 1 MB step-output limit.
+          git diff "origin/$BASE_REF...HEAD" > pr.diff
+          echo "Diff size: $(wc -c < pr.diff) bytes across $(grep -c '^diff --git ' pr.diff || true) files"
+
+      - name: Run review
+        working-directory: ${{ env.REVIEWER_DIR }}
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          REVIEW_MODEL: ${{ inputs.model || 'anthropic/claude-sonnet-5' }}
+          REVIEW_COMMENT_PATH: ${{ github.workspace }}/review-comment.md
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          # Turns a 'fail' verdict into a red job. This is a signal, not a lock:
+          # without a branch protection rule requiring this check, a red run
+          # still leaves the merge button available.
+          REVIEW_FAIL_ON_VERDICT: "true"
+        # --silent matters: without it npm prints its run banner to stdout and
+        # corrupts review.json.
+        run: npm run --silent review < "$GITHUB_WORKSPACE/pr.diff" > "$GITHUB_WORKSPACE/review.json"
+
+      - name: Publish to job summary
+        if: always()
+        run: cat review-comment.md >> "$GITHUB_STEP_SUMMARY" || echo "No review produced." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment on the pull request
+        # always() is load-bearing: an `if:` without a status-check function gets
+        # an implicit success(), so a red review step would silently skip the
+        # comment — exactly the run where the comment matters most.
+        if: always() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # always() means this step also runs when the job failed upstream of
+          # the review — in that case there is no comment to post, and treating
+          # the missing file as an error just adds a second red step that says
+          # nothing about the real failure.
+          if [ ! -f review-comment.md ]; then
+            echo "No review was produced — nothing to comment."
+            exit 0
+          fi
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file review-comment.md
+
+      - name: Upload review artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-code-review
+          path: |
+            review.json
+            review-comment.md
+          if-no-files-found: warn

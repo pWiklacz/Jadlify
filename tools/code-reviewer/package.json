@@ -1,0 +1,31 @@
+{
+  "name": "@jadlify/code-reviewer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AI code review agent for Jadlify pull requests (Vercel AI SDK + OpenRouter)",
+  "engines": {
+    "node": ">=20.19.0",
+    "npm": ">=11"
+  },
+  "scripts": {
+    "review": "tsx src/review.ts",
+    "test": "vitest run",
+    "eval": "cross-env NODE_OPTIONS=\"--import tsx\" promptfoo eval",
+    "eval:view": "cross-env NODE_OPTIONS=\"--import tsx\" promptfoo view",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@openrouter/ai-sdk-provider": "^3.0.0",
+    "ai": "^7.0.58",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.2",
+    "cross-env": "^10.1.0",
+    "promptfoo": "^0.120.19",
+    "tsx": "^4.23.11",
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.7"
+  }
+}

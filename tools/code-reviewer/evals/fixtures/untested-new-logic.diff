@@ -1,0 +1,85 @@
+diff --git a/src/Jadlify.SharedKernel/Time/WeekRange.cs b/src/Jadlify.SharedKernel/Time/WeekRange.cs
+new file mode 100644
+index 0000000..7c2e91a
+--- /dev/null
++++ b/src/Jadlify.SharedKernel/Time/WeekRange.cs
+@@ -0,0 +1,47 @@
++namespace Jadlify.SharedKernel.Time;
++
++/// <summary>
++/// Half-open range [Start, End) covering the ISO-8601 week that contains a date.
++/// Weeks start on Monday regardless of the caller's culture.
++/// </summary>
++public readonly record struct WeekRange(DateOnly Start, DateOnly End)
++{
++    public static WeekRange Containing(DateOnly date)
++    {
++        var offset = ((int)date.DayOfWeek + 6) % 7;
++        var start = date.AddDays(-offset);
++        return new WeekRange(start, start.AddDays(7));
++    }
++
++    public bool Contains(DateOnly date) => date >= Start && date < End;
++
++    /// <summary>
++    /// ISO-8601 week number. The week belongs to the year that owns its Thursday,
++    /// so the first days of January can fall in week 52 or 53 of the prior year.
++    /// </summary>
++    public int IsoWeekNumber()
++    {
++        var thursday = Start.AddDays(3);
++        var jan1 = new DateOnly(thursday.Year, 1, 1);
++        var jan1Offset = ((int)jan1.DayOfWeek + 6) % 7;
++        var firstThursday = jan1.AddDays(jan1Offset <= 3 ? -jan1Offset + 3 : 7 - jan1Offset + 3);
++        return (thursday.DayNumber - firstThursday.DayNumber) / 7 + 1;
++    }
++
++    /// <summary>
++    /// Splits an arbitrary span into whole weeks. A partial week at either end is
++    /// returned clipped, so callers can page a meal plan without losing days.
++    /// </summary>
++    public static IReadOnlyList<WeekRange> Split(DateOnly from, DateOnly to)
++    {
++        if (to < from)
++        {
++            return [];
++        }
++
++        var weeks = new List<WeekRange>();
++        var cursor = Containing(from);
++        while (cursor.Start < to)
++        {
++            var clippedStart = cursor.Start < from ? from : cursor.Start;
++            var clippedEnd = cursor.End > to ? to : cursor.End;
++            weeks.Add(new WeekRange(clippedStart, clippedEnd));
++            cursor = new WeekRange(cursor.End, cursor.End.AddDays(7));
++        }
++
++        return weeks;
++    }
++}
+diff --git a/src/Jadlify.Application/MealPlans/GetMealPlan/GetMealPlanQueryHandler.cs b/src/Jadlify.Application/MealPlans/GetMealPlan/GetMealPlanQueryHandler.cs
+index 3f8a1d2..b91c4e5 100644
+--- a/src/Jadlify.Application/MealPlans/GetMealPlan/GetMealPlanQueryHandler.cs
++++ b/src/Jadlify.Application/MealPlans/GetMealPlan/GetMealPlanQueryHandler.cs
+@@ -1,4 +1,5 @@
+ using Jadlify.Application.Abstractions.Data;
++using Jadlify.SharedKernel.Time;
+ using Jadlify.SharedKernel.Results;
+
+ namespace Jadlify.Application.MealPlans.GetMealPlan;
+@@ -18,9 +19,10 @@ internal sealed class GetMealPlanQueryHandler(IMealPlanRepository repository)
+         CancellationToken cancellationToken)
+     {
+         var entries = await repository.GetForUserAsync(query.UserId, query.From, query.To, cancellationToken);
+-        var days = entries
+-            .GroupBy(entry => entry.Date)
+-            .Select(group => new MealPlanDayDto(group.Key, [.. group.Select(MealPlanEntryDto.From)]))
++        var weeks = WeekRange.Split(query.From, query.To);
++        var days = weeks
++            .SelectMany(week => entries.Where(entry => week.Contains(entry.Date)))
++            .GroupBy(entry => entry.Date)
++            .Select(group => new MealPlanDayDto(group.Key, [.. group.Select(MealPlanEntryDto.From)]))
+             .OrderBy(day => day.Date)
+             .ToList();
+

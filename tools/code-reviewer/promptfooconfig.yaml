@@ -1,0 +1,127 @@
+# Model comparison for the Jadlify code review agent.
+#
+#   npm run eval          # runs the matrix
+#   npm run eval:view     # opens the result matrix in a browser
+#
+# Needs OPENROUTER_API_KEY. Each provider runs the real agent from src/agent.ts
+# with a different model, so the matrix compares what CI actually executes —
+# including the Output.object schema enforcement the assertions depend on.
+description: Jadlify code review - cheaper vs pricier model
+
+prompts:
+  # The provider reads the diff from vars; this placeholder is only here because
+  # promptfoo requires a prompt entry.
+  - "{{diff}}"
+
+providers:
+  # The ceiling of the comparison at $5/M input. Worth a column because the
+  # question the matrix answers is not "which model is best" but "does paying
+  # more buy a better review" — and that needs a top end, not just a middle.
+  - id: file://evals/agent-provider.ts
+    label: claude-opus-5
+    config:
+      model: anthropic/claude-opus-5
+  # Current default in agent.ts. $2/M input — twice Haiku, and the reason for the
+  # switch is in the untested-new-logic case below, which Haiku waved through.
+  - id: file://evals/agent-provider.ts
+    label: claude-sonnet-5
+    config:
+      model: anthropic/claude-sonnet-5
+  # The previous default, kept as the cheap end of the comparison rather than
+  # deleted: the matrix only answers "is the pricier model worth it" if the
+  # cheaper one is still in it.
+  - id: file://evals/agent-provider.ts
+    label: claude-haiku-4.5
+    config:
+      model: anthropic/claude-haiku-4.5
+  # ~7x cheaper on input than Haiku; reviews are input-heavy, so this is the
+  # candidate that would actually move the bill.
+  - id: file://evals/agent-provider.ts
+    label: deepseek-v4-flash
+    config:
+      model: deepseek/deepseek-v4-flash
+
+defaultTest:
+  options:
+    # llm-rubric needs a grading model. Pin it to OpenRouter so the whole eval
+    # runs on one key — the default grader would demand an OpenAI key. Sonnet
+    # rather than Haiku here too: a grader that waves through a weak review is
+    # the same failure as a reviewer that waves through a weak diff, and the
+    # rubric inputs are small enough that the price difference is noise.
+    provider: openrouter:anthropic/claude-sonnet-5
+  assert:
+    # The CI gate parses this output. A model that cannot hold the shape is
+    # disqualified regardless of how good its prose is.
+    - type: is-json
+
+tests:
+  - description: Broken per-user isolation must be caught and must fail the change
+    vars:
+      diff: file://evals/fixtures/user-scoping-leak.diff
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.verdict !== 'fail') throw new Error(`expected verdict=fail, got ${r.verdict}`);
+          if (r.security > 3) throw new Error(`expected security<=3, got ${r.security}`);
+          return true;
+      - type: llm-rubric
+        value: >
+          The review identifies that the new shared shopping-list endpoint reads a list by id
+          without scoping it to the authenticated user (GetByIdWithoutOwnerAsync), and treats
+          this as a data-isolation defect. Mentioning the missing RequireAuthorization or the
+          absent tests is a bonus, not a requirement.
+
+  # Not a spotless diff, on purpose. It is correct, layered and tested — so it
+  # must pass — but its XML doc claims the constant is "shared by the create and
+  # update validators" while the diff only touches the create validator. That
+  # one verifiable inconsistency is what separates a model that reads the diff
+  # from one that pattern-matches "small change with tests" and awards 10/10.
+  # The first run of this matrix had every model at 100%: the pass/fail column
+  # said nothing, while Haiku and DeepSeek were quietly returning straight tens
+  # with an empty findings array — the same flatness that produced a worthless
+  # review on PR #19. Requiring the finding is what turns this row into a signal.
+  - description: A correct, tested change must pass — and its doc/scope mismatch must still be caught
+    vars:
+      diff: file://evals/fixtures/clean-change.diff
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.verdict !== 'pass') throw new Error(`expected verdict=pass, got ${r.verdict}`);
+          if (r.testCoverage < 7) throw new Error(`expected testCoverage>=7, got ${r.testCoverage}`);
+          if (!Array.isArray(r.findings) || r.findings.length < 1) {
+            throw new Error('expected at least one finding: the XML doc claims the constant is shared with the update validator, which this diff does not touch');
+          }
+          // A blocker here would contradict verdict=pass and means the model
+          // invented severity to look thorough.
+          const blockers = r.findings.filter((f) => f.severity === 'blocker');
+          if (blockers.length > 0) throw new Error(`expected no blockers on a passing change, got ${blockers.length}`);
+          return true;
+      - type: llm-rubric
+        value: >
+          The review recognises that the validator change is covered by the two added xUnit
+          tests and sits in the correct project, and does not invent blocking defects. It also
+          notes the documentation inconsistency on ProductNameBounds: the XML summary says the
+          constant is shared by the create and update validators, but only the create validator
+          is wired up in this diff.
+
+  # Regression case for a real miss: on PR #19 the reviewer scored 10/10 across
+  # every criterion, with no findings, on a diff that added ~1400 lines of
+  # untested logic. The criterion enumerated product paths, so logic outside them
+  # got full marks by default. Not a merge blocker, so no verdict assertion —
+  # the point is that the score has to register the gap.
+  - description: New non-trivial logic with no tests must cost testCoverage points
+    vars:
+      diff: file://evals/fixtures/untested-new-logic.diff
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.testCoverage > 4) throw new Error(`expected testCoverage<=4, got ${r.testCoverage}`);
+          return true;
+      - type: llm-rubric
+        value: >
+          The review points out that WeekRange — specifically its ISO week-number or Split
+          logic — is added without any test exercising it, and does not treat the absence of
+          tests as acceptable merely because the type is a small pure helper in SharedKernel.
