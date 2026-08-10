@@ -10,6 +10,7 @@
   },
   "scripts": {
     "review": "tsx src/review.ts",
+    "test": "vitest run",
     "eval": "cross-env NODE_OPTIONS=\"--import tsx\" promptfoo eval",
     "eval:view": "cross-env NODE_OPTIONS=\"--import tsx\" promptfoo view",
     "typecheck": "tsc --noEmit"
@@ -24,6 +25,7 @@
     "cross-env": "^10.1.0",
     "promptfoo": "^0.120.19",
     "tsx": "^4.23.11",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.7"
   }
 }

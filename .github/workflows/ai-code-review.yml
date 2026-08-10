@@ -57,6 +57,15 @@ jobs:
         working-directory: ${{ env.REVIEWER_DIR }}
         run: npm ci
 
+      # Runs before the model does: a broken diff splitter or comment renderer
+      # should fail here, cheaply and deterministically, rather than after we
+      # have paid for a review built on a mangled diff.
+      - name: Test reviewer
+        working-directory: ${{ env.REVIEWER_DIR }}
+        run: |
+          npm run typecheck
+          npm test
+
       - name: Compute diff
         env:
           BASE_REF: ${{ github.event.pull_request.base.ref || 'main' }}
